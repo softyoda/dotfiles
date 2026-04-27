@@ -6,7 +6,7 @@ Setup complet de mon environnement en une commande.
 
 ```bash
 # 1. Cloner le repo
-git clone https://github.com/TON_USER/dotfiles.git ~/dotfiles
+git clone https://github.com/softyoda/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
 # 2. Lancer l'installeur
