@@ -1,0 +1,4 @@
+# Secrets — ne jamais committer
+config/fish/secrets.fish
+*.secret
+*.key
