@@ -29,7 +29,8 @@ run() {
   local dirs=(kdedefaults)
   for d in "${dirs[@]}"; do
     if [[ -d "$HOME/.config/$d" ]]; then
-      cp -r "$HOME/.config/$d" "$KDE_DIR/$d"
+      mkdir -p "$KDE_DIR/$d"
+      cp -r "$HOME/.config/$d/." "$KDE_DIR/$d/"
       success "  $d/"
     fi
   done

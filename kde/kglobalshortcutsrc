@@ -35,6 +35,7 @@ _k_friendly_name=Gestion de sessions
 
 [kwin]
 Activate Window Demanding Attention=Meta+Ctrl+A,Meta+Ctrl+A,Activer une fenêtre réclamant de l'attention
+Cube=Meta+C,none,Basculer ou non vers le cube
 Cycle Overview=none,none,Faire défiler les vues en aperçu et en grille
 Cycle Overview Opposite=none,none,Faire défiler les vues en aperçu et en grille
 Decrease Opacity=,,Diminuer l'opacité de la fenêtre active de 5 %
@@ -211,7 +212,7 @@ mediavolumeup=,,Augmentation du volume pour le média
 nextmedia=Media Next,Media Next,Lecture du média suivant
 pausemedia=Media Pause,Media Pause,Mettre en pause la lecture du média
 playmedia=,,Démarrer la lecture du média
-playpausemedia=Media Play,Media Play,Démarrer / Mettre en pause la lecture du média
+playpausemedia=F9\tMedia Play,Media Play,Démarrer / Mettre en pause la lecture du média
 previousmedia=Media Previous,Media Previous,Lecture du média précédent
 seekbackwardmedia=Media Rewind,Media Rewind,Retour arrière de 5 secondes de la lecture du média
 seekbackwardmedialong=,,Retour arrière de 30 secondes de la lecture du média
@@ -250,6 +251,7 @@ activate task manager entry 7=Meta+7,Meta+7,Activer l'entrée du gestionnaire de
 activate task manager entry 8=Meta+8,Meta+8,Activer l'entrée du gestionnaire de tâches 8
 activate task manager entry 9=Meta+9,Meta+9,Activer l'entrée du gestionnaire de tâches 9
 activate widget 46=,none,Activer le composant graphique Gestionnaire de tâches uniquement par icônes
+activate widget 98=,none,Activer le composant graphique Minimiser toutes les fenêtres
 clear-history=,,Effacer l'historique du presse-papier
 clipboard_action=Meta+Ctrl+X,Meta+Ctrl+X,Menu contextuel automatique d'action :
 cycle-panels=Meta+Alt+P,Meta+Alt+P,Déplacer le focus de clavier entre les panneaux

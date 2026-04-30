@@ -227,17 +227,17 @@ class InstallWorker(QThread):
 
 # ─── Widgets réutilisables ──────────────────────────────────────────────────
 
-class CategoryButton(QPushButton):
+class TabButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
         self.setCheckable(True)
-        self.setFixedHeight(44)
+        self.setFixedHeight(36)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setStyleSheet("""
-            QPushButton { text-align:left; padding:0 16px; border:none; border-radius:8px;
-                font-size:14px; color:#cdd6f4; background:transparent; }
-            QPushButton:hover  { background:#313244; }
-            QPushButton:checked{ background:#45475a; color:#cba6f7; font-weight:bold; }
+            QPushButton { padding:0 20px; border:none; border-radius:8px;
+                font-size:13px; color:#6c7086; background:transparent; font-weight:500; }
+            QPushButton:hover   { color:#cdd6f4; background:#313244; }
+            QPushButton:checked { color:#cba6f7; background:#313244; font-weight:bold; }
         """)
 
 
@@ -562,69 +562,31 @@ class KdeEnvPage(QWidget):
 class AppsPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.cards = {}
-        self._cat_index = {}
-        self._current_cat = "__kde__"
+        self.cards = []
         self._build_ui()
 
     def _build_ui(self):
-        root = QHBoxLayout(self)
+        root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        # ── Sidebar ──────────────────────────────────────────────────────────
-        sidebar = QWidget()
-        sidebar.setFixedWidth(200)
-        sidebar.setStyleSheet("background:#11111b;border-right:1px solid #1e1e2e;")
-        sb = QVBoxLayout(sidebar)
-        sb.setContentsMargins(10, 20, 10, 20)
-        sb.setSpacing(4)
+        # ── Barre du haut ─────────────────────────────────────────────────────
+        topbar = QWidget()
+        topbar.setFixedHeight(60)
+        topbar.setStyleSheet("background:#11111b;border-bottom:1px solid #1e1e2e;")
+        tb = QHBoxLayout(topbar)
+        tb.setContentsMargins(20, 0, 20, 0)
+        tb.setSpacing(8)
 
         logo = QLabel("✦  Dotfiles")
-        logo.setStyleSheet("color:#cba6f7;font-size:17px;font-weight:bold;padding:0 6px 12px 6px;")
-        sb.addWidget(logo)
+        logo.setStyleSheet("color:#cba6f7;font-size:17px;font-weight:bold;")
 
-        self.cat_buttons = {}
+        self.tab_apps = TabButton("Applications")
+        self.tab_apps.setChecked(True)
+        self.tab_kde = TabButton("KDE Plasma")
+        self.tab_apps.clicked.connect(lambda: self._show_tab("apps"))
+        self.tab_kde.clicked.connect(lambda: self._show_tab("kde"))
 
-        # Bouton spécial KDE
-        kde_btn = CategoryButton("  KDE Plasma")
-        kde_btn.clicked.connect(lambda: self._select("__kde__"))
-        kde_btn.setChecked(True)
-        self.cat_buttons["__kde__"] = kde_btn
-        sb.addWidget(kde_btn)
-
-        # Séparateur
-        sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet("background:#313244;border:none;max-height:1px;margin:6px 6px;")
-        sb.addWidget(sep)
-
-        # Catégories apps
-        for cat in APPS:
-            btn = CategoryButton(cat)
-            btn.clicked.connect(lambda _, c=cat: self._select(c))
-            sb.addWidget(btn)
-            self.cat_buttons[cat] = btn
-
-        sb.addStretch()
-
-        self.install_btn = QPushButton("⬇  Installer")
-        self.install_btn.setFixedHeight(44)
-        self.install_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.install_btn.setStyleSheet(BTN.format(bg="#cba6f7", fg="#1e1e2e", hv="#d0bcff"))
-        self.install_btn.clicked.connect(self._install)
-        sb.addWidget(self.install_btn)
-
-        # ── Content ───────────────────────────────────────────────────────────
-        content = QWidget()
-        cl = QVBoxLayout(content)
-        cl.setContentsMargins(28, 24, 28, 24)
-        cl.setSpacing(16)
-
-        # Sel all/none (caché sur la page KDE)
-        self.sel_row = QWidget()
-        sel_layout = QHBoxLayout(self.sel_row)
-        sel_layout.setContentsMargins(0, 0, 0, 0)
         sel_all  = QPushButton("Tout cocher")
         sel_none = QPushButton("Tout décocher")
         for b in (sel_all, sel_none):
@@ -634,71 +596,69 @@ class AppsPage(QWidget):
                             "QPushButton:hover{background:#45475a;}")
         sel_all.clicked.connect(lambda: self._select_all(True))
         sel_none.clicked.connect(lambda: self._select_all(False))
-        sel_layout.addWidget(sel_all)
-        sel_layout.addWidget(sel_none)
-        sel_layout.addStretch()
 
+        self.install_btn = QPushButton("⬇  Installer")
+        self.install_btn.setFixedHeight(36)
+        self.install_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.install_btn.setStyleSheet(BTN.format(bg="#cba6f7", fg="#1e1e2e", hv="#d0bcff"))
+        self.install_btn.clicked.connect(self._install)
+
+        self._action_widgets = [sel_all, sel_none, self.install_btn]
+
+        tb.addWidget(logo)
+        tb.addSpacing(12)
+        tb.addWidget(self.tab_apps)
+        tb.addWidget(self.tab_kde)
+        tb.addStretch()
+        for w in self._action_widgets:
+            tb.addWidget(w)
+
+        # ── Stack ─────────────────────────────────────────────────────────────
         self.stack = QStackedWidget()
 
-        # Page 0 : KDE env
+        # Page 0 : liste unique triée alphabétiquement
+        apps_widget = QWidget()
+        al = QVBoxLayout(apps_widget)
+        al.setContentsMargins(28, 16, 28, 16)
+        al.setSpacing(8)
+
+        all_apps = sorted(
+            [app for apps in APPS.values() for app in apps],
+            key=lambda a: a["label"].lower()
+        )
+        for app in all_apps:
+            card = AppCard(app, is_installed(app))
+            al.addWidget(card)
+            self.cards.append(card)
+        al.addStretch()
+
+        scroll = QScrollArea()
+        scroll.setWidget(apps_widget)
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("background:transparent;")
+        self.stack.addWidget(scroll)
+
+        # Page 1 : KDE env
         self.kde_page = KdeEnvPage()
         self.stack.addWidget(self.kde_page)
 
-        # Pages apps (index 1…)
-        for i, (cat, apps) in enumerate(APPS.items()):
-            page = QWidget()
-            pl = QVBoxLayout(page)
-            pl.setSpacing(8)
-            pl.setContentsMargins(0, 0, 0, 0)
-            self.cards[cat] = []
-            for app in apps:
-                card = AppCard(app, is_installed(app))
-                pl.addWidget(card)
-                self.cards[cat].append(card)
-            pl.addStretch()
+        root.addWidget(topbar)
+        root.addWidget(self.stack, 1)
 
-            scroll = QScrollArea()
-            scroll.setWidget(page)
-            scroll.setWidgetResizable(True)
-            scroll.setStyleSheet("background:transparent;")
-            self.stack.addWidget(scroll)
-            self._cat_index[cat] = i + 1
-
-        cl.addWidget(self.sel_row)
-        cl.addWidget(self.stack, 1)
-
-        root.addWidget(sidebar)
-        root.addWidget(content, 1)
-
-        # Démarre sur la page KDE, sel_row caché
-        self.stack.setCurrentIndex(0)
-        self.sel_row.setVisible(False)
-        self.install_btn.setVisible(False)
-
-    def _select(self, cat):
-        for c, btn in self.cat_buttons.items():
-            btn.setChecked(c == cat)
-        if cat == "__kde__":
-            self.stack.setCurrentIndex(0)
-            self.sel_row.setVisible(False)
-            self.install_btn.setVisible(False)
-        else:
-            self.stack.setCurrentIndex(self._cat_index[cat])
-            self.sel_row.setVisible(True)
-            self.install_btn.setVisible(True)
-        self._current_cat = cat
+    def _show_tab(self, tab):
+        is_apps = (tab == "apps")
+        self.tab_apps.setChecked(is_apps)
+        self.tab_kde.setChecked(not is_apps)
+        self.stack.setCurrentIndex(0 if is_apps else 1)
+        for w in self._action_widgets:
+            w.setVisible(is_apps)
 
     def _select_all(self, state):
-        for card in self.cards.get(self._current_cat, []):
+        for card in self.cards:
             card.checkbox.setChecked(state)
 
     def _install(self):
-        to_install = [
-            card.app
-            for cards in self.cards.values()
-            for card in cards
-            if card.is_checked() and not is_installed(card.app)
-        ]
+        to_install = [c.app for c in self.cards if c.is_checked() and not is_installed(c.app)]
         if not to_install:
             QMessageBox.information(self, "Rien à faire",
                 "Toutes les apps cochées sont déjà installées.")

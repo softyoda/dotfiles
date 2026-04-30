@@ -3,15 +3,36 @@ Id_1=36944de8-7906-419e-ac7a-919f5a9d53b5
 Number=1
 Rows=1
 
+[Effect-blur]
+BlurStrength=11
+NoiseStrength=4
+Saturation=169
+
 [Effect-shakecursor]
 Magnification=4
 
+[Effect-wobblywindows]
+AdvancedMode=true
+MoveFactor=14
+Stiffness=5
+
 [Plugins]
+diminactiveEnabled=true
+gamecontrollerEnabled=true
+glassEnabled=true
+kinetic_maximizeEnabled=false
+kwin4_effect_geometry_changeEnabled=true
 launch-mission-centerEnabled=true
+overviewEnabled=false
+translucencyEnabled=true
+wobblywindowsEnabled=true
 
 [Tiling][36944de8-7906-419e-ac7a-919f5a9d53b5][4f8b46a3-078e-4af6-bb95-3bfdbdb80159]
 padding=4
 tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Wayland]
+VirtualKeyboardEnabled=false
 
 [Windows]
 ElectricBorderCornerRatio=0.3
