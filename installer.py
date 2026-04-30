@@ -91,14 +91,19 @@ BTN = """
 
 def is_installed(app):
     m, pkg = app["method"], app["pkg"]
-    if m in ("pacman", "paru"):
-        return subprocess.run(["pacman", "-Qq", pkg], capture_output=True).returncode == 0
-    if m == "flatpak":
-        r = subprocess.run(["flatpak", "list", "--app", "--columns=application"],
-                           capture_output=True, text=True)
-        return pkg in r.stdout
-    if m == "npm":
-        return shutil.which("claude") is not None
+    try:
+        if m in ("pacman", "paru"):
+            return subprocess.run(["pacman", "-Qq", pkg], capture_output=True).returncode == 0
+        if m == "flatpak":
+            if not shutil.which("flatpak"):
+                return False
+            r = subprocess.run(["flatpak", "list", "--app", "--columns=application"],
+                               capture_output=True, text=True)
+            return pkg in r.stdout
+        if m == "npm":
+            return shutil.which("claude") is not None
+    except Exception:
+        pass
     return False
 
 def read_existing_api_key():

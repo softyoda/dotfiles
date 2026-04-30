@@ -16,10 +16,15 @@ run() {
     info "Autologin déjà configuré"
   fi
 
-  # Flatpak — ajout remote flathub
-  if ! flatpak remotes 2>/dev/null | grep -q flathub; then
+  # Flatpak — installation si absent puis ajout remote flathub
+  if ! is_installed_cmd flatpak; then
+    info "Installation de flatpak..."
+    sudo pacman -S --needed --noconfirm flatpak
+    success "flatpak installé"
+  fi
+  if ! flatpak remotes --system 2>/dev/null | grep -q flathub; then
     info "Ajout de Flathub..."
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    sudo flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     success "Flathub ajouté"
   fi
 
