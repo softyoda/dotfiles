@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Ré-applique spicetify après une update de Spotify (Flatpak).
+# Déclenché par spicetify-reapply.path (systemd user) ou manuellement.
+
+set -u
+
+SPICETIFY="${HOME}/.spicetify/spicetify"
+if [[ ! -x "$SPICETIFY" ]]; then
+  SPICETIFY="$(command -v spicetify || true)"
+fi
+[[ -z "${SPICETIFY:-}" || ! -x "$SPICETIFY" ]] && { echo "spicetify introuvable"; exit 0; }
+
+# Si Spotify tourne, on le ferme (sinon spicetify refuse de patcher).
+if pgrep -x spotify >/dev/null 2>&1; then
+  flatpak kill com.spotify.Client 2>/dev/null || pkill -x spotify || true
+  sleep 1
+fi
+
+# Petit délai pour laisser flatpak finir d'écrire le nouveau deployment.
+sleep 2
+
+"$SPICETIFY" backup apply

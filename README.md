@@ -63,12 +63,24 @@ dotfiles/
 │   ├── kglobalshortcutsrc
 │   ├── plasma-org.kde.plasma.desktop-appletsrc
 │   └── kdedefaults/
-└── scripts/
-    ├── setup-system.sh           # paru, Flathub, autologin SDDM
-    ├── kde-restore.sh            # Restaure le thème KDE
-    ├── link-configs.sh           # Crée les symlinks configs
-    └── utils.sh                  # Fonctions utilitaires bash
+├── scripts/
+│   ├── setup-system.sh           # paru, Flathub, autologin SDDM
+│   ├── kde-restore.sh            # Restaure le thème KDE
+│   ├── link-configs.sh           # Crée les symlinks configs
+│   ├── setup-spicetify-hook.sh   # Hook auto-reapply Spicetify post-update
+│   ├── spicetify-reapply         # Bin appelé par le hook systemd
+│   └── utils.sh                  # Fonctions utilitaires bash
+└── systemd/user/
+    ├── spicetify-reapply.service # Lance spicetify backup apply
+    └── spicetify-reapply.path    # Watch le deployment Flatpak Spotify
 ```
+
+## Hook auto-reapply Spicetify
+
+Si Spicetify est sélectionné lors de l'install, un hook systemd user est activé : il
+détecte chaque update de Spotify (Flatpak) via le symlink de deployment et relance
+automatiquement `spicetify backup apply`. Plus besoin de le refaire à la main après
+chaque `flatpak update` / `Cachy-Update`.
 
 ## Prérequis
 

@@ -227,6 +227,14 @@ class InstallWorker(QThread):
             rc = self._stream("pkexec bash -c " + shlex.quote("; ".join(flatpak_parts)))
             self.log.emit("✓ Flatpak installé" if rc == 0 else f"✗ Erreur flatpak (code {rc})")
 
+        # ── Post-install : hook spicetify si spicetify a été installé ───────
+        if any(a["id"] == "spicetify" for a in self.apps):
+            hook = DOTFILES / "scripts" / "setup-spicetify-hook.sh"
+            if hook.exists():
+                self.log.emit("\n▶ Activation du hook auto-reapply Spicetify")
+                rc = self._stream(f"bash {shlex.quote(str(hook))}")
+                self.log.emit("✓ Hook spicetify activé" if rc == 0 else f"✗ Erreur hook (code {rc})")
+
         self.done.emit()
 
 

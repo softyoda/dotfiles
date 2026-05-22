@@ -1,0 +1,6 @@
+[Unit]
+Description=Re-apply Spicetify after Spotify (Flatpak) update
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/spicetify-reapply

@@ -117,6 +117,11 @@ run() {
     install_app "$id"
   done
 
+  # Post-install : hook spicetify si demandé
+  if [[ " $selected " == *" spicetify "* ]]; then
+    bash "$(dirname "$0")/setup-spicetify-hook.sh"
+  fi
+
   success "Toutes les apps sélectionnées sont installées !"
 }
 
