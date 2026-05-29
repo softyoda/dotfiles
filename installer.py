@@ -89,6 +89,10 @@ BTN = """
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
+def _is_cachy_update_active():
+    override = Path.home() / ".local" / "share" / "arch-update" / "lib" / "list_packages.sh"
+    return override.exists() and not override.is_symlink()
+
 def is_installed(app):
     m, pkg = app["method"], app["pkg"]
     try:
@@ -597,8 +601,10 @@ class AppsPage(QWidget):
         self.tab_apps = TabButton("Applications")
         self.tab_apps.setChecked(True)
         self.tab_kde = TabButton("KDE Plasma")
+        self.tab_syst = TabButton("Système")
         self.tab_apps.clicked.connect(lambda: self._show_tab("apps"))
         self.tab_kde.clicked.connect(lambda: self._show_tab("kde"))
+        self.tab_syst.clicked.connect(lambda: self._show_tab("syst"))
 
         sel_all  = QPushButton("Tout cocher")
         sel_none = QPushButton("Tout décocher")
@@ -622,6 +628,7 @@ class AppsPage(QWidget):
         tb.addSpacing(12)
         tb.addWidget(self.tab_apps)
         tb.addWidget(self.tab_kde)
+        tb.addWidget(self.tab_syst)
         tb.addStretch()
         for w in self._action_widgets:
             tb.addWidget(w)
@@ -655,16 +662,20 @@ class AppsPage(QWidget):
         self.kde_page = KdeEnvPage()
         self.stack.addWidget(self.kde_page)
 
+        # Page 2 : Système
+        self.syst_page = SystPage()
+        self.stack.addWidget(self.syst_page)
+
         root.addWidget(topbar)
         root.addWidget(self.stack, 1)
 
     def _show_tab(self, tab):
-        is_apps = (tab == "apps")
-        self.tab_apps.setChecked(is_apps)
-        self.tab_kde.setChecked(not is_apps)
-        self.stack.setCurrentIndex(0 if is_apps else 1)
+        self.tab_apps.setChecked(tab == "apps")
+        self.tab_kde.setChecked(tab == "kde")
+        self.tab_syst.setChecked(tab == "syst")
+        self.stack.setCurrentIndex({"apps": 0, "kde": 1, "syst": 2}.get(tab, 0))
         for w in self._action_widgets:
-            w.setVisible(is_apps)
+            w.setVisible(tab == "apps")
 
     def _select_all(self, state):
         for card in self.cards:
@@ -690,6 +701,102 @@ class AppsPage(QWidget):
         self._worker.log.connect(self._log_win.append)
         self._worker.done.connect(lambda: self._log_win.finish(0))
         self._worker.start()
+
+
+# ─── Page Système ───────────────────────────────────────────────────────────
+
+class SystPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(28, 24, 28, 24)
+        layout.setSpacing(16)
+
+        title = QLabel("Système")
+        title.setStyleSheet("color:#cdd6f4;font-size:20px;font-weight:bold;")
+        layout.addWidget(title)
+
+        card = QFrame()
+        card.setStyleSheet("QFrame{background:#1e1e2e;border-radius:10px;border:1px solid #313244;}")
+        cl = QVBoxLayout(card)
+        cl.setContentsMargins(20, 16, 20, 16)
+        cl.setSpacing(10)
+
+        header = QHBoxLayout()
+        card_title = QLabel("Mises à jour automatiques (cachy-update)")
+        card_title.setStyleSheet("color:#cdd6f4;font-size:15px;font-weight:bold;background:transparent;border:none;")
+        active = _is_cachy_update_active()
+        self.status_lbl = QLabel("● Actif" if active else "○ Inactif")
+        self.status_lbl.setStyleSheet(
+            f"color:{'#a6e3a1' if active else '#6c7086'};font-size:12px;background:transparent;border:none;")
+        header.addWidget(card_title)
+        header.addStretch()
+        header.addWidget(self.status_lbl)
+        cl.addLayout(header)
+
+        desc = QLabel(
+            "Remplace les libs de cachy-update pour éliminer les confirmations répétitives.\n"
+            "Au démarrage de la mise à jour : Y = mode interactif normal,  a = tout valider automatiquement.\n"
+            "Pacman, paru, flatpak, orphelins, cache et services : tout s'enchaîne sans pause."
+        )
+        desc.setWordWrap(True)
+        desc.setStyleSheet("color:#6c7086;font-size:12px;background:transparent;border:none;")
+        cl.addWidget(desc)
+
+        detail = QLabel(
+            "Override dans ~/.local/share/arch-update/lib/  •  paru.conf : SkipReview  •  arch-update.conf : NewsNum=0"
+        )
+        detail.setStyleSheet("color:#45475a;font-size:11px;background:transparent;border:none;")
+        detail.setWordWrap(True)
+        cl.addWidget(detail)
+
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(10)
+        self.apply_btn = QPushButton("⬇  Activer")
+        self.apply_btn.setFixedHeight(36)
+        self.apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.apply_btn.setStyleSheet(BTN.format(bg="#a6e3a1", fg="#1e1e2e", hv="#94e2d5"))
+        self.apply_btn.setEnabled(not active)
+        self.apply_btn.clicked.connect(self._apply)
+
+        self.remove_btn = QPushButton("✕  Désactiver")
+        self.remove_btn.setFixedHeight(36)
+        self.remove_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.remove_btn.setStyleSheet(BTN.format(bg="#f38ba8", fg="#1e1e2e", hv="#eba0ac"))
+        self.remove_btn.setEnabled(active)
+        self.remove_btn.clicked.connect(self._remove)
+
+        btn_row.addStretch()
+        btn_row.addWidget(self.apply_btn)
+        btn_row.addWidget(self.remove_btn)
+        cl.addLayout(btn_row)
+
+        layout.addWidget(card)
+        layout.addStretch()
+
+    def _apply(self):
+        script = DOTFILES / "scripts" / "setup-cachy-update.sh"
+        self._run(f"bash {shlex.quote(str(script))}", "Activation auto-update")
+
+    def _remove(self):
+        self._run('rm -rf "$HOME/.local/share/arch-update/lib"', "Désactivation auto-update")
+
+    def _run(self, cmd, title):
+        self._log_win = LogWindow(title, self.window())
+        self._log_win.show()
+        self._worker = ShellWorker(cmd)
+        self._worker.log.connect(self._log_win.append)
+        self._worker.done.connect(self._on_done)
+        self._worker.start()
+
+    def _on_done(self, rc):
+        self._log_win.finish(rc)
+        active = _is_cachy_update_active()
+        self.status_lbl.setText("● Actif" if active else "○ Inactif")
+        self.status_lbl.setStyleSheet(
+            f"color:{'#a6e3a1' if active else '#6c7086'};font-size:12px;background:transparent;border:none;")
+        self.apply_btn.setEnabled(not active)
+        self.remove_btn.setEnabled(active)
 
 
 # ─── Fenêtre principale ─────────────────────────────────────────────────────
