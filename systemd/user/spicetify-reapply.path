@@ -2,11 +2,14 @@
 Description=Watch Spotify Flatpak deployment for updates
 
 [Path]
-# Le symlink "active" change quand flatpak déploie une nouvelle version.
-# Spicetify modifie xpui.spa dans le deployment mais ne touche jamais à ce symlink,
-# donc pas de boucle. Les deux paths (user + system) couvrent les deux modes d'install.
-PathChanged=%h/.local/share/flatpak/app/com.spotify.Client/x86_64/stable/active
-PathChanged=/var/lib/flatpak/app/com.spotify.Client/x86_64/stable/active
+# On surveille le répertoire parent "stable/" : quand flatpak remplace le symlink
+# "active" (via rename atomique), inotify détecte le changement dans le parent.
+# Surveiller "active" directement ne marche pas car inotify suit le symlink
+# et reste accroché à l'ancienne cible après le rename.
+# Spicetify écrit dans stable/<hash>/files/…, pas dans stable/ lui-même,
+# donc pas de boucle.
+PathChanged=%h/.local/share/flatpak/app/com.spotify.Client/x86_64/stable
+PathChanged=/var/lib/flatpak/app/com.spotify.Client/x86_64/stable
 Unit=spicetify-reapply.service
 
 [Install]
