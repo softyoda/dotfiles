@@ -14,9 +14,21 @@ symlink() {
 run() {
   header "Configs (symlinks)"
 
-  symlink "$DOTFILES/config/fish/config.fish"           ~/.config/fish/config.fish
-  symlink "$DOTFILES/config/konsole/Default.profile"    ~/.local/share/konsole/Default.profile
-  symlink "$DOTFILES/config/wezterm/wezterm.lua"        ~/.config/wezterm/wezterm.lua
+  symlink "$DOTFILES/config/fish/config.fish"                       ~/.config/fish/config.fish
+  symlink "$DOTFILES/config/konsole/Default.profile"                ~/.local/share/konsole/Default.profile
+  symlink "$DOTFILES/config/wezterm/wezterm.lua"                    ~/.config/wezterm/wezterm.lua
+
+  # Claude Code
+  symlink "$DOTFILES/config/claude/settings.json"                   ~/.claude/settings.json
+  symlink "$DOTFILES/config/claude/agents/deepseek.md"              ~/.claude/agents/deepseek.md
+  symlink "$DOTFILES/config/claude/agents/gemini.md"                ~/.claude/agents/gemini.md
+
+  # Claude Code Router (CCR)
+  symlink "$DOTFILES/config/claude-code-router/config.json"         ~/.claude-code-router/config.json
+  symlink "$DOTFILES/config/claude-code-router/custom-router.js"    ~/.claude-code-router/custom-router.js
+
+  # claude-cache-fix (service systemd user)
+  symlink "$DOTFILES/systemd/user/claude-cache-fix.service"         ~/.config/systemd/user/claude-cache-fix.service
 
   # Flatpak — handler .flatpakref
   mkdir -p ~/.local/share/applications ~/.local/bin

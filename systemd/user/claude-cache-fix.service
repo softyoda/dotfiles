@@ -1,0 +1,13 @@
+[Unit]
+Description=Claude Code cache-fix proxy (upstream: Poe)
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/node /home/ryzen/.npm-global/lib/node_modules/claude-code-cache-fix/proxy/server.mjs
+Environment=CACHE_FIX_PROXY_UPSTREAM=https://api.poe.com
+Environment=CACHE_FIX_DEBUG=1
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

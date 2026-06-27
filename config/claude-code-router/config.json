@@ -1,0 +1,44 @@
+{
+  "LOG": true,
+  "HOST": "127.0.0.1",
+  "PORT": 3456,
+  "CUSTOM_ROUTER_PATH": "/home/ryzen/.claude-code-router/custom-router.js",
+  "Providers": [
+    {
+      "name": "poe-anthropic",
+      "api_base_url": "https://api.poe.com/v1/messages",
+      "api_key": "$POE_API_KEY",
+      "models": [
+        "claude-opus-4.8",
+        "claude-opus-4.7",
+        "claude-opus-4.6",
+        "claude-opus-4.5",
+        "claude-sonnet-4.6",
+        "claude-sonnet-4.5",
+        "claude-haiku-4.5"
+      ],
+      "transformer": {
+        "use": ["Anthropic"]
+      }
+    },
+    {
+      "name": "poe-openai",
+      "api_base_url": "https://api.poe.com/v1/chat/completions",
+      "api_key": "$POE_API_KEY",
+      "models": [
+        "gemini-3.5-flash",
+        "deepseek-v4-pro-e"
+      ],
+      "transformer": {
+        "use": ["OpenAI"]
+      }
+    }
+  ],
+  "Router": {
+    "default": "poe-anthropic,claude-opus-4.8",
+    "background": "poe-anthropic,claude-sonnet-4.6",
+    "think": "poe-anthropic,claude-opus-4.8",
+    "longContext": "poe-anthropic,claude-opus-4.8",
+    "longContextThreshold": 60000
+  }
+}
