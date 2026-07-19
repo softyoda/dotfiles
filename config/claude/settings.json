@@ -1,9 +1,12 @@
 {
+  "theme": "dark",
+  "model": "claude-sonnet-4-6",
+  "language": "français",
+  "effortLevel": "medium",
+  "skipWorkflowUsageWarning": true,
   "env": {
     "SUDO_ASKPASS": "/usr/bin/ksshaskpass",
-    "ANTHROPIC_BASE_URL": "http://127.0.0.1:9801",
-    "ANTHROPIC_CUSTOM_HEADERS": "Authorization: Bearer <POE_API_KEY>",
-    "CACHE_FIX_PROXY_UPSTREAM": "http://127.0.0.1:9801"
+    "ANTHROPIC_BASE_URL": "https://api.poe.com"
   },
   "permissions": {
     "allow": [
@@ -11,16 +14,10 @@
       "Bash",
       "Read",
       "Write",
-      "Edit",
-      "Bash(cp ~/.config/fish/config.fish ~/Bureau/dotfiles/config/fish/)",
-      "Bash(cp ~/.local/share/konsole/Default.profile ~/Bureau/dotfiles/config/konsole/)",
-      "Bash(cp ~/.config/wezterm/wezterm.lua ~/Bureau/dotfiles/config/wezterm/)",
-      "Bash(khotkeys)",
-      "Bash(qdbus org.kde.khotkeys /khotkeys org.kde.khotkeys.reread_configuration)"
+      "Edit"
     ],
     "defaultMode": "default"
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -28,16 +25,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "input=$(cat); cmd=$(printf '%s' \"$input\" | jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -qE 'gh (issue|pr) (create|comment|edit|close|merge)'; then jq -n --arg cmd \"$cmd\" '{\"systemMessage\": (\"Action GitHub bloquée — relire avant envoi:\\n\\n\" + $cmd + \"\\n\\nDonne ton feu vert ou tes retours.\"), \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"ask\", \"permissionDecisionReason\": \"Revue obligatoire avant tout post GitHub (issue/PR/comment).\"}}'; fi",
             "if": "Bash(gh *)",
-            "statusMessage": "Vérification commande GitHub..."
+            "statusMessage": "Vérification commande GitHub...",
+            "command": "input=$(cat); cmd=$(printf '%s' \"$input\" | jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -qE 'gh (issue|pr) (create|comment|edit|close|merge)'; then jq -n --arg cmd \"$cmd\" '{\"systemMessage\": (\"Action GitHub bloquée — relire avant envoi:\\n\\n\" + $cmd + \"\\n\\nDonne ton feu vert ou tes retours.\"), \"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"ask\", \"permissionDecisionReason\": \"Revue obligatoire avant tout post GitHub (issue/PR/comment).\"}}'; fi"
           }
         ]
       }
     ]
-  },
-  "language": "français",
-  "effortLevel": "medium",
-  "skipWorkflowUsageWarning": true,
-  "theme": "dark"
+  }
 }
