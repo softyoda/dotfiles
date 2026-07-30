@@ -69,10 +69,15 @@ dotfiles/
 │   ├── link-configs.sh           # Crée les symlinks configs
 │   ├── setup-spicetify-hook.sh   # Hook auto-reapply Spicetify post-update
 │   ├── spicetify-reapply         # Bin appelé par le hook systemd
+│   ├── cache-cleanup.sh          # Purge caches pacman/paru > 7 jours
+│   ├── setup-cache-cleanup.sh    # Installe le timer systemd de nettoyage
 │   └── utils.sh                  # Fonctions utilitaires bash
-└── systemd/user/
-    ├── spicetify-reapply.service # Lance spicetify backup apply
-    └── spicetify-reapply.path    # Watch le deployment Flatpak Spotify
+├── systemd/user/
+│   ├── spicetify-reapply.service # Lance spicetify backup apply
+│   └── spicetify-reapply.path    # Watch le deployment Flatpak Spotify
+└── systemd/system/
+    ├── cache-cleanup.service     # Oneshot : purge des caches
+    └── cache-cleanup.timer       # Timer quotidien (Persistent)
 ```
 
 ## Hook auto-reapply Spicetify
@@ -81,6 +86,28 @@ Si Spicetify est sélectionné lors de l'install, un hook systemd user est activ
 détecte chaque update de Spotify (Flatpak) via le symlink de deployment et relance
 automatiquement `spicetify backup apply`. Plus besoin de le refaire à la main après
 chaque `flatpak update` / `Cachy-Update`.
+
+## Nettoyage automatique des caches
+
+Les caches de paquets ne sont **jamais** purgés automatiquement sur Arch/CachyOS :
+`/var/cache/pacman/pkg` et `~/.cache/paru/clone` grossissent indéfiniment (facilement
+plusieurs dizaines de Go, ex. les versions successives de `cuda` ou les nightlies Firefox).
+
+Ce repo installe un timer systemd qui supprime **chaque jour** les fichiers de cache
+(`*.pkg.tar.*`, archives sources, AppImage, .deb…) de **plus de 7 jours**, côté pacman
+comme côté paru.
+
+```bash
+bash scripts/setup-cache-cleanup.sh
+```
+
+Vérifier / déclencher manuellement :
+
+```bash
+systemctl list-timers cache-cleanup.timer   # prochaine exécution
+journalctl -u cache-cleanup.service          # ce qui a été supprimé
+sudo /usr/local/bin/cache-cleanup.sh         # lancer maintenant
+```
 
 ## Prérequis
 

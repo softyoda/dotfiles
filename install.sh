@@ -20,7 +20,10 @@ fi
 
 python3 "$DOTFILES/installer.py"
 
-# 4. Restauration thème KDE
+# 4. Nettoyage automatique des caches (timer systemd quotidien)
+bash "$DOTFILES/scripts/setup-cache-cleanup.sh"
+
+# 5. Restauration thème KDE
 bash "$DOTFILES/scripts/kde-restore.sh"
 
 echo ""

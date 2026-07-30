@@ -1,0 +1,9 @@
+[Unit]
+Description=Clean pacman and paru package caches (files older than 7 days)
+Documentation=man:paccache(8)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cache-cleanup.sh
+Nice=19
+IOSchedulingClass=idle
