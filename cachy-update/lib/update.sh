@@ -32,10 +32,15 @@ if [ -n "${aur_packages}" ]; then
 	main_msg "$(eval_gettext "Updating AUR Packages...\n")"
 
 	# shellcheck disable=SC2154
-	aur_noconfirm=""
-	[ -n "${noconfirm_mode}" ] && aur_noconfirm="--noconfirm"
+	aur_noconfirm=()
+	if [ -n "${noconfirm_mode}" ]; then
+		aur_noconfirm=(--noconfirm)
+		if [ "${aur_helper##*/}" = paru ]; then
+			aur_noconfirm+=(--skipreview)
+		fi
+	fi
 	# shellcheck disable=SC2086
-	if ! "${aur_helper}" --color "${pacman_color_opt}" ${aur_noconfirm} "${devel_flag[@]}" -Syu; then
+	if ! "${aur_helper}" --color "${pacman_color_opt}" "${aur_noconfirm[@]}" "${devel_flag[@]}" -Syu; then
 		echo
 		warning_msg "$(eval_gettext "An error has occurred during the update process\nThe update has been aborted\n")"
 		error_during_update="true"

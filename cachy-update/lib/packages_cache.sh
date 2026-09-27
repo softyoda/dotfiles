@@ -19,27 +19,23 @@ if [ "${pacman_cache_total}" -gt 0 ]; then
 
 	if [ "${pacman_cache_total}" -eq 1 ]; then
 		main_msg "$(eval_gettext "Cached Packages:\nThere's an old or uninstalled cached package\n")"
+		if [ -n "${noconfirm_mode}" ]; then
+			answer="$(eval_gettext "Y")"
+		else
+			ask_msg "$(eval_gettext "Would you like to remove it from the cache now? [Y/n]")"
+		fi
 	else
 		main_msg "$(eval_gettext "Cached Packages:\nThere are old and / or uninstalled cached packages\n")"
-	fi
-
-	if [ -z "${noconfirm_mode}" ]; then
-		if [ "${pacman_cache_total}" -eq 1 ]; then
-			ask_msg "$(eval_gettext "Would you like to remove it from the cache now? [Y/n]")"
+		if [ -n "${noconfirm_mode}" ]; then
+			answer="$(eval_gettext "Y")"
 		else
 			ask_msg "$(eval_gettext "Would you like to remove them from the cache now? [Y/n]")"
 		fi
-		case "${answer}" in
-			"$(eval_gettext "Y")"|"$(eval_gettext "y")"|"") ;;
-			*)
-				echo
-				info_msg "$(eval_gettext "The removal hasn't been applied\n")"
-				return 0 2>/dev/null || true
-			;;
-		esac
 	fi
 
-	if true; then
+	# shellcheck disable=SC2154
+	case "${answer}" in
+		"$(eval_gettext "Y")"|"$(eval_gettext "y")"|"")
 			if [ "${pacman_cache_old}" -gt 0 ] && [ "${pacman_cache_uninstalled}" -eq 0 ]; then
 				echo
 				main_msg "$(eval_gettext "Removing old cached packages...")"
@@ -82,7 +78,11 @@ if [ "${pacman_cache_total}" -gt 0 ]; then
 				fi
 			fi
 		;;
-	fi
+		*)
+			echo
+			info_msg "$(eval_gettext "The removal hasn't been applied\n")"
+		;;
+	esac
 else
 	info_msg "$(eval_gettext "No old or uninstalled cached package found\n")"
 fi
