@@ -58,6 +58,12 @@ run() {
   kbuildsycoca6 --noincremental 2>/dev/null || true
   qdbus6 org.kde.KWin /KWin reconfigure 2>/dev/null || true
 
+  # Assistance au placement des fenêtres, installée pour cet utilisateur.
+  info "Installation de Snap Assist..."
+  if ! bash "$DOTFILES/scripts/setup-snap-assist.sh"; then
+    warn "Snap Assist n'a pas pu être activé ; relancer scripts/setup-snap-assist.sh"
+  fi
+
   success "Environnement KDE restauré ! (redémarre la session pour finaliser)"
 }
 
