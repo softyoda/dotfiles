@@ -6,14 +6,18 @@ source "$DOTFILES_LIB"
 
 LOCATION="${MULLVAD_LOCATION:-be}"
 
-enable_system mullvad-daemon.service mullvad-early-boot-blocking.service
+enable_system mullvad-daemon.service
+# Blocage au démarrage : seulement activé (jamais démarré à chaud : il poserait une règle
+# nftables qui coupe tout le réseau, LAN compris, jusqu'au redémarrage).
+as_root systemctl enable mullvad-early-boot-blocking.service
 
 # Attendre que le démon réponde
 for _ in {1..20}; do mullvad status &>/dev/null && break; sleep 0.5; done
 
 mullvad relay set location $LOCATION
 mullvad relay set multihop off
-mullvad auto-connect set on
+# Reconnexion auto seulement si un compte est connecté (sinon le VPN reste en erreur/bloquant)
+if mullvad account get &>/dev/null; then mullvad auto-connect set on; else mullvad auto-connect set off; fi
 mullvad lan set allow
 mullvad lockdown-mode set off
 mullvad tunnel set ipv6 off
