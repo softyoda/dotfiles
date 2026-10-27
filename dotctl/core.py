@@ -62,7 +62,7 @@ def private_dir() -> Path | None:
         cands.append(os.path.expanduser(PRIVATE_PATH_FILE.read_text().strip()))
     home = Path.home()
     cands += [home / "Seafile" / "dotfiles-private", *home.glob("seafile*/Seafile/dotfiles-private"),
-              DOTFILES.parent / "dotfiles-private"]
+              home / ".config" / "dotfiles-private", DOTFILES.parent / "dotfiles-private"]
     for p in cands:
         if p and Path(p).is_dir():
             return Path(p)
