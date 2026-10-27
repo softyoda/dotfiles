@@ -291,6 +291,9 @@ def missing_packages(m: Module) -> list[str]:
     pac = _installed("pacman")
     fp = _installed("flatpak")
     miss = [p for p in m.pacman + m.aur if p not in pac]
+    if miss:  # paquet fourni par une variante (ex. vesktop-bin fournit vesktop)
+        r = subprocess.run(["pacman", "-T", *miss], capture_output=True, text=True)
+        miss = r.stdout.split()
     miss += [p for p in m.flatpak if p not in fp]
     return miss
 
