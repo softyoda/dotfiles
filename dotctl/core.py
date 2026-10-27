@@ -134,7 +134,9 @@ def load_profile(name: str | None = None) -> dict:
 def context_env(profile: dict | None = None) -> dict[str, str]:
     """Variables visibles par les modules : profil (non secret) + secrets locaux."""
     profile = profile or load_profile()
-    env = {k: str(v) for k, v in profile.get("vars", {}).items()}
+    # « ~/… » développé : les scripts et fichiers générés reçoivent des chemins absolus
+    env = {k: (os.path.expanduser(str(v)) if str(v).startswith("~/") else str(v))
+           for k, v in profile.get("vars", {}).items()}
     for f in secret_files():
         env.update(read_env_file(f))
     env.setdefault("USER", os.environ.get("USER", ""))

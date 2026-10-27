@@ -17,8 +17,8 @@ ver=$(envget IMMICH_VERSION "$STACK/.env")
 [[ -n $ver ]] || ver=$(curl -fsS "$IMMICH_URL/api/server/version" |
                        python3 -c 'import json,sys; print("v%(major)s.%(minor)s.%(patch)s" % json.load(sys.stdin))')
 
-files=docker-compose.yml suffix=""
-if [[ ${IMMICH_ML_ACCEL:-cuda} == cuda ]]; then files+=":docker-compose.ml-cuda.yml"; suffix=-cuda; fi
+files=$STACK/docker-compose.yml suffix=""
+if [[ ${IMMICH_ML_ACCEL:-cuda} == cuda ]]; then files+=":$STACK/docker-compose.ml-cuda.yml"; suffix=-cuda; fi
 
 umask 077
 cat > "$STACK/.env" <<ENV
