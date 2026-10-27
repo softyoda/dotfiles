@@ -211,9 +211,12 @@ def cmd_upgrade_nas(env, args):
         nas(env, f"cd {d} && sudo docker exec immich-db sh -c 'pg_dumpall --clean --if-exists -U \"$POSTGRES_USER\"' "
                  f"| gzip > db-backup-pre-{target}-{stamp}.sql.gz && ls -lh db-backup-pre-{target}-{stamp}.sql.gz")
         log("▶ 2/4 Téléchargement des nouvelles images sur le NAS…")
-        nas(env, f"cd {d} && sudo env IMMICH_VERSION={target} docker compose pull immich-server")
+        # sudo n'est requis que pour docker ; le .env appartient à l'utilisateur
+        nas(env, f"cd {d} && sed 's/^\\(\\s*\\)IMMICH_VERSION=.*/\\1IMMICH_VERSION={target}/' .env > .env.next "
+                 f"&& grep -q 'IMMICH_VERSION={target}' .env.next "
+                 f"&& sudo docker compose --env-file .env.next pull immich-server")
         log("▶ 3/4 Bascule du NAS…")
-        nas(env, f"cd {d} && sudo cp .env .env.bak-{stamp} && sudo sed -i 's/^\\s*IMMICH_VERSION=.*/IMMICH_VERSION={target}/' .env "
+        nas(env, f"cd {d} && cp -p .env .env.bak-{stamp} && cp .env.next .env && rm .env.next "
                  f"&& sudo docker compose up -d")
     except RuntimeError as e:
         log(f"✗ {e} — le NAS n'a pas été basculé si l'étape 3 n'a pas commencé.")
@@ -225,7 +228,7 @@ def cmd_upgrade_nas(env, args):
         time.sleep(10)
     else:
         log(f"✗ Le serveur ne répond pas en {target} après 15 min.")
-        log(f"  Retour arrière : ssh {env.get('IMMICH_NAS_SSH', 'nas')} 'cd {d} && sudo cp .env.bak-{stamp} .env && sudo docker compose up -d'")
+        log(f"  Retour arrière : ssh {env.get('IMMICH_NAS_SSH', 'nas')} 'cd {d} && cp .env.bak-{stamp} .env && sudo docker compose up -d'")
         log(f"  (la sauvegarde DB est db-backup-pre-{target}-{stamp}.sql.gz)")
         return 1
     log(f"✓ NAS en {target}.")
