@@ -132,6 +132,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 |---|---|
 | [`claude-code`](modules/claude-code/) | Installe Claude Code (installeur natif officiel) avec ma config, l’agent gemini et un shell nettoyé des variables API pour utiliser l’abonnement. ✋ |
 | [`codex`](modules/codex/) | Installe Codex CLI d’OpenAI (paquet CachyOS) avec le grand contexte, à utiliser avec l’abonnement ChatGPT. ✋ |
+| [`llama-qwen`](modules/llama-qwen/) | Compile llama.cpp pour le GPU (CUDA, archi du GPU), récupère le modèle depuis le NAS et sert une API OpenAI-compatible sur le LAN, avec une icône pour démarrer/arrêter. |
 | [`opencode-poe`](modules/opencode-poe/) | Installe OpenCode, réservé aux modèles Poe, avec la config partagée du NAS (liens) ou une copie autonome sans NAS. ✋ |
 | [`paseo`](modules/paseo/) | Une seule interface (bureau + mobile) pour piloter les agents Claude Code, Codex et OpenCode, chacun avec son abonnement. ✋ |
 

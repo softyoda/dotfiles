@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Serveur LLM local
+Comment=Démarrer / arrêter le serveur llama.cpp
+Exec=${HOME}/.local/bin/llm-tray
+Icon=applications-science
+Terminal=false
+Categories=Development;

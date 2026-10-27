@@ -1,0 +1,34 @@
+name = "LLM local llama.cpp (Qwen)"
+category = "ai"
+description = "Compile llama.cpp pour le GPU (CUDA, archi du GPU), récupère le modèle depuis le NAS et sert une API OpenAI-compatible sur le LAN, avec une icône pour démarrer/arrêter."
+vars = ["LLM_MODEL_DIR", "LLM_MODEL_FILE", "LLM_ALIAS", "LLM_PORT", "LLM_CUDA_ARCH"]
+# Optionnels : LLM_MODEL_SOURCE (dossier du modèle sur le NAS, copié s'il manque),
+#              LLM_MMPROJ_FILE (vision), LLAMA_CPP_REF (commit/tag, défaut épinglé)
+
+[packages]
+pacman = ["cuda", "cmake", "ninja", "git", "openssl", "python-pyqt6", "rsync"]
+
+[[files]]
+src = "files/serve.sh"
+dst = "${LLM_MODEL_DIR}/serve.sh"
+mode = "755"
+template = true
+
+[[files]]
+src = "files/chat_template.jinja"
+dst = "${LLM_MODEL_DIR}/chat_template.jinja"
+
+[[files]]
+src = "files/config.ini"
+dst = "~/.config/llm-server/config.ini"
+template = true
+
+[[files]]
+src = "files/llm-tray"
+dst = "~/.local/bin/llm-tray"
+mode = "755"
+
+[[files]]
+src = "files/llm-tray.desktop"
+dst = "~/.local/share/applications/llm-tray.desktop"
+template = true
