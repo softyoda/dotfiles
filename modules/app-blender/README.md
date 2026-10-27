@@ -26,3 +26,10 @@ Réappliquer le module restaure la désactivation.
 Le paquet du launcher se met à jour via `cachy-update` lorsque la gestion AUR
 est activée et qu’une mise à jour du paquet est disponible. Les versions de
 Blender téléchargées sont gérées séparément dans Blender Launcher.
+
+## Choix dans l’installateur
+
+Le socle `app-blender` installe le paquet. La sous-partie
+`app-blender/no-keyring`, cochée par défaut, déploie le raccourci sans trousseau.
+Elle peut être appliquée seule : `dotctl apply app-blender/no-keyring`.
+La décocher évite son déploiement ; cela ne supprime pas un raccourci déjà installé.

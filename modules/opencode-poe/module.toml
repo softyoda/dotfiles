@@ -11,3 +11,17 @@ manual = true   # connexion : `opencode auth login` → Poe
 [[files]]
 src = "files/opencode-path.fish"
 dst = "~/.config/fish/conf.d/opencode.fish"
+
+[[inputs]]
+key = "OPENCODE_SHARED_CONFIG"
+label = "Dossier de configuration partagé (facultatif)"
+type = "path"
+path_kind = "directory"
+must_exist = true
+help = "Laisser vide pour la configuration autonome. Un dossier privé synchronisé peut remplacer l’ancien partage NAS."
+
+[[inputs]]
+key = "LLM_SERVER_URL"
+label = "Serveur LLM compatible OpenAI (facultatif)"
+type = "text"
+help = "Utilisé par la copie autonome ; laisser vide pour le serveur local par défaut."

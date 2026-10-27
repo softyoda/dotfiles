@@ -1,12 +1,40 @@
 name = "Seafile (synchro cloud)"
 category = "apps"
-description = "Client de synchronisation Seafile (Flatpak) pointant sur le serveur du profil, démarré au login sans fenêtre."
-vars = ["SEAFILE_SERVER_URL"]
+description = "Client Seafile avec démarrage automatique et réglages de connexion sélectionnables ; connexion au compte dans Seafile."
 manual = true
 
 [packages]
 flatpak = ["com.seafile.Client"]
 
-[[files]]
+[[parts]]
+id = "autostart"
+name = "Démarrer Seafile à l’ouverture de session"
+description = "Ajoute le raccourci de démarrage automatique."
+default = true
+
+[[parts.files]]
 src = "files/com.seafile.Client.desktop"
 dst = "~/.config/autostart/com.seafile.Client.desktop"
+
+[[parts]]
+id = "client-settings"
+name = "Serveur et comportement de la fenêtre"
+description = "Préremplit le serveur et choisit si la fenêtre s’affiche au démarrage. Quitter Seafile avant application."
+default = true
+apply = "configure-client.sh"
+check = "check-client.sh"
+vars = ["SEAFILE_SERVER_URL"]
+
+[[parts.inputs]]
+key = "SEAFILE_SERVER_URL"
+label = "Adresse HTTPS du serveur Seafile"
+type = "text"
+required = true
+pattern = "https://[^\\s]+"
+help = "La connexion au compte et le mot de passe de bibliothèque restent saisis dans Seafile."
+
+[[parts.inputs]]
+key = "SEAFILE_HIDE_WINDOW"
+label = "Masquer la fenêtre au démarrage"
+type = "bool"
+default = true

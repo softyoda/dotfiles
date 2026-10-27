@@ -1,6 +1,6 @@
 name = "Appli Dotfiles (menu + notification)"
 category = "base"
-description = "Commande `dotctl`, entrée « Dotfiles » dans le menu et icône de notification qui synchronise le repo et signale les mises à jour et les secrets qui expirent."
+description = "Interface avec sous-parties sélectionnables, formulaires privés, README et identifiants copiables pour les agents. Commande `dotctl`, entrée « Dotfiles » dans le menu et icône de notification qui synchronise le repo et signale les mises à jour et les secrets qui expirent."
 
 [packages]
 pacman = ["python-pyqt6", "git", "ksshaskpass"]

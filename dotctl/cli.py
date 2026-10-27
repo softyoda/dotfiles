@@ -1,8 +1,10 @@
 """dotctl — gestion des modules dotfiles.
 
-  dotctl list [catégorie|--md]   catalogue des modules (--md : tableau pour le README)
+  dotctl list [catégorie|--md|--json]   catalogue des modules (--md : tableau pour le README)
   dotctl status [--all]          état des modules (du profil, ou tous)
-  dotctl info <module>           description, paquets, fichiers, notes
+  dotctl info <id> [--json]      module ou module/sous-partie : schéma, fichiers, README
+  dotctl plan <id>… [--json]     aperçu sans modification
+  dotctl configure <id>          --parts a,b --set CLE=valeur --values-file fichier.json
   dotctl apply <module>…         installe / met à jour des modules
   dotctl apply --profile [nom]   applique tout le profil (machine courante par défaut)
   dotctl diff <module>           différences repo ↔ machine
@@ -13,10 +15,13 @@
 """
 from __future__ import annotations
 
+import argparse
 import difflib
+import json
+from pathlib import Path
 import sys
 
-from . import core
+from . import core, options
 
 C = {"ok": "\033[32m", "update": "\033[33m", "drift": "\033[35m", "absent": "\033[90m", "end": "\033[0m"}
 
@@ -27,9 +32,12 @@ def _color(s: str, st: str) -> str:
 
 def cmd_list(args):
     mods = core.load_modules()
+    if "--json" in args:
+        print(json.dumps([core.describe(m) for m in mods.values()], ensure_ascii=False, indent=2))
+        return
     if "--md" in args:
         for cat, label in core.CATEGORIES.items():
-            items = sorted((m for m in mods.values() if m.category == cat and m.path), key=lambda m: m.id)
+            items = sorted((m for m in mods.values() if m.category == cat and m.path and not m.parent), key=lambda m: m.id)
             if items:
                 print(f"\n### {label}\n\n| Module | Ce que ça fait |\n|---|---|")
                 for m in items:
@@ -45,7 +53,7 @@ def cmd_list(args):
         return
     cats = [args[0]] if args else list(core.CATEGORIES)
     for cat in cats:
-        items = [m for m in mods.values() if m.category == cat]
+        items = [m for m in mods.values() if m.category == cat and not m.parent]
         if not items:
             continue
         print(f"\n\033[1m{core.CATEGORIES.get(cat, cat)}\033[0m")
@@ -58,7 +66,9 @@ def cmd_status(args):
     prof = core.load_profile()
     env = core.context_env(prof)
     state = core.load_state()
-    ids = list(mods) if "--all" in args or not prof["modules"] else prof["modules"]
+    explicit = [arg for arg in args if not arg.startswith("--")]
+    ids = explicit or ([mid for mid, m in mods.items() if not m.parent]
+                       if "--all" in args or not prof["modules"] else prof["modules"])
     print(f"Profil : {prof['_name'] or '(aucun)'}  {prof['_path'] or ''}")
     for mid in ids:
         if mid not in mods:
@@ -72,6 +82,9 @@ def cmd_status(args):
 
 def cmd_info(args):
     m = core.load_modules()[args[0]]
+    if "--json" in args:
+        print(json.dumps(core.describe(m), ensure_ascii=False, indent=2))
+        return
     print(f"\033[1m{m.name}\033[0m  [{m.id}, {core.CATEGORIES.get(m.category, m.category)}]")
     print(m.description)
     for label, pk in (("pacman", m.pacman), ("AUR", m.aur), ("flatpak", m.flatpak)):
@@ -83,8 +96,66 @@ def cmd_info(args):
         print(f"  dépend de : {', '.join(m.requires)}")
     if m.vars or m.secrets:
         print(f"  variables : {', '.join(m.vars)}  secrets : {', '.join(m.secrets)}")
+    for part in m.parts:
+        print(f"  sous-partie : {part.id} — {part.name}")
+    for item in options.fields(m):
+        print(f"  champ : {item.key} ({item.type}) — {item.label or item.key}")
     if m.readme():
         print("\n" + m.readme())
+
+
+
+def cmd_plan(args):
+    ids = [arg for arg in args if arg != "--json"]
+    if not ids:
+        raise ValueError("dotctl plan <module ou module/sous-partie>… [--json]")
+    plan = core.application_plan(ids)
+    if "--json" in args:
+        print(json.dumps(plan, ensure_ascii=False, indent=2))
+        return
+    for m in plan["modules"]:
+        print(f"{m['id']} : {m['name']}")
+        for kind, names in m['packages'].items():
+            if names:
+                print(f"  {kind} : {', '.join(names)}")
+        for f in m['files']:
+            print(f"  fichier : {f['dst']}{' (système)' if f['root'] else ''}")
+        for name, path in m['scripts'].items():
+            if name == 'apply.sh':
+                print(f"  script : {path}")
+        if m['missing_inputs']:
+            print("  champs à renseigner : " + ", ".join(m['missing_inputs']))
+
+
+def cmd_configure(args):
+    parser = argparse.ArgumentParser(prog='dotctl configure')
+    parser.add_argument('id')
+    parser.add_argument('--parts', help='Identifiants séparés par des virgules ; none = socle seul')
+    parser.add_argument('--set', action='append', default=[], metavar='CLE=VALEUR')
+    parser.add_argument('--values-file', help='JSON privé ; - pour stdin (recommandé pour les secrets)')
+    parsed = parser.parse_args(args)
+    module = core.load_modules()[parsed.id]
+    parts = None
+    if parsed.parts is not None:
+        parts = [] if parsed.parts in ('', 'none') else [
+            p if '/' in p else f'{module.id}/{p}' for p in parsed.parts.split(',')]
+    schema = {f.key: f for m in [module, *module.parts] for f in options.fields(m)}
+    values = {}
+    if parsed.values_file:
+        values = json.load(sys.stdin) if parsed.values_file == '-' else json.loads(Path(parsed.values_file).read_text())
+        if not isinstance(values, dict):
+            raise ValueError('Le fichier de valeurs doit contenir un objet JSON.')
+    for setting in parsed.set:
+        if '=' not in setting:
+            raise ValueError('--set attend CLE=valeur')
+        key, value = setting.split('=', 1)
+        if key in schema and schema[key].type == 'secret':
+            raise ValueError('Utilisez --values-file ou stdin pour les secrets, pas les arguments de commande.')
+        values[key] = value
+    if parts is None and module.parts:
+        parts = options.selected(module)
+    options.save(module, values, parts)
+    print(f'{module.id} : choix enregistrés dans le dossier privé. Rien appliqué ; utilisez dotctl plan puis dotctl apply.')
 
 
 def cmd_apply(args):
@@ -133,7 +204,7 @@ def cmd_tray(args):
     gui.main(tray=True)
 
 
-COMMANDS = {"list": cmd_list, "status": cmd_status, "info": cmd_info, "apply": cmd_apply,
+COMMANDS = {"plan": cmd_plan, "configure": cmd_configure, "list": cmd_list, "status": cmd_status, "info": cmd_info, "apply": cmd_apply,
             "diff": cmd_diff, "capture": cmd_capture, "sync": cmd_sync, "firefox": cmd_firefox, "gui": cmd_gui, "tray": cmd_tray}
 
 
@@ -146,3 +217,5 @@ def main(argv=None):
         COMMANDS[argv[0]](argv[1:])
     except KeyError as e:
         sys.exit(f"Module inconnu : {e}")
+    except (ValueError, OSError) as e:
+        sys.exit(str(e))

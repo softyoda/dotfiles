@@ -5,15 +5,16 @@ import os
 import shutil
 import sys
 import threading
+from pathlib import Path
 
-from PyQt6.QtCore import QObject, QProcess, Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import QObject, QProcess, QProcessEnvironment, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap, QKeySequence, QShortcut
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame, QHBoxLayout, QLabel,
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel,
                              QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox,
                              QPlainTextEdit, QPushButton, QScrollArea, QSystemTrayIcon,
                              QVBoxLayout, QWidget)
 
-from . import core
+from . import core, options
 
 BG, CARD, BORDER, FG, MUTED, ACCENT = "#1e1e2e", "#181825", "#313244", "#cdd6f4", "#6c7086", "#cba6f7"
 BADGE = {core.OK: "#a6e3a1", core.UPDATE: "#f9e2af", core.DRIFT: "#f5c2e7", core.ABSENT: "#6c7086"}
@@ -55,11 +56,18 @@ def dotctl_cmd() -> list[str]:
 class Scan(QObject):
     """Calcule les statuts en arrière-plan (check.sh peut être lent)."""
     done = pyqtSignal(dict, dict, dict)
+    failed = pyqtSignal(str)
 
     def run(self):
         threading.Thread(target=self._run, daemon=True).start()
 
     def _run(self):
+        try:
+            self._scan()
+        except Exception as error:
+            self.failed.emit(str(error))
+
+    def _scan(self):
         core.invalidate_cache()
         mods = core.load_modules()
         prof = core.load_profile()
@@ -98,25 +106,26 @@ class ModuleCard(QFrame):
         badge.setStyleSheet(f"color:{BADGE[status]};border:1px solid {BADGE[status]};border-radius:5px;"
                             f"padding:1px 6px;font-size:11px;")
         lay.addWidget(badge)
-        if m.path:
-            info = QPushButton("?")
-            info.setFixedSize(30, 30)
-            info.setStyleSheet("padding:0; font-weight:bold;")
-            info.clicked.connect(self.show_info)
-            lay.addWidget(info)
+        info = QPushButton("Configurer…" if m.parts or options.fields(m) else "README / détails")
+        info.clicked.connect(self.show_info)
+        lay.addWidget(info)
+        copy_id = QPushButton("ID")
+        copy_id.setToolTip("Copier " + m.id)
+        copy_id.clicked.connect(lambda: QApplication.clipboard().setText(m.id))
+        lay.addWidget(copy_id)
 
     def show_info(self):
-        d = QDialog(self)
-        d.setWindowTitle(self.m.name)
-        d.resize(700, 520)
-        v = QVBoxLayout(d)
-        t = QPlainTextEdit(readOnly=True)
-        pk = "  ".join(f"{k}: {' '.join(p)}" for k, p in (("pacman", self.m.pacman), ("AUR", self.m.aur),
-                                                          ("flatpak", self.m.flatpak)) if p)
-        files = "\n".join(f"  → {f.dst}" for f in self.m.files)
-        t.setPlainText(f"{self.m.description}\n\n{pk}\n{files}\n\n{self.m.readme()}")
-        v.addWidget(t)
-        d.exec()
+        from .module_gui import ModuleDialog
+        dialog = ModuleDialog(self.m, self)
+        result = dialog.exec()
+        window = self.window()
+        if result == ModuleDialog.APPLY:
+            log = LogDialog(dotctl_cmd() + ["apply", self.m.id], f"Application : {self.m.name}", window)
+            if hasattr(window, "refresh"):
+                log.finished.connect(lambda _rc: window.refresh())
+            log.show()
+        elif result == QDialog.DialogCode.Accepted and hasattr(window, "refresh"):
+            window.refresh()
 
 
 class LogDialog(QDialog):
@@ -133,7 +142,7 @@ class LogDialog(QDialog):
         self.btn.clicked.connect(self.accept)
         v.addWidget(self.btn, alignment=Qt.AlignmentFlag.AlignRight)
         self.p = QProcess(self)
-        env = self.p.processEnvironment()
+        env = QProcessEnvironment.systemEnvironment()
         env.insert("PYTHONUNBUFFERED", "1")
         if not env.contains("SUDO_ASKPASS") and shutil.which("ksshaskpass"):
             env.insert("SUDO_ASKPASS", shutil.which("ksshaskpass"))
@@ -191,7 +200,12 @@ class MainWindow(QMainWindow):
         self.private_status = QLabel()
         self.private_status.setWordWrap(True)
         self.private_status.setStyleSheet(f"color:{MUTED};")
-        v.addWidget(self.private_status)
+        private_row = QHBoxLayout()
+        private_row.addWidget(self.private_status, 1)
+        private_button = QPushButton("Dossier privé…")
+        private_button.clicked.connect(self.choose_private_directory)
+        private_row.addWidget(private_button)
+        v.addLayout(private_row)
         self.search = QLineEdit()
         self.search.setPlaceholderText("Rechercher dans tous les modules… (Ctrl+F)")
         self.search.setClearButtonEnabled(True)
@@ -225,6 +239,7 @@ class MainWindow(QMainWindow):
 
         self.scan = Scan()
         self.scan.done.connect(self.loaded)
+        self.scan.failed.connect(self.scan_failed)
         self.refresh()
 
     # ── données ──
@@ -233,7 +248,13 @@ class MainWindow(QMainWindow):
         self.b_apply.setEnabled(False)
         self.scan.run()
 
+    def scan_failed(self, message):
+        self.subtitle.setText("Analyse interrompue : vérifiez la configuration.")
+        self.b_apply.setEnabled(False)
+        QMessageBox.warning(self, "Configuration Dotfiles", message)
+
     def loaded(self, mods, prof, st):
+        self.cards = {}
         self.mods, self.prof, self.st = mods, prof, st
         self.private_status.setText(core.private_sync_label())
         self.reset_checks()
@@ -247,16 +268,30 @@ class MainWindow(QMainWindow):
             if self.mode == NEW:
                 self.checked[mid] = mid in wanted
             else:  # mises à jour : ce qui est dans le profil (ou déjà appliqué) et pas à jour
-                self.checked[mid] = (mid in wanted or mid in state) and s in (core.UPDATE, core.ABSENT) \
+                tracked = mid in wanted or state.get(mid, {}).get("requested", mid in state)
+                self.checked[mid] = tracked and s in (core.UPDATE, core.ABSENT) \
                     and not (s == core.ABSENT and mid not in wanted)
+
+    def choose_private_directory(self):
+        current = core.private_dir()
+        directory = QFileDialog.getExistingDirectory(self, "Bibliothèque privée synchronisée par Seafile", str(current or Path.home()))
+        if directory:
+            try:
+                options.set_private_directory(directory)
+                self.refresh()
+            except (ValueError, OSError) as error:
+                QMessageBox.warning(self, "Dossier privé", str(error))
 
     def visible_ids(self) -> list[str]:
         order = list(core.CATEGORIES)
         ids = sorted(self.mods, key=lambda i: (order.index(self.mods[i].category) if self.mods[i].category in order
                                                 else 99, getattr(self.mods[i], "group", ""), self.mods[i].name.lower()))
         query = self.search.text().strip().casefold()
+        state = core.load_state()
+        wanted = set(self.prof.get("modules", [])) | {mid for mid, item in state.items() if item.get("requested", True)}
+        if not query:
+            ids = [i for i in ids if not self.mods[i].parent or i in wanted]
         if self.mode == UPDATES and not query:
-            wanted = set(self.prof.get("modules", [])) | set(core.load_state())
             ids = [i for i in ids if self.st[i] != core.OK and (i in wanted or self.st[i] == core.DRIFT)]
         if query:
             ids = [i for i in ids if all(word in " ".join((self.mods[i].name, i,

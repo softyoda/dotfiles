@@ -1,27 +1,67 @@
 name = "Paseo"
 category = "ai"
-description = "Une seule interface (bureau + mobile) pour piloter les agents Claude Code, Codex et OpenCode, chacun avec son abonnement."
-requires = ["claude-code", "codex", "opencode-poe"]
-manual = true   # appairage de l’appli mobile, connexions des 3 agents
+description = "Interface pour piloter les agents ; choix séparé du lanceur, des réglages et des fournisseurs."
+manual = true
 
 [packages]
 aur = ["paseo-bin"]
 
-[[files]]
+[[parts]]
+id = "launcher"
+name = "Lanceur et wrapper Paseo"
+description = "Lance Paseo en isolant les variables de facturation des autres agents."
+default = true
+apply = "configure-launcher.sh"
+
+[[parts.files]]
 src = "files/paseo-wrapper"
 dst = "~/.local/bin/paseo"
 mode = "755"
 
-[[files]]
+[[parts.files]]
 src = "files/paseo.desktop"
 dst = "~/.local/share/applications/paseo.desktop"
 template = true
 
-[[files]]
+[[parts]]
+id = "daemon-settings"
+name = "Réglages du démon et du relais"
+description = "Déploie la configuration du démon, sans les clés ni l’appairage de cet ordinateur."
+default = true
+apply = "secure-config.sh"
+
+[[parts.files]]
 src = "files/config.json"
 dst = "~/.paseo/config.json"
 mode = "600"
 
-[[files]]
+[[parts]]
+id = "desktop-settings"
+name = "Préférences de l’application de bureau"
+description = "Canal de mise à jour, notifications et gestion du démon."
+default = true
+
+[[parts.files]]
 src = "files/desktop-settings.json"
 dst = "~/.config/Paseo/desktop-settings.json"
+
+[[parts]]
+id = "agent-claude"
+name = "Fournisseur Claude Code"
+description = "Installe et configure le module Claude Code. Connexion au compte dans Claude."
+default = true
+requires = ["claude-code"]
+
+[[parts]]
+id = "agent-codex"
+name = "Fournisseur Codex"
+description = "Installe et configure le module Codex. Connexion au compte dans Codex."
+default = true
+requires = ["codex"]
+
+[[parts]]
+id = "agent-opencode"
+name = "Fournisseur OpenCode / Poe"
+description = "Installe et configure le module OpenCode. Connexion au fournisseur dans OpenCode."
+default = true
+requires = ["opencode-poe"]

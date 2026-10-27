@@ -23,9 +23,11 @@ import sqlite3
 import subprocess
 import time
 import tomllib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from string import Template
+
+from . import options
 
 DOTFILES = Path(__file__).resolve().parent.parent
 MODULES_DIR = DOTFILES / "modules"
@@ -161,6 +163,7 @@ def context_env(profile: dict | None = None) -> dict[str, str]:
            for k, v in profile.get("vars", {}).items()}
     for f in secret_files():
         env.update(read_env_file(f))
+    env.update(options.environment())
     env.setdefault("USER", os.environ.get("USER", ""))
     env.setdefault("HOME", str(Path.home()))
     env.setdefault("UID", str(os.getuid()))
@@ -198,13 +201,24 @@ class Module:
     notes: str = ""
     manual: bool = False  # étapes manuelles restantes (affichées, pas automatisables)
 
+    parent: str | None = None
+    default: bool = True
+    parts: list[Module] = field(default_factory=list)
+    inputs: list[options.Input] = field(default_factory=list)
+    apply_script: str | None = None
+    check_script: str | None = None
+
     @property
     def packages(self) -> list[str]:
         return self.pacman + self.aur + self.flatpak
 
     def script(self, name: str) -> Path | None:
-        if self.path and (self.path / name).is_file():
-            return self.path / name
+        override = self.apply_script if name == "apply.sh" else self.check_script
+        if self.parent and override is None:
+            return None
+        relative = override or name
+        if self.path and (self.path / relative).is_file():
+            return self.path / relative
         return None
 
     def readme(self) -> str:
@@ -214,7 +228,19 @@ class Module:
 
     def content_hash(self) -> str:
         h = hashlib.sha256()
-        if self.path:
+        if self.path and (self.parent or self.parts):
+            spec = {key: getattr(self, key) for key in
+                    ("id", "name", "description", "requires", "vars", "secrets", "pacman", "aur", "flatpak",
+                     "apply_script", "check_script")}
+            spec["inputs"] = [f.schema() for f in self.inputs]
+            spec["files"] = [asdict(f) for f in self.files]
+            h.update(json.dumps(spec, sort_keys=True).encode())
+            paths = [self.path / f.src for f in self.files]
+            paths += [p for name in ("apply.sh", "check.sh") if (p := self.script(name))]
+            for f in sorted(set(paths)):
+                h.update(str(f.relative_to(self.path)).encode())
+                h.update(f.read_bytes())
+        elif self.path:
             for f in sorted(self.path.rglob("*")):
                 if f.is_file():
                     h.update(str(f.relative_to(self.path)).encode())
@@ -241,6 +267,11 @@ def _module_from_toml(mid: str, data: dict, path: Path | None) -> Module:
         secrets=data.get("secrets", []),
         notes=data.get("notes", ""),
         manual=data.get("manual", False),
+        parent=data.get("parent"),
+        default=data.get("default", True),
+        inputs=[options.Input(**item) for item in data.get("inputs", [])],
+        apply_script=data.get("apply"),
+        check_script=data.get("check"),
     )
 
 
@@ -248,7 +279,26 @@ def load_modules() -> dict[str, Module]:
     mods: dict[str, Module] = {}
     for toml in sorted(MODULES_DIR.glob("*/module.toml")):
         mid = toml.parent.name
-        mods[mid] = _module_from_toml(mid, tomllib.loads(toml.read_text()), toml.parent)
+        data = tomllib.loads(toml.read_text())
+        mods[mid] = _module_from_toml(mid, data, toml.parent)
+        for part in data.get("parts", []):
+            pid = part["id"]
+            if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", pid):
+                raise ValueError(f"Identifiant de sous-partie invalide : {mid}/{pid}")
+            full_id = f"{mid}/{pid}"
+            if full_id in mods:
+                raise ValueError(f"Sous-partie dupliquée : {full_id}")
+            child = _module_from_toml(full_id, {**part, "parent": mid,
+                          "category": data.get("category", "apps")}, toml.parent)
+            for field in child.files:
+                if Path(field.src).is_absolute() or ".." in Path(field.src).parts:
+                    raise ValueError(f"Source invalide : {full_id}")
+            for script in (child.apply_script, child.check_script):
+                if script and (Path(script).is_absolute() or ".." in Path(script).parts
+                               or not (toml.parent / script).is_file()):
+                    raise ValueError(f"Script invalide : {full_id}")
+            mods[mid].parts.append(child)
+            mods[full_id] = child
     if CATALOG.is_file():
         cat = tomllib.loads(CATALOG.read_text())
         for group, apps in cat.items():
@@ -266,24 +316,76 @@ def load_modules() -> dict[str, Module]:
     return mods
 
 
-def resolve(ids: list[str], mods: dict[str, Module]) -> list[Module]:
-    """Ordre topologique en incluant les dépendances."""
-    out: list[Module] = []
-    seen: set[str] = set()
+def resolve(ids: list[str], mods: dict[str, Module], selections: dict | None = None) -> list[Module]:
+    """Une sous-partie ajoute le socle parent, jamais ses parties sœurs."""
+    out, seen, visiting, expanded = [], set(), set(), set()
 
-    def visit(i: str):
-        if i in seen:
-            return
-        if i not in mods:
-            raise KeyError(f"Module inconnu : {i}")
-        seen.add(i)
-        for r in mods[i].requires:
-            visit(r)
-        out.append(mods[i])
+    def visit(mid: str, expand=True):
+        if mid not in mods:
+            raise KeyError(mid)
+        if mid in visiting:
+            raise ValueError(f"Dépendance circulaire : {mid}")
+        m = mods[mid]
+        if mid not in seen:
+            visiting.add(mid)
+            if m.parent:
+                visit(m.parent, expand=False)
+            for dependency in m.requires:
+                visit(dependency)
+            visiting.remove(mid)
+            seen.add(mid)
+            out.append(m)
+        if expand and m.parts and mid not in expanded:
+            expanded.add(mid)
+            chosen = selections[mid] if selections is not None and mid in selections else options.selected(m)
+            available = {p.id for p in m.parts}
+            if set(chosen) - available:
+                raise ValueError(f"Sous-partie inconnue pour {mid}")
+            for child in chosen:
+                visit(child)
 
-    for i in ids:
-        visit(i)
+    for mid in ids:
+        visit(mid)
     return out
+
+
+def module_env(m: Module, env: dict) -> dict:
+    result = dict(env)
+    sources = [m]
+    if m.parent:
+        sources.insert(0, load_modules()[m.parent])
+    for source in sources:
+        for item in options.fields(source):
+            if item.key not in env and item.default is not None:
+                result[item.key] = options.env_value(item.default)
+    return result
+
+
+def configuration_hash(m: Module, env: dict) -> str:
+    env = module_env(m, env)
+    data = {f.key: env.get(f.key, "") for f in options.fields(m)}
+    return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def describe(m: Module) -> dict:
+    return {"id": m.id, "parent": m.parent, "name": m.name, "description": m.description,
+            "category": m.category, "manual": m.manual,
+            "requires": ([m.parent] if m.parent else []) + m.requires,
+            "parts": [{"id": p.id, "name": p.name, "default": p.default} for p in m.parts],
+            "inputs": [f.schema() for f in options.fields(m)],
+            "packages": {"pacman": m.pacman, "aur": m.aur, "flatpak": m.flatpak},
+            "files": [asdict(f) for f in m.files],
+            "scripts": {name: str(p.relative_to(DOTFILES)) for name in ("apply.sh", "check.sh")
+                        if (p := m.script(name))},
+            "readme": str(m.path.relative_to(DOTFILES) / "README.md") if m.path else None}
+
+
+def application_plan(ids: list[str], selections=None, values=None) -> dict:
+    env = context_env()
+    env.update({key: options.env_value(value) for key, value in (values or {}).items()})
+    modules = resolve(ids, load_modules(), selections)
+    return {"requested": ids, "modules": [dict(describe(m), missing_inputs=missing_vars(m, module_env(m, env)))
+                                         for m in modules]}
 
 
 # ─── État installé ──────────────────────────────────────────────────────────
@@ -321,6 +423,7 @@ def missing_packages(m: Module) -> list[str]:
 
 
 def render(m: Module, f: FileSpec, env: dict) -> bytes:
+    env = module_env(m, env)
     data = (m.path / f.src).read_bytes()
     if f.template:
         data = Template(data.decode()).safe_substitute(env).encode()
@@ -351,11 +454,16 @@ def save_state(state: dict):
     STATE_FILE.write_text(json.dumps(state, indent=2, sort_keys=True))
 
 
-def status(m: Module, env: dict, state: dict | None = None) -> str:
+def status(m: Module, env: dict, state: dict | None = None, _aggregate=True) -> str:
+    env = module_env(m, env)
     state = load_state() if state is None else state
     applied = state.get(m.id)
-    if missing_packages(m):
+    if missing_packages(m) or missing_vars(m, env):
         return ABSENT
+    if m.parent and _aggregate:
+        parent_status = status(load_modules()[m.parent], env, state, _aggregate=False)
+        if parent_status != OK:
+            return parent_status
     chk = m.script("check.sh")
     if chk and subprocess.run(["bash", str(chk)], env={**os.environ, **env, **_script_env(m)},
                               capture_output=True).returncode != 0:
@@ -367,6 +475,21 @@ def status(m: Module, env: dict, state: dict | None = None) -> str:
         return UPDATE
     if drift:
         return DRIFT
+    if applied and "config_hash" in applied and applied["config_hash"] != configuration_hash(m, env):
+        return UPDATE
+    if m.parts and _aggregate:
+        selected = set(options.selected(m))
+        statuses = [status(part, env, state) for part in m.parts if part.id in selected]
+        for candidate in (DRIFT, ABSENT, UPDATE):
+            if candidate in statuses:
+                return candidate
+    if m.requires and _aggregate:
+        mods = load_modules()
+        # La résolution vérifie les cycles avant l'inspection des dépendances.
+        for dependency in resolve(m.requires, mods):
+            result = status(dependency, env, state, _aggregate=False)
+            if result != OK:
+                return result
     return OK
 
 
@@ -386,7 +509,14 @@ def sudo_cmd() -> list[str]:
 
 
 def missing_vars(m: Module, env: dict) -> list[str]:
-    return [v for v in m.vars + m.secrets if not env.get(v)]
+    env = module_env(m, env)
+    missing = []
+    for item in options.fields(m):
+        try:
+            item.normalize(env.get(item.key, ""))
+        except ValueError:
+            missing.append(item.key)
+    return missing
 
 
 def plan_commands(mods: list[Module], env: dict) -> list[tuple[str, list[str] | str]]:
@@ -448,9 +578,12 @@ def run_stream(cmd, log, env=None) -> int:
         return 127
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                             env={**os.environ, **(env or {})})
-    for line in proc.stdout:
-        log(line.rstrip())
-    return proc.wait()
+    try:
+        for line in proc.stdout:
+            log(line.rstrip())
+        return proc.wait()
+    finally:
+        proc.stdout.close()
 
 
 def apply(ids: list[str], log=print, profile: dict | None = None) -> int:
@@ -464,6 +597,11 @@ def apply(ids: list[str], log=print, profile: dict | None = None) -> int:
     for mid, vs in blocked.items():
         log(f"⚠ {mid} ignoré : variables manquantes {', '.join(vs)} "
             f"(profil privé ou {SECRETS_FILE})")
+    # Propager les échecs de configuration avant toute installation.
+    for m in mods:
+        if m.id not in blocked and any(dep in blocked for dep in ([m.parent] if m.parent else []) + m.requires):
+            blocked[m.id] = ["dépendance non configurée"]
+            log(f"⚠ {m.id} ignoré : dépendance non configurée")
     mods = [m for m in mods if m.id not in blocked]
     failures += len(blocked)
 
@@ -475,18 +613,28 @@ def apply(ids: list[str], log=print, profile: dict | None = None) -> int:
     invalidate_cache()
 
     state = load_state()
+    failed = set(blocked)
     for m in mods:
         log(f"\n━━ {m.name} ({m.id}) ━━")
         if missing_packages(m):
             log(f"✗ paquets manquants : {' '.join(missing_packages(m))}")
             failures += 1
+            failed.add(m.id)
             continue
-        ok = deploy_files(m, env, log)
+        current_env = module_env(m, env)
+        if any(dependency in failed for dependency in ([m.parent] if m.parent else []) + m.requires):
+            log("✗ dépendance non appliquée")
+            failures += 1
+            failed.add(m.id)
+            continue
+        ok = deploy_files(m, current_env, log)
         script = m.script("apply.sh")
         if ok and script:
-            ok = run_stream(["bash", str(script)], log, env={**env, **_script_env(m)}) == 0
+            ok = run_stream(["bash", str(script)], log, env={**current_env, **_script_env(m)}) == 0
         if ok:
-            state[m.id] = {"hash": m.content_hash(), "date": time.strftime("%Y-%m-%d %H:%M")}
+            state[m.id] = {"hash": m.content_hash(), "config_hash": configuration_hash(m, current_env),
+                           "requested": m.id in ids or state.get(m.id, {}).get("requested", m.id in state and not m.parent),
+                           "date": time.strftime("%Y-%m-%d %H:%M")}
             save_state(state)
             log("✓ appliqué")
             if m.manual:
@@ -494,6 +642,7 @@ def apply(ids: list[str], log=print, profile: dict | None = None) -> int:
         else:
             log("✗ échec")
             failures += 1
+            failed.add(m.id)
     return failures
 
 

@@ -59,3 +59,13 @@ elle est chiffrée. Sauvegarder le fichier, aligner uniquement l'identifiant de
 la base des événements avec celui validé, puis redémarrer Seafile. Contrôler la
 connexion et l'API après redémarrage. Ne pas modifier les identifiants MariaDB
 ni recréer la bibliothèque pour contourner cette erreur.
+
+## Options de l’installateur
+
+- `seafile/autostart` : raccourci de démarrage automatique.
+- `seafile/client-settings` : adresse du serveur et case « Masquer la fenêtre au démarrage ».
+
+Le socle installe le client. Les deux parties sont cochées par défaut.
+Quitter le client avant d'appliquer ses réglages : le script refuse d'écrire
+sa configuration pendant qu'il tourne. La connexion au compte et le mot de
+passe de chiffrement se saisissent toujours directement dans Seafile.

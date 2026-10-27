@@ -28,3 +28,23 @@ class GuiTests(unittest.TestCase):
             self.assertIn('app-blender',window.cards)
             self.assertFalse(window.cards['app-blender'].cb.isChecked())
             window.close()
+
+    def test_subparts_from_parent_are_not_silently_preselected(self):
+        parent=core.Module('parent','Parent','apps')
+        child=core.Module('parent/a','A','apps',parent='parent')
+        parent.parts=[child]
+        state={'parent':{'requested':True},'parent/a':{'requested':False}}
+        with patch.object(gui.MainWindow,'refresh'),patch.object(core,'load_state',return_value=state):
+            window=gui.MainWindow()
+            window.mods={'parent':parent,'parent/a':child}
+            window.st={'parent':core.UPDATE,'parent/a':core.UPDATE}
+            window.prof={'modules':['parent']}
+            window.mode=gui.UPDATES
+            window.reset_checks()
+            self.assertTrue(window.checked['parent'])
+            self.assertFalse(window.checked['parent/a'])
+            self.assertNotIn('parent/a',window.visible_ids())
+            window.search.setText('parent/a')
+            self.assertIn('parent/a',window.cards)
+            self.assertFalse(window.cards['parent/a'].cb.isChecked())
+            window.close()

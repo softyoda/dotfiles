@@ -9,3 +9,11 @@ pacman = ["firefox"]
 [[files]]
 src = "files/firefox-profile.svg"
 dst = "~/.local/share/icons/hicolor/scalable/apps/firefox-profile-extra.svg"
+
+[[inputs]]
+key = "FIREFOX_EXTRA_PROFILE"
+label = "Nom du profil Firefox supplémentaire"
+type = "text"
+required = true
+pattern = "[A-Za-z0-9 _-]{1,64}"
+help = "Un nouveau profil séparé ; ne modifie pas le profil Firefox principal."

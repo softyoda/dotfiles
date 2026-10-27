@@ -36,3 +36,15 @@ les cookies/stockages de `~/.config/Paseo`.
 
 `config.json` et `desktop-settings.json` peuvent être réécrits par Paseo : en cas de « modifié
 localement », `dotctl diff paseo` puis `dotctl capture paseo`.
+
+## Installation sélective
+
+Le socle `paseo` installe le paquet. Le formulaire permet de choisir séparément :
+`paseo/launcher`, `paseo/daemon-settings`, `paseo/desktop-settings`,
+`paseo/agent-claude`, `paseo/agent-codex` et `paseo/agent-opencode`.
+Toutes ces parties sont cochées par défaut pour conserver le comportement
+historique. Les connexions aux fournisseurs et l’appairage restent effectués
+par l’utilisateur dans les applications.
+
+`dotctl plan paseo/launcher` puis `dotctl apply paseo/launcher` ne déploient pas
+les préférences de bureau, la configuration du démon ni les fournisseurs.

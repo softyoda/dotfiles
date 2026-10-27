@@ -88,7 +88,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`cachy-update`](modules/cachy-update/) | Ajoute le choix « A » à Cachy-Update : mise à jour complète (pacman, AUR, Flatpak, nettoyages) sans confirmations. |
 | [`dns-over-tls`](modules/dns-over-tls/) | Résolution DNS chiffrée via Cloudflare et Quad9 (systemd-resolved, DNS over TLS). |
 | [`docker-nvidia`](modules/docker-nvidia/) | Docker avec accès au GPU NVIDIA dans les conteneurs (nvidia-container-toolkit), utilisateur dans le groupe docker. |
-| [`dotfiles-app`](modules/dotfiles-app/) | Commande `dotctl`, entrée « Dotfiles » dans le menu et icône de notification qui synchronise le repo et signale les mises à jour et les secrets qui expirent. |
+| [`dotfiles-app`](modules/dotfiles-app/) | Interface avec sous-parties sélectionnables, formulaires privés, README et identifiants copiables pour les agents. Commande `dotctl`, entrée « Dotfiles » dans le menu et icône de notification qui synchronise le repo et signale les mises à jour et les secrets qui expirent. |
 | [`fish-shell`](modules/fish-shell/) | fish comme shell par défaut, avec la config CachyOS, le prompt Pure, fzf (Ctrl+R/Ctrl+T) et les secrets dans un fichier local. |
 | [`plymouth-theme`](modules/plymouth-theme/) | Écran de démarrage « Cogwheel spinner » : roue crantée animée et barre de progression pendant le boot. ✋ |
 | [`terminals`](modules/terminals/) | WezTerm (thème Tokyo Night, JetBrains Mono, clic droit = coller) et profil Konsole (copie à la sélection, historique de 100 000 lignes). |
@@ -124,7 +124,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`flatpakref-handler`](modules/flatpakref-handler/) | Un double-clic sur un fichier .flatpakref lance l'installation Flatpak correspondante. |
 | [`mullvad`](modules/mullvad/) | VPN Mullvad connecté automatiquement (sortie en Belgique, WireGuard post-quantique + DAITA, LAN accessible), interface démarrée réduite. ✋ |
 | [`rustdesk`](modules/rustdesk/) | Bureau à distance RustDesk en service système : accessible sans session ouverte, avec mot de passe permanent. ✋ |
-| [`seafile`](modules/seafile/) | Client de synchronisation Seafile (Flatpak) pointant sur le serveur du profil, démarré au login sans fenêtre. ✋ |
+| [`seafile`](modules/seafile/) | Client Seafile avec démarrage automatique et réglages de connexion sélectionnables ; connexion au compte dans Seafile. ✋ |
 | [`spicetify`](modules/spicetify/) | Spotify (Flatpak utilisateur) personnalisé par Spicetify avec le Marketplace, ré-appliqué automatiquement après chaque mise à jour de Spotify. |
 | [`vesktop`](modules/vesktop/) | Client Discord Vesktop (Vencord intégré), démarré réduit dans la barre système, hors VPN Mullvad, gestionnaire des liens discord://. |
 
@@ -136,13 +136,13 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`codex`](modules/codex/) | Installe Codex CLI d’OpenAI (paquet CachyOS) avec le grand contexte, à utiliser avec l’abonnement ChatGPT. ✋ |
 | [`llama-qwen`](modules/llama-qwen/) | Compile llama.cpp pour le GPU (CUDA, archi du GPU), récupère le modèle depuis le NAS et sert une API OpenAI-compatible sur le LAN, avec une icône pour démarrer/arrêter. |
 | [`opencode-poe`](modules/opencode-poe/) | Installe OpenCode, réservé aux modèles Poe, avec la config partagée du NAS (liens) ou une copie autonome sans NAS. ✋ |
-| [`paseo`](modules/paseo/) | Une seule interface (bureau + mobile) pour piloter les agents Claude Code, Codex et OpenCode, chacun avec son abonnement. ✋ |
+| [`paseo`](modules/paseo/) | Interface pour piloter les agents ; choix séparé du lanceur, des réglages et des fournisseurs. ✋ |
 
 ### Création
 
 | Module | Ce que ça fait |
 |---|---|
-| [`app-blender`](modules/app-blender/) | Gère les versions de Blender, avec un lanceur sans demande de déverrouillage du trousseau de clés. |
+| [`app-blender`](modules/app-blender/) | Gère les versions de Blender ; le raccourci sans trousseau est une option sélectionnable. |
 | [`helios-laser`](modules/helios-laser/) | Pilotage d'un DAC laser Helios en USB depuis TouchDesigner : règle udev, bibliothèque SDK compilée, pont UDP vers USB en service utilisateur et scripts d'envoi côté TouchDesigner. |
 | [`metashape`](modules/metashape/) | Photogrammétrie Agisoft Metashape Professional 2.1.3 dans /opt/metashape-pro, lanceurs (Metashape, Viewer, Network Monitor) et commande fish « metashape ». ✋ |
 | [`mixxx-rgb`](modules/mixxx-rgb/) | Mixxx 2.5.6 recompilé avec des formes d'onde RGB façon Rekordbox (patch maison), installé dans ~/.local/opt, avec raccourcis clavier perso, alias Espace → lecture et lanceur XWayland. |

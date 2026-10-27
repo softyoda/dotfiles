@@ -8,15 +8,16 @@ need_vars SEAFILE_SERVER_URL
 conf="$HOME/.var/app/com.seafile.Client/config/Seafile/Seafile Client.conf"
 
 if pgrep -f seafile-applet >/dev/null; then
-    warn "Seafile est lancé : le quitter (icône → Quitter) puis relancer ce module pour garantir la prise en compte"
+    error "Seafile est lancé : le quitter (icône → Quitter) puis réappliquer seafile/client-settings"
+    exit 1
 fi
 
-python3 - "$conf" "$SEAFILE_SERVER_URL" <<'EOF'
+python3 - "$conf" "$SEAFILE_SERVER_URL" "${SEAFILE_HIDE_WINDOW:-true}" <<'EOF'
 import sys
 from pathlib import Path
 
 path, server = Path(sys.argv[1]), sys.argv[2]
-wanted = {"Behavior": {"hideMainWindowWhenStarted": "true", "hideDockIcon": "false"},
+wanted = {"Behavior": {"hideMainWindowWhenStarted": sys.argv[3], "hideDockIcon": "false"},
           "UsedServerAddresses": {"main": server}}
 lines = path.read_text().splitlines() if path.exists() else []
 for section, kv in wanted.items():
@@ -37,4 +38,4 @@ for section, kv in wanted.items():
 path.parent.mkdir(parents=True, exist_ok=True)
 path.write_text("\n".join(lines) + "\n")
 EOF
-success "Seafile : serveur $SEAFILE_SERVER_URL, démarrage sans fenêtre"
+success "Seafile : serveur et comportement de la fenêtre configurés"

@@ -1,10 +1,16 @@
 name = "Blender Launcher"
 category = "creative"
-description = "Gère les versions de Blender, avec un lanceur sans demande de déverrouillage du trousseau de clés."
+description = "Gère les versions de Blender ; le raccourci sans trousseau est une option sélectionnable."
 
 [packages]
 aur = ["blender-launcher-v2-bin"]
 
-[[files]]
+[[parts]]
+id = "no-keyring"
+name = "Ne pas demander le trousseau de clés"
+description = "Installe le raccourci utilisateur qui désactive keyring uniquement pour Blender Launcher."
+default = true
+
+[[parts.files]]
 src = "files/blenderlauncher.desktop"
 dst = "~/.local/share/applications/blenderlauncher.desktop"
