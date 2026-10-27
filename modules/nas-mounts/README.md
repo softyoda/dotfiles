@@ -47,3 +47,8 @@ ls /mnt/nas                       # déclenche le montage
 systemctl list-units --type=automount
 findmnt -t cifs,nfs,nfs4
 ```
+
+## IPv6
+
+Si `<nas>.local` se résout en IPv6 sur une machine (systemd-resolved avec mDNS), le NFS du NAS
+peut refuser le montage (« incorrect mount option »). Mettre l'IPv4 du NAS dans `NAS_HOST`.
