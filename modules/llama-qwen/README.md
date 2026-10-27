@@ -12,15 +12,15 @@ Réglages repris **à l'identique** de flystation (RTX 5090, 32 Go) :
 API OpenAI-compatible : `http://<machine>.local:8081/v1` (utilisée par le provider
 `qwen-local` d'OpenCode, variable `LLM_SERVER_URL`). Web UI llama.cpp à la racine.
 
-## Watchdog d'affichage (important pour la vitesse)
+## Watchdog d'affichage
 
-Quand le GPU qui fait le calcul affiche aussi l'écran, le pilote NVIDIA tue les
+Quand le GPU de calcul affiche aussi un écran, le pilote NVIDIA peut tuer les
 noyaux CUDA trop longs (« launch timed out ») avec de gros batches à long contexte.
 Sur Mint/X11 c'était réglé par `/etc/X11/xorg.conf.d/10-nvidia-notdr.conf`
-(`Option "Interactive" "0"`). Sous CachyOS/Plasma **Wayland** ce fichier ne
-s'applique pas : la solution propre est de **brancher l'écran sur la carte mère
-(iGPU AMD)** pour que la 5090 ne fasse que du calcul. Sinon, baisser
-`--batch-size`/`--ubatch-size` (ex. 1024/256).
+(`Option "Interactive" "0"`), qui ne s'applique pas sous Plasma **Wayland**.
+L'écran reste volontairement sur la 5090 (accès RustDesk sans dongle HDMI).
+À tester après réinstallation : si l'erreur apparaît à long contexte, baisser
+`--batch-size`/`--ubatch-size` (ex. 1024/256) dans `files/serve.sh`.
 
 ## Variables (profil)
 
