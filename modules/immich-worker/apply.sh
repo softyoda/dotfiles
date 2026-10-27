@@ -15,7 +15,7 @@ envget() { grep -oP "^$1=\K.*" "$2" 2>/dev/null || true; }
 ver=$(envget IMMICH_VERSION "$STACK/.env")
 [[ -n $ver ]] || ver=$(envget IMMICH_VERSION "$OLD/.env")
 [[ -n $ver ]] || ver=$(curl -fsS "$IMMICH_URL/api/server/version" |
-                       python3 -c 'import json,sys;d=json.load(sys.stdin);print(f"v{d[\"major\"]}.{d[\"minor\"]}.{d[\"patch\"]}")')
+                       python3 -c 'import json,sys; print("v%(major)s.%(minor)s.%(patch)s" % json.load(sys.stdin))')
 
 files=docker-compose.yml suffix=""
 if [[ ${IMMICH_ML_ACCEL:-cuda} == cuda ]]; then files+=":docker-compose.ml-cuda.yml"; suffix=-cuda; fi
