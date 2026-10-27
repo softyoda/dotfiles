@@ -7,7 +7,8 @@
   dotctl apply --profile [nom]   applique tout le profil (machine courante par défaut)
   dotctl diff <module>           différences repo ↔ machine
   dotctl capture <module>        recopie dans le repo les fichiers modifiés localement
-  dotctl sync                    git pull du repo public (+ privé)
+  dotctl sync                    git pull des dépôts Git (privé Seafile exclu)
+  dotctl firefox                 sauvegarde/restauration sélectives de Firefox
   dotctl gui | tray              interface graphique / icône de notification
 """
 from __future__ import annotations
@@ -113,6 +114,11 @@ def cmd_capture(args):
         print(f"{mid} : {core.capture(mid)} fichier(s) recopié(s)")
 
 
+def cmd_firefox(args):
+    from .firefox_gui import main
+    main()
+
+
 def cmd_sync(args):
     sys.exit(0 if core.sync() else 1)
 
@@ -128,7 +134,7 @@ def cmd_tray(args):
 
 
 COMMANDS = {"list": cmd_list, "status": cmd_status, "info": cmd_info, "apply": cmd_apply,
-            "diff": cmd_diff, "capture": cmd_capture, "sync": cmd_sync, "gui": cmd_gui, "tray": cmd_tray}
+            "diff": cmd_diff, "capture": cmd_capture, "sync": cmd_sync, "firefox": cmd_firefox, "gui": cmd_gui, "tray": cmd_tray}
 
 
 def main(argv=None):

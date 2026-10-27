@@ -7,9 +7,9 @@ import sys
 import threading
 
 from PyQt6.QtCore import QObject, QProcess, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap
+from PyQt6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame, QHBoxLayout, QLabel,
-                             QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox,
+                             QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox,
                              QPlainTextEdit, QPushButton, QScrollArea, QSystemTrayIcon,
                              QVBoxLayout, QWidget)
 
@@ -31,6 +31,7 @@ QListWidget::item:selected {{ background:{BORDER}; color:{ACCENT}; }}
 QScrollArea {{ border:none; }}
 QCheckBox::indicator {{ width:18px; height:18px; border-radius:5px; border:2px solid #585b70; background:{CARD}; }}
 QCheckBox::indicator:checked {{ background:{ACCENT}; border-color:{ACCENT}; }}
+QLineEdit {{ background:{CARD}; border:1px solid {BORDER}; border-radius:8px; padding:9px; }}
 QPlainTextEdit {{ background:{CARD}; border-radius:8px; font-family:monospace; padding:8px; }}
 """
 
@@ -169,7 +170,7 @@ class MainWindow(QMainWindow):
         self.title = QLabel("<span style='font-size:20px;font-weight:bold'>Dotfiles</span>")
         top.addWidget(self.title)
         top.addStretch()
-        self.b_new = QPushButton("Nouvelle installation", checkable=True)
+        self.b_new = QPushButton("Tous les modules", checkable=True)
         self.b_upd = QPushButton("Mises à jour", checkable=True)
         for b, mode in ((self.b_new, NEW), (self.b_upd, UPDATES)):
             b.setMinimumWidth(190)
@@ -179,11 +180,25 @@ class MainWindow(QMainWindow):
         self.b_sync = QPushButton("⟳ Synchroniser")
         self.b_sync.clicked.connect(self.sync)
         top.addWidget(self.b_sync)
+        self.b_firefox = QPushButton("Firefox…")
+        self.b_firefox.clicked.connect(self.firefox_settings)
+        top.addWidget(self.b_firefox)
         v.addLayout(top)
 
         self.subtitle = QLabel()
         self.subtitle.setStyleSheet(f"color:{MUTED};")
         v.addWidget(self.subtitle)
+        self.private_status = QLabel()
+        self.private_status.setWordWrap(True)
+        self.private_status.setStyleSheet(f"color:{MUTED};")
+        v.addWidget(self.private_status)
+        self.search = QLineEdit()
+        self.search.setPlaceholderText("Rechercher dans tous les modules… (Ctrl+F)")
+        self.search.setClearButtonEnabled(True)
+        self.search.textChanged.connect(lambda _: self.set_mode(self.mode))
+        v.addWidget(self.search)
+        self.search_shortcut = QShortcut(QKeySequence.StandardKey.Find, self)
+        self.search_shortcut.activated.connect(self.search.setFocus)
 
         body = QHBoxLayout()
         self.cats = QListWidget()
@@ -220,6 +235,7 @@ class MainWindow(QMainWindow):
 
     def loaded(self, mods, prof, st):
         self.mods, self.prof, self.st = mods, prof, st
+        self.private_status.setText(core.private_sync_label())
         self.reset_checks()
         self.set_mode(self.mode)
 
@@ -238,9 +254,14 @@ class MainWindow(QMainWindow):
         order = list(core.CATEGORIES)
         ids = sorted(self.mods, key=lambda i: (order.index(self.mods[i].category) if self.mods[i].category in order
                                                 else 99, getattr(self.mods[i], "group", ""), self.mods[i].name.lower()))
-        if self.mode == UPDATES:
+        query = self.search.text().strip().casefold()
+        if self.mode == UPDATES and not query:
             wanted = set(self.prof.get("modules", [])) | set(core.load_state())
             ids = [i for i in ids if self.st[i] != core.OK and (i in wanted or self.st[i] == core.DRIFT)]
+        if query:
+            ids = [i for i in ids if all(word in " ".join((self.mods[i].name, i,
+                   self.mods[i].description, core.CATEGORIES.get(self.mods[i].category, ""),
+                   getattr(self.mods[i], "group", ""))).casefold() for word in query.split())]
         return ids
 
     def set_mode(self, mode):
@@ -249,6 +270,7 @@ class MainWindow(QMainWindow):
         self.b_new.setChecked(mode == NEW)
         self.b_upd.setChecked(mode == UPDATES)
         if changed:
+            self.cards = {}
             self.reset_checks()
         ids = self.visible_ids()
         cur = self.cats.currentItem().data(Qt.ItemDataRole.UserRole) if self.cats.currentItem() else None
@@ -265,6 +287,8 @@ class MainWindow(QMainWindow):
                 it = QListWidgetItem(f"{label}  ({counts[cat]})")
                 it.setData(Qt.ItemDataRole.UserRole, cat)
                 self.cats.addItem(it)
+        if self.search.text().strip():
+            cur = None
         row = next((r for r in range(self.cats.count())
                     if self.cats.item(r).data(Qt.ItemDataRole.UserRole) == cur), 0)
         self.cats.setCurrentRow(row)
@@ -272,8 +296,10 @@ class MainWindow(QMainWindow):
         prof = self.prof.get("_name") or "aucun profil (dossier privé introuvable)"
         n_upd = sum(1 for i in ids if self.st[i] in (core.UPDATE, core.ABSENT, core.DRIFT))
         self.subtitle.setText(
-            f"Machine : {prof}  ·  " + ("Mode nouvelle installation : tout le profil est coché."
+            f"Machine : {prof}  ·  " + ("Tous les modules disponibles ; le profil est présélectionné."
                                        if mode == NEW else f"{n_upd} module(s) à traiter."))
+        if self.search.text().strip():
+            self.subtitle.setText(f"{len(ids)} résultat(s) dans tous les modules, y compris ceux à jour.")
         self.b_apply.setEnabled(True)
         self.fill()
 
@@ -325,6 +351,10 @@ class MainWindow(QMainWindow):
         d = LogDialog(dotctl_cmd() + ["apply", *ids], f"Application de {len(ids)} module(s)", self)
         d.finished.connect(lambda _rc: self.refresh())
         d.show()
+
+    def firefox_settings(self):
+        from .firefox_gui import FirefoxDialog
+        FirefoxDialog(self).exec()
 
     def sync(self):
         d = LogDialog(dotctl_cmd() + ["sync"], "Synchronisation", self)

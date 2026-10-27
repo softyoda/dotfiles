@@ -1,0 +1,9 @@
+name = "Firefox : sauvegarde sélective des réglages et extensions"
+category = "apps"
+description = "Choix du profil, des préférences about:config, des filtres uBlock Origin et des userscripts Violentmonkey à sauvegarder ou restaurer via le dossier privé."
+requires = ["dotfiles-app"]
+manual = true
+
+[[files]]
+src = "files/firefox-settings.desktop"
+dst = "~/.local/share/applications/dotfiles-firefox.desktop"

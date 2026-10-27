@@ -19,6 +19,7 @@ import os
 import shlex
 import shutil
 import socket
+import sqlite3
 import subprocess
 import time
 import tomllib
@@ -67,6 +68,27 @@ def private_dir() -> Path | None:
         if p and Path(p).is_dir():
             return Path(p)
     return None
+
+
+
+def private_sync_label() -> str:
+    private = private_dir()
+    if private is None:
+        return "Données privées : dossier introuvable."
+    if is_git_root(private):
+        return "Données privées : dépôt Git (synchronisé par le bouton Synchroniser)."
+    home = Path.home()
+    for ini in (home / ".ccnet/seafile.ini",
+                home / ".var/app/com.seafile.Client/.ccnet/seafile.ini"):
+        try:
+            db = Path(ini.read_text().strip()) / "repo.db"
+            with sqlite3.connect(db.as_uri() + "?mode=ro", uri=True) as conn:
+                trees = conn.execute("SELECT value FROM RepoProperty WHERE key = 'worktree'").fetchall()
+            if any(private.resolve().is_relative_to(Path(value).resolve()) for (value,) in trees):
+                return "Données privées : dossier suivi par Seafile ; vérifier le transfert dans le client Seafile."
+        except (OSError, ValueError, sqlite3.Error):
+            continue
+    return "Données privées : dossier local — synchronisation distante à configurer dans Seafile."
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -498,8 +520,16 @@ def git(repo: Path, *args) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
 
 
+def is_git_root(path: Path) -> bool:
+    # Ne pas traiter un simple dossier (même dans un dépôt parent) comme un dépôt.
+    result = git(path, "rev-parse", "--show-toplevel")
+    return result.returncode == 0 and Path(result.stdout.strip()).resolve() == path.resolve()
+
+
 def repos() -> list[Path]:
-    return [DOTFILES] + ([private_dir()] if private_dir() else [])
+    private = private_dir()
+    return [DOTFILES] + ([private] if private and private.resolve() != DOTFILES.resolve()
+                        and is_git_root(private) else [])
 
 
 def behind_count(repo: Path, fetch: bool = True) -> int:
@@ -515,6 +545,14 @@ def sync(log=print) -> bool:
         r = git(repo, "pull", "--ff-only")
         log(f"{repo.name} : {(r.stdout or r.stderr).strip()}")
         ok &= r.returncode == 0
+    private = private_dir()
+    if private and not is_git_root(private):
+        log(private_sync_label())
+        log(f"{private.name} : dossier privé non Git ({private}). "
+            "Pas de git pull ; sa synchronisation doit être assurée par Seafile "
+            "ou votre outil de sauvegarde. dotctl ne vérifie pas son transfert distant.")
+    elif private is None:
+        log("Dossier privé introuvable : seules les configurations publiques ont été synchronisées.")
     return ok
 
 

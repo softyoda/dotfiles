@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Firefox — sauvegarde des réglages
+Comment=Sauvegarder ou restaurer les réglages Firefox, uBlock Origin et Violentmonkey
+Exec=dotctl firefox
+Icon=firefox
+Terminal=false
+Categories=Settings;Network;

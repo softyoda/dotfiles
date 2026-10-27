@@ -120,6 +120,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | Module | Ce que ça fait |
 |---|---|
 | [`firefox-second-profile`](modules/firefox-second-profile/) | Un profil Firefox séparé (marque-pages, mots de passe, sessions) avec son propre lanceur « Firefox (<nom>) » dans le menu. |
+| [`firefox-settings`](modules/firefox-settings/) | Choix du profil, des préférences about:config, des filtres uBlock Origin et des userscripts Violentmonkey à sauvegarder ou restaurer via le dossier privé. ✋ |
 | [`flatpakref-handler`](modules/flatpakref-handler/) | Un double-clic sur un fichier .flatpakref lance l'installation Flatpak correspondante. |
 | [`mullvad`](modules/mullvad/) | VPN Mullvad connecté automatiquement (sortie en Belgique, WireGuard post-quantique + DAITA, LAN accessible), interface démarrée réduite. ✋ |
 | [`rustdesk`](modules/rustdesk/) | Bureau à distance RustDesk en service système : accessible sans session ouverte, avec mot de passe permanent. ✋ |
