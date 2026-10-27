@@ -1,5 +1,5 @@
 name = "Écran rond (interface adaptée)"
 category = "hardware"
-description = "Adapte Plasma à un écran rond : échelle lisible, barre centrée dans l'arc du haut (menu, fenêtres, heure, notifications) et applis gardées dans le carré visible, façon Android."
+description = "Barres Plasma en arc, icônes orientées et indicateurs courbes ; fenêtres conservées dans le carré visible de l’écran rond."
 vars = ["ROUND_SCALE"]
 # Optionnels : ROUND_OUTPUT (nom de la sortie, sinon : la première sortie carrée)

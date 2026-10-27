@@ -26,8 +26,23 @@ qdbus6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript round-safe-ar
 qdbus6 org.kde.KWin /KWin reconfigure
 success "zone sûre active : les fenêtres restent dans le carré visible"
 
-# Barre du haut (sauvegarde de l'ancienne disposition une seule fois)
+# Conteneur de panneau en arc validé.
+pkg="$MODULE_DIR/org.softyoda.arcpanel"
+if [[ -d ~/.local/share/plasma/plasmoids/org.softyoda.arcpanel ]]; then
+    kpackagetool6 --type Plasma/Applet --upgrade "$pkg" >/dev/null
+else
+    kpackagetool6 --type Plasma/Applet --install "$pkg" >/dev/null
+fi
+
+# Barres en arc (sauvegarde de l'ancienne disposition une seule fois)
 rc=~/.config/plasma-org.kde.plasma.desktop-appletsrc
 [[ -f $rc.bak-avant-rond ]] || cp "$rc" "$rc.bak-avant-rond"
 qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "$(cat "$MODULE_DIR/files/panels.js")" >/dev/null
 success "barre ronde en place (ancienne disposition : $rc.bak-avant-rond)"
+
+# Plasma doit avoir sauvegardé les nouveaux panneaux avant de régler leur tray.
+systemctl --user stop plasma-plasmashell.service
+trap 'systemctl --user start plasma-plasmashell.service' EXIT
+python3 "$MODULE_DIR/tools/configure-tray.py" "$rc"
+systemctl --user start plasma-plasmashell.service
+trap - EXIT
