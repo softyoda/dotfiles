@@ -1,6 +1,6 @@
 name = "Blender Launcher"
 category = "creative"
-description = "Gère les versions de Blender ; le raccourci sans trousseau est une option sélectionnable."
+description = "Gère les versions de Blender, avec options sans trousseau et icône officielle dans We10X."
 
 [packages]
 aur = ["blender-launcher-v2-bin"]
@@ -14,3 +14,14 @@ default = true
 [[parts.files]]
 src = "files/blenderlauncher.desktop"
 dst = "~/.local/share/applications/blenderlauncher.desktop"
+
+[[parts]]
+id = "official-icon"
+name = "Icône Blender officielle dans We10X"
+description = "Remplace uniquement le dessin Blender du pack We10X, y compris sa variante sombre."
+default = true
+apply = "refresh-icons.sh"
+
+[[parts.files]]
+src = "files/blender.svg"
+dst = "~/.local/share/icons/We10X-black/apps/scalable/blender.svg"

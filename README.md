@@ -142,7 +142,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 | Module | Ce que ça fait |
 |---|---|
-| [`app-blender`](modules/app-blender/) | Gère les versions de Blender ; le raccourci sans trousseau est une option sélectionnable. |
+| [`app-blender`](modules/app-blender/) | Gère les versions de Blender, avec options sans trousseau et icône officielle dans We10X. |
 | [`helios-laser`](modules/helios-laser/) | Pilotage d'un DAC laser Helios en USB depuis TouchDesigner : règle udev, bibliothèque SDK compilée, pont UDP vers USB en service utilisateur et scripts d'envoi côté TouchDesigner. |
 | [`metashape`](modules/metashape/) | Photogrammétrie Agisoft Metashape Professional 2.1.3 dans /opt/metashape-pro, lanceurs (Metashape, Viewer, Network Monitor) et commande fish « metashape ». ✋ |
 | [`mixxx-rgb`](modules/mixxx-rgb/) | Mixxx 2.5.6 recompilé avec des formes d'onde RGB façon Rekordbox (patch maison), installé dans ~/.local/opt, avec raccourcis clavier perso, alias Espace → lecture et lanceur XWayland. |
