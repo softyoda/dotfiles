@@ -3,9 +3,9 @@
 Le cadre visible est le cercle inscrit : les coins du carré 1080×1080 n'existent pas.
 
 - **Échelle 150 %** (`ROUND_SCALE`) : ~5" à 1080 px, sinon tout est minuscule.
-- **Barre du haut** épaisse et non flottante, ajustée au contenu et centrée : l'épaisseur pousse
-  les éléments dans la partie large de l'arc. Ordre : liste des fenêtres · menu (au centre, là où
-  l'arc est le plus haut) · heure (taille fixe) · notifications (clé USB, réseau, son…).
+- **Haut** : l’heure seule, centrée (police automatique).
+- **Dock en bas** (flottant, ajusté au contenu, centré) : menu · applis ouvertes (icônes seules) ·
+  notifications réduites à clé USB, réseau, son (le reste sous la flèche).
 - **Script KWin `round-safe-area`** : sur la sortie carrée, chaque appli occupe le carré inscrit
   (côté = d/√2), façon Android ; les dialogues y sont centrés. Plein écran (vidéo, jeux) non touché.
   Réglages dans `kwinrc` `[Script-round-safe-area]` : `Inset` (0.7071), `AndroidMode`,
