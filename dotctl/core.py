@@ -371,6 +371,10 @@ def plan_commands(mods: list[Module], env: dict) -> list[tuple[str, list[str] | 
     if pac:
         steps.append((f"pacman : {' '.join(pac)}", sudo_cmd() + ["pacman", "-S", "--needed", "--noconfirm", *pac]))
     if aur:
+        if not shutil.which("paru"):  # machine neuve : paru est dans les dépôts CachyOS, sinon compilé depuis l'AUR
+            steps.append(("installation de paru", " ".join(sudo_cmd()) + " pacman -S --needed --noconfirm paru || "
+                          "(rm -rf /tmp/paru-bin && git clone https://aur.archlinux.org/paru-bin.git /tmp/paru-bin && "
+                          "cd /tmp/paru-bin && makepkg -si --noconfirm)"))
         steps.append((f"AUR : {' '.join(aur)}", ["paru", "-S", "--needed", "--noconfirm", "--skipreview", *aur]))
     if fp:
         steps.append((f"Flatpak : {' '.join(fp)}",
@@ -412,6 +416,9 @@ def deploy_files(m: Module, env: dict, log) -> bool:
 def run_stream(cmd, log, env=None) -> int:
     if isinstance(cmd, str):
         cmd = ["bash", "-c", cmd]
+    if not shutil.which(cmd[0]):
+        log(f"✗ commande introuvable : {cmd[0]}")
+        return 127
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                             env={**os.environ, **(env or {})})
     for line in proc.stdout:
