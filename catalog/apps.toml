@@ -197,13 +197,6 @@ pkg = "com.blackmagicdesign.resolve"
 
 # ── 3D / Graphisme
 [["3D / Graphisme"]]
-id = "blender"
-label = "Blender Launcher"
-desc = "Gère toutes versions Blender"
-method = "aur"
-pkg = "blender-launcher-v2-bin"
-
-[["3D / Graphisme"]]
 id = "darktable"
 label = "Darktable"
 desc = "Développement RAW photo"

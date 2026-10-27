@@ -1,0 +1,10 @@
+name = "Blender Launcher"
+category = "creative"
+description = "Gère les versions de Blender, avec un lanceur sans demande de déverrouillage du trousseau de clés."
+
+[packages]
+aur = ["blender-launcher-v2-bin"]
+
+[[files]]
+src = "files/blenderlauncher.desktop"
+dst = "~/.local/share/applications/blenderlauncher.desktop"

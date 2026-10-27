@@ -141,6 +141,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 | Module | Ce que ça fait |
 |---|---|
+| [`app-blender`](modules/app-blender/) | Gère les versions de Blender, avec un lanceur sans demande de déverrouillage du trousseau de clés. |
 | [`helios-laser`](modules/helios-laser/) | Pilotage d'un DAC laser Helios en USB depuis TouchDesigner : règle udev, bibliothèque SDK compilée, pont UDP vers USB en service utilisateur et scripts d'envoi côté TouchDesigner. |
 | [`metashape`](modules/metashape/) | Photogrammétrie Agisoft Metashape Professional 2.1.3 dans /opt/metashape-pro, lanceurs (Metashape, Viewer, Network Monitor) et commande fish « metashape ». ✋ |
 | [`mixxx-rgb`](modules/mixxx-rgb/) | Mixxx 2.5.6 recompilé avec des formes d'onde RGB façon Rekordbox (patch maison), installé dans ~/.local/opt, avec raccourcis clavier perso, alias Espace → lecture et lanceur XWayland. |
@@ -165,9 +166,9 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`remote-workstation`](modules/remote-workstation/) | Monte le dossier personnel d’une ou plusieurs machines du réseau (ex. flystation) dans ~/Mounts, avec un raccourci Dolphin et « Exécuter sur la machine distante » au clic droit. ✋ |
 | [`ssh-home-share`](modules/ssh-home-share/) | Rend cette machine accessible depuis les autres PC (module remote-workstation) : SSH par clé uniquement et nom <machine>.local sur le réseau. |
 
-### Applications simples (84, `catalog/apps.toml`)
+### Applications simples (83, `catalog/apps.toml`)
 
-- **3D / Graphisme** : Blender Launcher, CloudCompare, Darktable, GIMP, Google Earth Pro, QGIS, RapidRAW, XnView MP
+- **3D / Graphisme** : CloudCompare, Darktable, GIMP, Google Earth Pro, QGIS, RapidRAW, XnView MP
 - **Communication** : Discord, Element, Slack
 - **Crypto** : Electrum-LTC, Monero GUI
 - **Développement** : Alacritty, DB Browser, Git, Jan, Meld, Notepadqq, VSCodium

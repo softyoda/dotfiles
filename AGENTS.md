@@ -1,5 +1,7 @@
 # Préférences de maintenance
 
+- Une modification demandée dans ces dotfiles doit être vérifiée, commitée et poussée sur le dépôt GitHub `softyoda/dotfiles`, sauf demande explicite de rester en local. Une modification uniquement locale ne termine pas le travail ; signaler tout blocage de publication.
+
 - Répondre en français.
 - Lorsqu'une personnalisation durable du bureau ou des outils est installée pour l'utilisateur, l'intégrer aussi à ces dotfiles avec sa procédure de restauration. Demander en cas de doute sur le périmètre à sauvegarder.
 - Préserver les modifications locales existantes ; utiliser un arbre de travail séparé si nécessaire.
