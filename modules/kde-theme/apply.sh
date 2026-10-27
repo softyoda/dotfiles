@@ -125,6 +125,7 @@ tiles='{"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"w
 grep -o '^\[Tiling\]\[[^]]*\]\[[^]]*\]' "$CFG/kwinrc" 2>/dev/null | sort -u | while read -r g; do
     desk=$(sed -E 's/^\[Tiling\]\[([^]]*)\]\[([^]]*)\]$/\1/' <<<"$g")
     scr=$(sed -E 's/^\[Tiling\]\[([^]]*)\]\[([^]]*)\]$/\2/' <<<"$g")
+    [[ -n $desk && -n $scr ]] || continue   # groupe incomplet (ex. [Tiling][][…]) : ignoré
     kw --file kwinrc --group Tiling --group "$desk" --group "$scr" --key padding 4
     kw --file kwinrc --group Tiling --group "$desk" --group "$scr" --key tiles "$tiles"
 done
