@@ -1,0 +1,9 @@
+name = "Thème KDE (We10XOS sombre)"
+category = "kde"
+description = "Apparence complète du bureau : thème We10XOS sombre, accent gris, icônes We10X, effets KWin (verre, flou, fenêtres molles), splash Watch_Dogs et fond d'écran flouté en diaporama."
+vars = ["WALLPAPER_DIR", "XWAYLAND_SCALE"]
+manual = true   # disposition du panneau : script optionnel layout/restore-layout.sh
+
+[packages]
+pacman = ["kdeplasma-addons", "cachyos-kde-settings", "cachyos-emerald-kde-theme-git", "cachyos-iridescent-kde", "cachyos-nord-kde-theme-git", "git"]
+aur = ["kwin-effects-glass-git", "plasma6-wallpapers-blurredwallpaper-git"]

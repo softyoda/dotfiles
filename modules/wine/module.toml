@@ -1,0 +1,11 @@
+name = "Wine (TkG staging, wow64)"
+category = "creative"
+description = "Wine TkG staging en wow64 (un seul préfixe 64 bits pour les applis 32 et 64 bits), lanceur de réglages et surcharges DLL ddraw/dinput natives pour les vieux jeux."
+
+[packages]
+aur = ["wine-tkg-staging-wow64-bin"]
+
+[[files]]
+src = "files/wine-settings.desktop"
+dst = "~/.local/share/applications/wine-settings.desktop"
+template = true

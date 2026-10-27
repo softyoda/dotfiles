@@ -1,0 +1,12 @@
+name = "Seafile (synchro cloud)"
+category = "apps"
+description = "Client de synchronisation Seafile (Flatpak) pointant sur le serveur du profil, démarré au login sans fenêtre."
+vars = ["SEAFILE_SERVER_URL"]
+manual = true
+
+[packages]
+flatpak = ["com.seafile.Client"]
+
+[[files]]
+src = "files/com.seafile.Client.desktop"
+dst = "~/.config/autostart/com.seafile.Client.desktop"

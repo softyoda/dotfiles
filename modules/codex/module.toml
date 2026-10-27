@@ -1,0 +1,7 @@
+name = "Codex (ChatGPT)"
+category = "ai"
+description = "Installe Codex CLI d’OpenAI (paquet CachyOS) avec le grand contexte, à utiliser avec l’abonnement ChatGPT."
+manual = true   # connexion : `codex login`
+
+[packages]
+pacman = ["openai-codex"]

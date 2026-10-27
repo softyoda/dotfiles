@@ -1,0 +1,14 @@
+name = "Partage du dossier personnel par SSH"
+category = "homelab"
+description = "Rend cette machine accessible depuis les autres PC (module remote-workstation) : SSH par clé uniquement et nom <machine>.local sur le réseau."
+vars = ["SHARE_AUTHORIZED_KEYS_FILE"]
+# SHARE_AUTHORIZED_KEYS_FILE : fichier de clés PUBLIQUES (une par ligne), en général dans le repo
+# privé ; chemin absolu, ~/…, ou relatif au repo privé.
+
+[packages]
+pacman = ["openssh", "avahi", "nss-mdns"]
+
+[[files]]
+src = "files/10-dotfiles.conf"
+dst = "/etc/ssh/sshd_config.d/10-dotfiles.conf"
+root = true

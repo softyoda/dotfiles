@@ -1,0 +1,11 @@
+name = "Mullvad VPN"
+category = "apps"
+description = "VPN Mullvad connecté automatiquement (sortie en Belgique, WireGuard post-quantique + DAITA, LAN accessible), interface démarrée réduite."
+manual = true
+
+[packages]
+aur = ["mullvad-vpn-bin"]
+
+[[files]]
+src = "files/mullvad-vpn.desktop"
+dst = "~/.config/autostart/mullvad-vpn.desktop"

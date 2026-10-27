@@ -1,0 +1,14 @@
+name = "Shell fish"
+category = "base"
+description = "fish comme shell par défaut, avec la config CachyOS, le prompt Pure, fzf (Ctrl+R/Ctrl+T) et les secrets dans un fichier local."
+
+[packages]
+pacman = ["fish", "cachyos-fish-config", "fish-pure-prompt", "fish-autopair", "fisher", "fzf"]
+
+[[files]]
+src = "files/config.fish"
+dst = "~/.config/fish/config.fish"
+
+[[files]]
+src = "files/fish_user_key_bindings.fish"
+dst = "~/.config/fish/functions/fish_user_key_bindings.fish"

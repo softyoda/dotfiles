@@ -1,4 +1,8 @@
-# Secrets — ne jamais committer
-config/fish/secrets.fish
+# Secrets — jamais dans ce repo (voir README : dossier privé Seafile)
+secrets.env
+secrets.fish
 *.secret
 *.key
+*.lic
+.env
+__pycache__/

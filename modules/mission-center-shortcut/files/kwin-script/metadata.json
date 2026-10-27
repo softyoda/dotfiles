@@ -1,0 +1,9 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Description": "Shortcut Ctrl+Shift+Esc to open Mission Center",
+        "Name": "launch-mission-center",
+        "Id": "launch-mission-center",
+        "Version": "1.0"
+    }
+}

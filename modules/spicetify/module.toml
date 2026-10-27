@@ -1,0 +1,21 @@
+name = "Spotify + Spicetify"
+category = "apps"
+description = "Spotify (Flatpak utilisateur) personnalisé par Spicetify avec le Marketplace, ré-appliqué automatiquement après chaque mise à jour de Spotify."
+notes = "Remplace l’entrée app-spotify du catalogue."
+
+[[files]]
+src = "files/spicetify-reapply"
+dst = "~/.local/bin/spicetify-reapply"
+mode = "755"
+
+[[files]]
+src = "files/spicetify-reapply.path"
+dst = "~/.config/systemd/user/spicetify-reapply.path"
+
+[[files]]
+src = "files/spicetify-reapply.service"
+dst = "~/.config/systemd/user/spicetify-reapply.service"
+
+[[files]]
+src = "files/marketplace-color.ini"
+dst = "~/.config/spicetify/Themes/marketplace/color.ini"

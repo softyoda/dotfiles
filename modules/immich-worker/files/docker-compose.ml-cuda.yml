@@ -1,0 +1,11 @@
+# Activé quand IMMICH_ML_ACCEL=cuda (via COMPOSE_FILE dans .env) :
+# le machine-learning utilise aussi le GPU NVIDIA (image -cuda).
+services:
+  immich-machine-learning:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

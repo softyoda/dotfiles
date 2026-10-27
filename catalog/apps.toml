@@ -1,0 +1,608 @@
+# Applications « simples » (un paquet, aucune config).
+# method : pacman | aur | flatpak — chaque entrée devient le module app-<id>.
+# Les applis avec réglages/hook ont leur propre dossier dans modules/.
+
+# ── Communication
+[["Communication"]]
+id = "discord"
+label = "Discord"
+desc = "Chat & gaming"
+method = "pacman"
+pkg = "discord"
+
+[["Communication"]]
+id = "slack"
+label = "Slack"
+desc = "Chat pro"
+method = "flatpak"
+pkg = "com.slack.Slack"
+
+[["Communication"]]
+id = "element"
+label = "Element"
+desc = "Matrix / chiffré"
+method = "flatpak"
+pkg = "im.riot.Riot"
+
+# ── Productivité
+[["Productivité"]]
+id = "obsidian"
+label = "Obsidian"
+desc = "Notes / knowledge base"
+method = "flatpak"
+pkg = "md.obsidian.Obsidian"
+
+[["Productivité"]]
+id = "onlyoffice"
+label = "OnlyOffice"
+desc = "Suite bureautique"
+method = "aur"
+pkg = "onlyoffice-bin"
+
+[["Productivité"]]
+id = "calibre"
+label = "Calibre"
+desc = "Gestion ebooks"
+method = "pacman"
+pkg = "calibre"
+
+[["Productivité"]]
+id = "librewolf"
+label = "LibreWolf"
+desc = "Firefox sans tracking"
+method = "aur"
+pkg = "librewolf-bin"
+
+[["Productivité"]]
+id = "dropbox"
+label = "Dropbox"
+desc = "Sync cloud"
+method = "pacman"
+pkg = "dropbox"
+
+[["Productivité"]]
+id = "variety"
+label = "Variety"
+desc = "Fond d'écran automatique"
+method = "pacman"
+pkg = "variety"
+
+# ── Développement
+[["Développement"]]
+id = "vscodium"
+label = "VSCodium"
+desc = "Éditeur de code"
+method = "pacman"
+pkg = "vscodium"
+
+[["Développement"]]
+id = "git"
+label = "Git"
+desc = "Contrôle de version"
+method = "pacman"
+pkg = "git"
+
+[["Développement"]]
+id = "meld"
+label = "Meld"
+desc = "Diff visuel"
+method = "pacman"
+pkg = "meld"
+
+[["Développement"]]
+id = "alacritty"
+label = "Alacritty"
+desc = "Terminal GPU"
+method = "pacman"
+pkg = "alacritty"
+
+[["Développement"]]
+id = "notepadqq"
+label = "Notepadqq"
+desc = "Éditeur texte avancé"
+method = "pacman"
+pkg = "notepadqq"
+
+[["Développement"]]
+id = "sqlitebrowser"
+label = "DB Browser"
+desc = "SQLite GUI"
+method = "pacman"
+pkg = "sqlitebrowser"
+
+[["Développement"]]
+id = "jan"
+label = "Jan"
+desc = "IA locale (LLM offline)"
+method = "flatpak"
+pkg = "ai.jan.Jan"
+
+# ── Médias
+[["Médias"]]
+id = "vlc"
+label = "VLC"
+desc = "Lecteur vidéo universel"
+method = "pacman"
+pkg = "vlc"
+
+[["Médias"]]
+id = "haruna"
+label = "Haruna"
+desc = "Lecteur vidéo KDE"
+method = "pacman"
+pkg = "haruna"
+
+[["Médias"]]
+id = "smplayer"
+label = "SMPlayer"
+desc = "Lecteur vidéo avancé"
+method = "pacman"
+pkg = "smplayer"
+
+[["Médias"]]
+id = "obs"
+label = "OBS Studio"
+desc = "Stream / enregistrement"
+method = "pacman"
+pkg = "obs-studio"
+
+[["Médias"]]
+id = "spotify"
+label = "Spotify"
+desc = "Musique en streaming"
+method = "flatpak"
+pkg = "com.spotify.Client"
+
+[["Médias"]]
+id = "shotcut"
+label = "Shotcut"
+desc = "Montage vidéo"
+method = "pacman"
+pkg = "shotcut"
+
+[["Médias"]]
+id = "kid3"
+label = "Kid3"
+desc = "Éditeur tags audio"
+method = "pacman"
+pkg = "kid3"
+
+[["Médias"]]
+id = "soundconverter"
+label = "SoundConverter"
+desc = "Convertisseur audio"
+method = "pacman"
+pkg = "soundconverter"
+
+[["Médias"]]
+id = "freetube"
+label = "FreeTube"
+desc = "YouTube sans pub"
+method = "flatpak"
+pkg = "io.freetubeapp.FreeTube"
+
+[["Médias"]]
+id = "tenacity"
+label = "Tenacity"
+desc = "Éditeur audio (Audacity)"
+method = "flatpak"
+pkg = "org.tenacityaudio.Tenacity"
+
+[["Médias"]]
+id = "davinci"
+label = "DaVinci Resolve"
+desc = "Montage pro"
+method = "flatpak"
+pkg = "com.blackmagicdesign.resolve"
+
+# ── 3D / Graphisme
+[["3D / Graphisme"]]
+id = "blender"
+label = "Blender Launcher"
+desc = "Gère toutes versions Blender"
+method = "aur"
+pkg = "blender-launcher-v2-bin"
+
+[["3D / Graphisme"]]
+id = "darktable"
+label = "Darktable"
+desc = "Développement RAW photo"
+method = "pacman"
+pkg = "darktable"
+
+[["3D / Graphisme"]]
+id = "gimp"
+label = "GIMP"
+desc = "Retouche image"
+method = "pacman"
+pkg = "gimp"
+
+[["3D / Graphisme"]]
+id = "qgis"
+label = "QGIS"
+desc = "SIG / cartographie"
+method = "pacman"
+pkg = "qgis"
+
+[["3D / Graphisme"]]
+id = "cloudcompare"
+label = "CloudCompare"
+desc = "Nuages de points 3D"
+method = "flatpak"
+pkg = "org.cloudcompare.CloudCompare"
+
+# ── Gaming
+[["Gaming"]]
+id = "steam"
+label = "Steam"
+desc = "Plateforme de jeux"
+method = "pacman"
+pkg = "steam"
+
+[["Gaming"]]
+id = "lutris"
+label = "Lutris"
+desc = "Launcher multi-plateformes"
+method = "pacman"
+pkg = "lutris"
+
+[["Gaming"]]
+id = "gamescope"
+label = "Gamescope"
+desc = "Compositeur Valve pour jeux"
+method = "pacman"
+pkg = "gamescope"
+
+# ── Outils
+[["Outils"]]
+id = "qbittorrent"
+label = "qBittorrent"
+desc = "Client BitTorrent"
+method = "pacman"
+pkg = "qbittorrent"
+
+[["Outils"]]
+id = "kdeconnect"
+label = "KDE Connect"
+desc = "Téléphone <-> PC"
+method = "pacman"
+pkg = "kdeconnect"
+
+[["Outils"]]
+id = "filezilla"
+label = "FileZilla"
+desc = "FTP / SFTP"
+method = "pacman"
+pkg = "filezilla"
+
+[["Outils"]]
+id = "scrcpy"
+label = "Scrcpy"
+desc = "Miroir écran Android"
+method = "pacman"
+pkg = "scrcpy"
+
+[["Outils"]]
+id = "btop"
+label = "Btop"
+desc = "Moniteur système terminal"
+method = "pacman"
+pkg = "btop"
+
+[["Outils"]]
+id = "gparted"
+label = "GParted"
+desc = "Gestion partitions"
+method = "pacman"
+pkg = "gparted"
+
+[["Outils"]]
+id = "syncthing"
+label = "Syncthing"
+desc = "Sync P2P (alt. Dropbox)"
+method = "pacman"
+pkg = "syncthing"
+
+[["Outils"]]
+id = "remmina"
+label = "Remmina"
+desc = "Bureau à distance RDP"
+method = "pacman"
+pkg = "remmina"
+
+[["Outils"]]
+id = "snapx"
+label = "SnapX"
+desc = "Screenshot / GIF (ShareX)"
+method = "flatpak"
+pkg = "io.github.SnapXL.SnapX"
+
+[["Outils"]]
+id = "missioncenter"
+label = "Mission Center"
+desc = "Moniteur système GUI"
+method = "flatpak"
+pkg = "io.missioncenter.MissionCenter"
+
+[["Outils"]]
+id = "pavucontrol"
+label = "PavuControl"
+desc = "Contrôle volume PipeWire"
+method = "pacman"
+pkg = "pavucontrol"
+
+[["Outils"]]
+id = "sigma"
+label = "Sigma"
+desc = "Gestionnaire de fichiers"
+method = "aur"
+pkg = "sigma-file-manager-bin"
+
+# ── Médias (ajouts)
+[["Médias"]]
+id = "kodi"
+label = "Kodi"
+desc = "Media center salon"
+method = "pacman"
+pkg = "kodi"
+
+[["Médias"]]
+id = "mpcqt"
+label = "mpc-qt"
+desc = "Lecteur vidéo (défaut vidéos)"
+method = "flatpak"
+pkg = "io.github.mpc_qt.mpc-qt"
+
+[["Médias"]]
+id = "mpv"
+label = "mpv"
+desc = "Lecteur vidéo minimaliste"
+method = "pacman"
+pkg = "mpv-git"
+
+[["Médias"]]
+id = "stremio"
+label = "Stremio"
+desc = "Streaming"
+method = "flatpak"
+pkg = "com.stremio.Stremio"
+
+[["Médias"]]
+id = "jellyfin-desktop"
+label = "Jellyfin Desktop"
+desc = "Client Jellyfin"
+method = "flatpak"
+pkg = "org.jellyfin.JellyfinDesktop"
+
+[["Médias"]]
+id = "jellyfin-server"
+label = "Jellyfin Server"
+desc = "Serveur média"
+method = "flatpak"
+pkg = "org.jellyfin.JellyfinServer"
+
+[["Médias"]]
+id = "ardour"
+label = "Ardour"
+desc = "DAW audio"
+method = "flatpak"
+pkg = "org.ardour.Ardour"
+
+[["Médias"]]
+id = "bespokesynth"
+label = "Bespoke Synth"
+desc = "Synthé modulaire"
+method = "flatpak"
+pkg = "com.bespokesynth.BespokeSynth"
+
+[["Médias"]]
+id = "ytdlp"
+label = "yt-dlp"
+desc = "Téléchargeur vidéo CLI"
+method = "pacman"
+pkg = "yt-dlp"
+
+
+# ── 3D / Graphisme (ajouts)
+[["3D / Graphisme"]]
+id = "rapidraw"
+label = "RapidRAW"
+desc = "Développement RAW rapide"
+method = "aur"
+pkg = "rapidraw-bin"
+
+[["3D / Graphisme"]]
+id = "xnviewmp"
+label = "XnView MP"
+desc = "Visionneuse / conversion images"
+method = "aur"
+pkg = "xnviewmp"
+
+[["3D / Graphisme"]]
+id = "google-earth"
+label = "Google Earth Pro"
+desc = "Globe 3D"
+method = "aur"
+pkg = "google-earth-pro"
+
+
+# ── Gaming (ajouts)
+[["Gaming"]]
+id = "moonlight"
+label = "Moonlight"
+desc = "Client game streaming (Sunshine)"
+method = "pacman"
+pkg = "moonlight-qt"
+
+[["Gaming"]]
+id = "parsec"
+label = "Parsec"
+desc = "Bureau à distance gaming"
+method = "pacman"
+pkg = "parsec-bin"
+
+[["Gaming"]]
+id = "protonup"
+label = "ProtonUp-Qt"
+desc = "Gère Proton-GE / Wine-GE"
+method = "pacman"
+pkg = "protonup-qt"
+
+[["Gaming"]]
+id = "protontricks"
+label = "Protontricks"
+desc = "Winetricks pour Proton"
+method = "flatpak"
+pkg = "com.github.Matoking.protontricks"
+
+[["Gaming"]]
+id = "mari0"
+label = "Mari0"
+desc = "Mario + Portal"
+method = "pacman"
+pkg = "mari0"
+
+[["Gaming"]]
+id = "pokete"
+label = "Pokete"
+desc = "Pokémon en terminal"
+method = "flatpak"
+pkg = "com.github.lxgr_linux.pokete"
+
+
+# ── Outils (ajouts)
+[["Outils"]]
+id = "firefox-nightly"
+label = "Firefox Nightly"
+desc = "Firefox canal nightly"
+method = "aur"
+pkg = "firefox-nightly-bin"
+
+[["Outils"]]
+id = "vivaldi"
+label = "Vivaldi"
+desc = "Navigateur"
+method = "pacman"
+pkg = "vivaldi"
+
+[["Outils"]]
+id = "chromium"
+label = "Chromium"
+desc = "Navigateur"
+method = "pacman"
+pkg = "chromium"
+
+[["Outils"]]
+id = "keepassxc"
+label = "KeePassXC"
+desc = "Gestionnaire de mots de passe"
+method = "flatpak"
+pkg = "org.keepassxc.KeePassXC"
+
+[["Outils"]]
+id = "cryptomator"
+label = "Cryptomator"
+desc = "Coffres chiffrés cloud"
+method = "pacman"
+pkg = "cryptomator"
+
+[["Outils"]]
+id = "clipqr"
+label = "ClipQR"
+desc = "QR code depuis l'écran"
+method = "flatpak"
+pkg = "ch.imatt.ClipQR"
+
+[["Outils"]]
+id = "qdirstat"
+label = "QDirStat"
+desc = "Analyse espace disque"
+method = "aur"
+pkg = "qdirstat-bin"
+
+[["Outils"]]
+id = "filelight"
+label = "Filelight"
+desc = "Espace disque (KDE)"
+method = "pacman"
+pkg = "filelight"
+
+[["Outils"]]
+id = "krokiet"
+label = "Krokiet"
+desc = "Doublons / fichiers inutiles (czkawka)"
+method = "pacman"
+pkg = "krokiet"
+
+[["Outils"]]
+id = "btrfs-assistant"
+label = "Btrfs Assistant"
+desc = "Snapshots snapper GUI"
+method = "pacman"
+pkg = "btrfs-assistant"
+
+[["Outils"]]
+id = "coolercontrol"
+label = "CoolerControl"
+desc = "Courbes ventilateurs"
+method = "pacman"
+pkg = "coolercontrol"
+
+[["Outils"]]
+id = "lazydocker"
+label = "lazydocker"
+desc = "TUI Docker"
+method = "pacman"
+pkg = "lazydocker"
+
+[["Outils"]]
+id = "glances"
+label = "Glances"
+desc = "Monitoring CLI"
+method = "pacman"
+pkg = "glances"
+
+[["Outils"]]
+id = "appimagelauncher"
+label = "AppImageLauncher"
+desc = "Intègre les AppImage au menu"
+method = "aur"
+pkg = "appimagelauncher-git"
+
+[["Outils"]]
+id = "vmware"
+label = "VMware Workstation"
+desc = "Machines virtuelles"
+method = "aur"
+pkg = "vmware-workstation"
+
+[["Outils"]]
+id = "hugo"
+label = "Hugo"
+desc = "Générateur de site statique"
+method = "pacman"
+pkg = "hugo"
+
+[["Outils"]]
+id = "corex"
+label = "Corex"
+desc = "Outils système"
+method = "flatpak"
+pkg = "io.github.edewin.corex"
+
+
+# ── Crypto (ajouts)
+[["Crypto"]]
+id = "monero"
+label = "Monero GUI"
+desc = "Wallet Monero"
+method = "flatpak"
+pkg = "org.getmonero.Monero"
+
+[["Crypto"]]
+id = "electrum-ltc"
+label = "Electrum-LTC"
+desc = "Wallet Litecoin"
+method = "aur"
+pkg = "electrum-ltc-appimage"
+

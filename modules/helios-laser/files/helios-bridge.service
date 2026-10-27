@@ -1,0 +1,11 @@
+[Unit]
+Description=Helios Laser DAC bridge (TouchDesigner → USB)
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/python3 ${HOME}/.local/bin/helios_bridge.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

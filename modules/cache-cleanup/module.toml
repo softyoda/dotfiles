@@ -1,0 +1,19 @@
+name = "Nettoyage quotidien des caches"
+category = "base"
+description = "Supprime chaque jour les paquets en cache (pacman et paru) de plus de 7 jours."
+
+[[files]]
+src = "files/cache-cleanup.sh"
+dst = "/usr/local/bin/cache-cleanup.sh"
+root = true
+mode = "755"
+
+[[files]]
+src = "files/cache-cleanup.service"
+dst = "/etc/systemd/system/cache-cleanup.service"
+root = true
+
+[[files]]
+src = "files/cache-cleanup.timer"
+dst = "/etc/systemd/system/cache-cleanup.timer"
+root = true

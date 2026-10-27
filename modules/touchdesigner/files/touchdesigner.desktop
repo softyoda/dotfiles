@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TouchDesigner
+Comment=Real-time visual development platform
+Exec=${HOME}/.local/bin/launch-touchdesigner.sh
+Icon=${HOME}/.local/share/touchdesigner-linux/TouchDesigner.svg
+Terminal=false
+StartupNotify=true
+Categories=Graphics;

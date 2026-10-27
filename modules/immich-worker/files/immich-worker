@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""immich-worker — worker GPU Immich (microservices + machine-learning) déporté du NAS.
+
+  immich-worker status            état serveur / worker / jobs
+  immich-worker align             aligne le worker sur la version du serveur (rollback si échec)
+  immich-worker check-update      dernière release GitHub vs version du serveur
+  immich-worker upgrade-nas [vX.Y.Z] [--yes]
+                                  sauvegarde la DB, met à jour le NAS, puis aligne ce worker
+  immich-worker start|stop|restart|logs [ml|ms]
+
+Config : /opt/docker/immich-worker/.env (généré par `dotctl apply immich-worker`).
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+STACK = Path(os.environ.get("IMMICH_WORKER_DIR", "/opt/docker/immich-worker"))
+ENV_FILE = STACK / ".env"
+ML, MS = "immich-machine-learning", "immich-microservices"
+HEALTH_TIMEOUT = 240
+
+
+def log(msg):
+    print(msg, flush=True)
+
+
+def load_env() -> dict:
+    env = {}
+    if ENV_FILE.is_file():
+        for line in ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
+
+
+def set_env_key(key: str, value: str):
+    lines = ENV_FILE.read_text().splitlines()
+    out, done = [], False
+    for line in lines:
+        if line.startswith(f"{key}="):
+            out.append(f"{key}={value}")
+            done = True
+        else:
+            out.append(line)
+    if not done:
+        out.append(f"{key}={value}")
+    ENV_FILE.write_text("\n".join(out) + "\n")
+
+
+def http_json(url: str, headers=None, timeout=8):
+    req = urllib.request.Request(url, headers={"User-Agent": "immich-worker", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read())
+
+
+def server_version(env) -> str | None:
+    try:
+        d = http_json(env["IMMICH_URL"].rstrip("/") + "/api/server/version")
+        return f"v{d['major']}.{d['minor']}.{d['patch']}"
+    except Exception:
+        return None
+
+
+def latest_release() -> str | None:
+    try:
+        return http_json("https://api.github.com/repos/immich-app/immich/releases/latest")["tag_name"]
+    except Exception:
+        return None
+
+
+def parse(v: str) -> tuple:
+    return tuple(int(x) for x in re.findall(r"\d+", v or "")[:3]) or (0,)
+
+
+def compose(*args, env_override=None, capture=False):
+    cmd = ["docker", "compose", "--project-directory", str(STACK), *args]
+    e = {**os.environ, **(env_override or {})}
+    if capture:
+        return subprocess.run(cmd, env=e, capture_output=True, text=True)
+    return subprocess.run(cmd, env=e)
+
+
+def container_state(name) -> str:
+    r = subprocess.run(["docker", "inspect", name, "--format",
+                        "{{.State.Status}}{{if .State.Health}}/{{.State.Health.Status}}{{end}}"],
+                       capture_output=True, text=True)
+    return r.stdout.strip() or "absent"
+
+
+def ml_ping(env) -> bool:
+    try:
+        url = f"http://{env.get('WORKER_BIND_IP', '127.0.0.1')}:3003/ping"
+        with urllib.request.urlopen(url, timeout=4) as r:
+            return b"pong" in r.read()
+    except Exception:
+        return False
+
+
+def wait_healthy(env) -> bool:
+    deadline = time.time() + HEALTH_TIMEOUT
+    while time.time() < deadline:
+        ms = container_state(MS)
+        if ml_ping(env) and ms.startswith("running") and not ms.endswith(("starting", "unhealthy")):
+            return True
+        if "exited" in ms or "dead" in ms:
+            return False
+        time.sleep(5)
+    return False
+
+
+# ─── Commandes ──────────────────────────────────────────────────────────────
+
+def cmd_status(env, _args):
+    srv = server_version(env)
+    loc = env.get("IMMICH_VERSION", "?")
+    log(f"Serveur  {env.get('IMMICH_URL')} : {srv or 'injoignable'}")
+    log(f"Worker   version {loc}  ({'ALIGNÉ' if srv == loc else 'DÉSALIGNÉ → immich-worker align'})"
+        if srv else f"Worker   version {loc}")
+    log(f"  {ML:26} {container_state(ML)}  ping={'ok' if ml_ping(env) else 'non'}")
+    log(f"  {MS:26} {container_state(MS)}")
+    key = env.get("IMMICH_API_KEY")
+    if key and srv:
+        try:
+            jobs = http_json(env["IMMICH_URL"].rstrip("/") + "/api/jobs", {"x-api-key": key})
+            for k in ("thumbnailGeneration", "metadataExtraction", "smartSearch", "faceDetection",
+                      "videoConversion", "ocr"):
+                if k in jobs:
+                    c = jobs[k]["jobCounts"]
+                    log(f"  job {k:22} actifs {c['active']:>4}  en attente {c['waiting']:>6}")
+        except Exception as e:
+            log(f"  (jobs indisponibles : {e})")
+    return 0
+
+
+def cmd_align(env, args):
+    srv = server_version(env)
+    if not srv:
+        log("✗ Serveur Immich injoignable : impossible de connaître sa version.")
+        return 1
+    old = env.get("IMMICH_VERSION")
+    if old == srv and "--force" not in args:
+        log(f"✓ Worker déjà aligné sur {srv}.")
+        return 0
+    log(f"▶ Alignement du worker : {old} → {srv}")
+    log("  téléchargement des images (le worker actuel continue de tourner)…")
+    if compose("pull", env_override={"IMMICH_VERSION": srv}).returncode:
+        log("✗ Échec du téléchargement : rien n'a été modifié.")
+        return 1
+    set_env_key("IMMICH_VERSION", srv)
+    compose("up", "-d", "--remove-orphans")
+    log("  attente du démarrage (healthcheck)…")
+    if wait_healthy(env):
+        log(f"✓ Worker en {srv} et opérationnel.")
+        subprocess.run(["docker", "image", "prune", "-f", "--filter", "label=org.opencontainers.image.source=https://github.com/immich-app/immich"],
+                       capture_output=True)
+        return 0
+    log(f"✗ Le worker ne démarre pas correctement en {srv} : retour à {old}.")
+    if old:
+        set_env_key("IMMICH_VERSION", old)
+        compose("up", "-d", "--remove-orphans")
+        log("  rollback effectué." if wait_healthy(env) else "  ⚠ rollback lancé mais pas encore sain : voir `immich-worker logs`.")
+    return 1
+
+
+def cmd_check_update(env, _args):
+    srv, latest = server_version(env), latest_release()
+    log(f"serveur={srv or '?'} derniere={latest or '?'} worker={env.get('IMMICH_VERSION', '?')}")
+    if srv and latest and parse(latest) > parse(srv):
+        major = parse(latest)[0] != parse(srv)[0]
+        log(f"Mise à jour disponible : {srv} → {latest}" + ("  ⚠ VERSION MAJEURE (lire les notes de version)" if major else ""))
+        return 10
+    return 0
+
+
+def nas(env, script: str, check=True) -> subprocess.CompletedProcess:
+    host = env.get("IMMICH_NAS_SSH", "nas")
+    r = subprocess.run(["ssh", "-o", "BatchMode=yes", host, script], text=True)
+    if check and r.returncode:
+        raise RuntimeError(f"commande NAS en échec ({r.returncode})")
+    return r
+
+
+def cmd_upgrade_nas(env, args):
+    target = next((a for a in args if a.startswith("v")), None) or latest_release()
+    srv = server_version(env)
+    if not target or not srv:
+        log("✗ Impossible de déterminer la version serveur ou la cible.")
+        return 1
+    if parse(target) <= parse(srv):
+        log(f"✓ Le NAS est déjà en {srv} (cible {target}). Alignement du worker seulement.")
+        return cmd_align(env, [])
+    log(f"Mise à jour Immich du NAS : {srv} → {target}")
+    log(f"Notes de version : https://github.com/immich-app/immich/releases/tag/{target}")
+    if parse(target)[0] != parse(srv)[0]:
+        log("⚠ Changement de version MAJEURE : lis les notes (breaking changes) avant de continuer.")
+    if "--yes" not in args:
+        if not sys.stdin.isatty() or input("Continuer ? [o/N] ").strip().lower() not in ("o", "oui", "y"):
+            log("Annulé.")
+            return 1
+    d = env.get("IMMICH_NAS_DIR", "/mnt/Uqbar/docker/immich")
+    stamp = time.strftime("%Y%m%d-%H%M")
+    try:
+        log("▶ 1/4 Sauvegarde de la base sur le NAS…")
+        nas(env, f"cd {d} && sudo docker exec immich-db sh -c 'pg_dumpall --clean --if-exists -U \"$POSTGRES_USER\"' "
+                 f"| gzip > db-backup-pre-{target}-{stamp}.sql.gz && ls -lh db-backup-pre-{target}-{stamp}.sql.gz")
+        log("▶ 2/4 Téléchargement des nouvelles images sur le NAS…")
+        nas(env, f"cd {d} && sudo env IMMICH_VERSION={target} docker compose pull immich-server")
+        log("▶ 3/4 Bascule du NAS…")
+        nas(env, f"cd {d} && sudo cp .env .env.bak-{stamp} && sudo sed -i 's/^\\s*IMMICH_VERSION=.*/IMMICH_VERSION={target}/' .env "
+                 f"&& sudo docker compose up -d")
+    except RuntimeError as e:
+        log(f"✗ {e} — le NAS n'a pas été basculé si l'étape 3 n'a pas commencé.")
+        return 1
+    log("  attente du serveur (migrations de base possibles)…")
+    for _ in range(90):
+        if server_version(env) == target:
+            break
+        time.sleep(10)
+    else:
+        log(f"✗ Le serveur ne répond pas en {target} après 15 min.")
+        log(f"  Retour arrière : ssh {env.get('IMMICH_NAS_SSH', 'nas')} 'cd {d} && sudo cp .env.bak-{stamp} .env && sudo docker compose up -d'")
+        log(f"  (la sauvegarde DB est db-backup-pre-{target}-{stamp}.sql.gz)")
+        return 1
+    log(f"✓ NAS en {target}.")
+    log("▶ 4/4 Alignement de ce worker…")
+    return cmd_align(load_env(), [])
+
+
+def cmd_service(env, args, action):
+    if action == "start":
+        return compose("up", "-d").returncode
+    if action == "stop":
+        return compose("stop").returncode
+    if action == "restart":
+        return compose("restart").returncode
+    name = MS if args and args[0] == "ms" else ML if args and args[0] == "ml" else None
+    return subprocess.run(["docker", "logs", "-f", "--tail=100", name] if name
+                          else ["docker", "compose", "--project-directory", str(STACK), "logs", "-f", "--tail=50"]).returncode
+
+
+def main():
+    args = sys.argv[1:]
+    if not args or args[0] in ("-h", "--help"):
+        print(__doc__)
+        return 0
+    env = load_env()
+    if not env:
+        log(f"✗ {ENV_FILE} absent : lance `dotctl apply immich-worker`.")
+        return 1
+    cmd, rest = args[0], args[1:]
+    table = {"status": cmd_status, "align": cmd_align, "check-update": cmd_check_update,
+             "upgrade-nas": cmd_upgrade_nas}
+    if cmd in table:
+        return table[cmd](env, rest)
+    if cmd in ("start", "stop", "restart", "logs"):
+        return cmd_service(env, rest, cmd)
+    print(__doc__)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

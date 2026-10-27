@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=/opt/metashape-pro/monitor.sh
+Icon=/opt/metashape-pro/monitor.png
+Name=Agisoft Network Monitor
+Comment=Manage Metashape cluster
+Categories=Science;
+StartupWMClass=Monitor

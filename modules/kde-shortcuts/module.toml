@@ -1,0 +1,3 @@
+name = "Raccourcis clavier KDE personnalisés"
+category = "kde"
+description = "Raccourcis globaux : Meta+C bascule le cube, Meta+A / Meta+Maj+A parcourent les activités, Ctrl+Alt+T n'ouvre plus Konsole."

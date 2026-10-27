@@ -1,0 +1,4 @@
+#!/bin/sh
+# Claude uses subscription login; Poe credentials belong to OpenCode only.
+unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL ANTHROPIC_CUSTOM_HEADERS POE_API_KEY
+exec /usr/bin/paseo "$@"

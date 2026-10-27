@@ -1,0 +1,48 @@
+name = "Économiseur d'écran rétro (XScreenSaver)"
+category = "retro"
+description = "Économiseur animé XScreenSaver (pipes, matrix, flurry…) avec menu clic droit du bureau et protection automatique pendant les jeux, films, musique et applis en plein écran."
+
+[packages]
+pacman = ["xscreensaver", "gamemode", "python-dbus", "python-gobject", "gcc", "pkgconf", "qt6-base", "libplasma"]
+
+[[files]]
+src = "files/xscreensaver"
+dst = "~/.xscreensaver"
+template = true
+
+[[files]]
+src = "files/preferences.conf"
+dst = "~/.config/retro-saver/preferences.conf"
+
+[[files]]
+src = "files/guard.py"
+dst = "~/.local/share/retro-saver/guard.py"
+
+[[files]]
+src = "files/kwin-guard/metadata.json"
+dst = "~/.local/share/kwin/scripts/local-retro-guard/metadata.json"
+
+[[files]]
+src = "files/kwin-guard/contents/code/main.js"
+dst = "~/.local/share/kwin/scripts/local-retro-guard/contents/code/main.js"
+
+[[files]]
+src = "files/systemd/retro-screensaver.service"
+dst = "~/.config/systemd/user/retro-screensaver.service"
+
+[[files]]
+src = "files/systemd/retro-saver-guard.service"
+dst = "~/.config/systemd/user/retro-saver-guard.service"
+
+[[files]]
+src = "files/retro-menu.conf"
+dst = "~/.config/systemd/user/plasma-plasmashell.service.d/retro-menu.conf"
+template = true
+
+[[files]]
+src = "files/retro-saver-settings.desktop"
+dst = "~/.local/share/applications/retro-saver-settings.desktop"
+
+[[files]]
+src = "files/retro-screensaver.desktop"
+dst = "~/.config/autostart/retro-screensaver.desktop"

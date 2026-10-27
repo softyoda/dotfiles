@@ -1,0 +1,2 @@
+# Helios Laser DAC (VID 1209, PID e500)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="e500", MODE="0664", GROUP="users", TAG+="uaccess"

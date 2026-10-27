@@ -1,0 +1,18 @@
+name = "Ctrl+Maj+Échap = Mission Center"
+category = "kde"
+description = "Le raccourci Ctrl+Maj+Échap ouvre Mission Center (moniteur système), comme le gestionnaire de tâches de Windows."
+
+[packages]
+flatpak = ["io.missioncenter.MissionCenter"]
+
+[[files]]
+src = "files/kwin-script/metadata.json"
+dst = "~/.local/share/kwin/scripts/launch-mission-center/metadata.json"
+
+[[files]]
+src = "files/kwin-script/contents/code/main.js"
+dst = "~/.local/share/kwin/scripts/launch-mission-center/contents/code/main.js"
+
+[[files]]
+src = "files/mission-center.service"
+dst = "~/.config/systemd/user/mission-center.service"

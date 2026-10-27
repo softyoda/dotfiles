@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Ré-applique spicetify après une update de Spotify (Flatpak).
+# Déclenché par spicetify-reapply.path (systemd user) ou manuellement.
+
+set -u
+
+SPICETIFY="${HOME}/.spicetify/spicetify"
+if [[ ! -x "$SPICETIFY" ]]; then
+  SPICETIFY="$(command -v spicetify || true)"
+fi
+[[ -z "${SPICETIFY:-}" || ! -x "$SPICETIFY" ]] && { echo "spicetify introuvable"; exit 0; }
+
+SPOTIFY_PATH="${SPOTIFY_PATH:-${HOME}/.local/share/flatpak/app/com.spotify.Client/current/active/files/extra/share/spotify}"
+APPS_DIR="$SPOTIFY_PATH/Apps"
+
+# Déjà patché (spicetify a extrait Apps/*.spa en dossiers) : rien à faire.
+# Évite l'échec "Spotify cannot be backed up at this state" si le hook est
+# déclenché alors que le deployment est déjà patché.
+if [[ -d "$APPS_DIR/xpui" ]] && ! ls "$APPS_DIR"/*.spa >/dev/null 2>&1; then
+  echo "Spotify déjà patché, rien à faire"
+  exit 0
+fi
+
+# Si Spotify tourne, on le ferme (sinon spicetify refuse de patcher).
+if pgrep -x spotify >/dev/null 2>&1; then
+  flatpak kill com.spotify.Client 2>/dev/null || pkill -x spotify || true
+  sleep 1
+fi
+
+# Petit délai pour laisser flatpak finir d'écrire le nouveau deployment.
+sleep 2
+
+"$SPICETIFY" backup apply

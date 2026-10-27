@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-touchdesigner-toe">
+    <comment>TouchDesigner project file</comment>
+    <glob pattern="*.toe" priority="100"/>
+    <icon name="TouchDesigner-toe"/>
+  </mime-type>
+  <mime-type type="application/x-touchdesigner-tox">
+    <comment>TouchDesigner component file</comment>
+    <glob pattern="*.tox" priority="100"/>
+    <icon name="TouchDesigner-tox"/>
+  </mime-type>
+</mime-info>

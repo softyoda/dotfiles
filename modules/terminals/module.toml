@@ -1,0 +1,14 @@
+name = "Terminaux (WezTerm + Konsole)"
+category = "base"
+description = "WezTerm (thème Tokyo Night, JetBrains Mono, clic droit = coller) et profil Konsole (copie à la sélection, historique de 100 000 lignes)."
+
+[packages]
+pacman = ["wezterm", "konsole", "ttf-jetbrains-mono"]
+
+[[files]]
+src = "files/wezterm.lua"
+dst = "~/.config/wezterm/wezterm.lua"
+
+[[files]]
+src = "files/konsole-Default.profile"
+dst = "~/.local/share/konsole/Default.profile"

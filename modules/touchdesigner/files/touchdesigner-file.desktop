@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TouchDesigner
+Exec=${HOME}/.local/bin/launch-touchdesigner.sh %u
+MimeType=application/x-touchdesigner-toe;application/x-touchdesigner-tox;
+NoDisplay=true
+Icon=TouchDesigner
+StartupNotify=true
+Categories=Graphics;

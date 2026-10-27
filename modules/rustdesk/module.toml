@@ -1,0 +1,7 @@
+name = "RustDesk (accès à distance)"
+category = "apps"
+description = "Bureau à distance RustDesk en service système : accessible sans session ouverte, avec mot de passe permanent."
+manual = true
+
+[packages]
+aur = ["rustdesk-bin"]

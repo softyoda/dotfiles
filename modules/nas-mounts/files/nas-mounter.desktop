@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Partages NAS
+Name[fr]=Partages NAS
+Comment=Monter / démonter les partages TrueNAS (SMB & NFS)
+Comment[fr]=Monter / démonter les partages TrueNAS (SMB & NFS)
+Exec=${HOME}/.local/bin/nas-mounter
+Icon=drive-network
+Terminal=false
+Categories=System;Utility;
+Keywords=nas;smb;nfs;truenas;mount;montage;qbittorrent;

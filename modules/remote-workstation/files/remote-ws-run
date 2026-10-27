@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Lance un .sh ou un .desktop situé dans un montage sshfs (~/Mounts/<machine>)
+# directement SUR la machine distante, via ssh.
+# Usage : remote-ws-run term|bg FICHIER
+set -uo pipefail
+MODE="${1:-term}"   # term | bg
+LOCAL_PATH="$(realpath -s -- "${2:?fichier manquant}")"
+CONF_DIR="$HOME/.config/remote-workstations"
+
+# Trouve la machine dont le point de montage contient le fichier
+found=""
+for conf in "$CONF_DIR"/*.conf; do
+    [ -f "$conf" ] || continue
+    unset HOST REMOTE REMOTE_PATH MOUNT KEY
+    # shellcheck disable=SC1090
+    . "$conf"
+    case "$LOCAL_PATH" in "$MOUNT"/*) found="$conf"; break ;; esac
+done
+if [ -z "$found" ]; then
+    notify-send "remote-ws-run" "$LOCAL_PATH n’est dans aucun montage de machine distante" 2>/dev/null
+    exit 1
+fi
+NAME="$(basename "$found" .conf)"
+
+# Traduction chemin local → chemin distant
+REMOTE_FILE="${REMOTE_PATH}${LOCAL_PATH#"$MOUNT"}"
+
+if [[ "$LOCAL_PATH" == *.desktop ]]; then
+    # Commande Exec= du .desktop (sans les %f, %U…)
+    CMD=$(grep -m1 '^Exec=' "$LOCAL_PATH" | sed -e 's/^Exec=//' -e 's/ %[a-zA-Z]//g')
+else
+    CMD="bash $(printf '%q' "$REMOTE_FILE")"
+fi
+
+SSH=(ssh -i "$KEY" -o IdentitiesOnly=yes)
+if [ "$MODE" = term ]; then
+    konsole --hold -e "${SSH[@]}" -t "$REMOTE" "$CMD"
+else
+    notify-send "$NAME" "Lancement en arrière-plan : $CMD" 2>/dev/null || true
+    "${SSH[@]}" "$REMOTE" "$CMD" &
+fi

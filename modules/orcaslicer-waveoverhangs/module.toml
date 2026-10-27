@@ -1,0 +1,8 @@
+name = "OrcaSlicer WaveOverhangs"
+category = "creative"
+description = "Fork d'OrcaSlicer avec surplombs en vagues (impression de surplombs à 90° sans support), en AppImage téléchargé et lancé sur le GPU dédié."
+
+[[files]]
+src = "files/orcaslicer-waveoverhangs.desktop"
+dst = "~/.local/share/applications/orcaslicer-waveoverhangs.desktop"
+template = true

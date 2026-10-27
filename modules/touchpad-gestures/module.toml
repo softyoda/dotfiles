@@ -1,0 +1,11 @@
+name = "Gestes du pavé tactile"
+category = "kde"
+description = "Gestes multi-doigts façon macOS/Windows : 3 doigts pour précédent/suivant, vue d'ensemble et grille ; 4 doigts pour minimiser/agrandir et changer de bureau."
+
+[packages]
+pacman = ["xdotool"]
+aur = ["libinput-gestures"]
+
+[[files]]
+src = "files/libinput-gestures.conf"
+dst = "~/.config/libinput-gestures.conf"

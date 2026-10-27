@@ -1,0 +1,13 @@
+name = "OpenCode (Poe)"
+category = "ai"
+description = "Installe OpenCode, réservé aux modèles Poe, avec la config partagée du NAS (liens) ou une copie autonome sans NAS."
+manual = true   # connexion : `opencode auth login` → Poe
+# Variables optionnelles (profil [vars]) :
+#   OPENCODE_SHARED_CONFIG  dossier partagé (ex. /mnt/nas/03_Shared/Config/Opencode) → liens symboliques
+#                           (nécessite le module nas-mounts) ; absent → copie autonome du module
+#   LLM_SERVER_URL          URL OpenAI-compatible du LLM local (copie autonome uniquement)
+# Secret optionnel : POE_API_KEY dans ~/.config/fish/secrets.fish (voir README).
+
+[[files]]
+src = "files/opencode-path.fish"
+dst = "~/.config/fish/conf.d/opencode.fish"

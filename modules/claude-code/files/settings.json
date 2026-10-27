@@ -1,0 +1,40 @@
+{
+  "env": {
+    "SUDO_ASKPASS": "/usr/bin/ksshaskpass"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(sudo *)",
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Bash(pkexec:*)",
+      "Bash(kwriteconfig6:*)",
+      "Bash(kbuildsycoca6:*)",
+      "Bash(sudo -n /usr/local/bin/hdmi-redetect)"
+    ]
+  },
+  "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); cmd=$(printf '%s' \"$input\" | jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -qE '^gh (auth|repo|pr|issue|workflow|run|release)'; then cat; else echo '{\"error\": \"Commande gh non autorisée\"}' >&2; exit 1; fi",
+            "if": "Bash(gh *)",
+            "statusMessage": "Vérification commande GitHub..."
+          }
+        ]
+      }
+    ]
+  },
+  "language": "français",
+  "effortLevel": "medium",
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark",
+  "editorMode": "normal",
+  "verbose": false
+}

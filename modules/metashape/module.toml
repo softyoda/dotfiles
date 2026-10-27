@@ -1,0 +1,26 @@
+name = "Agisoft Metashape Pro"
+category = "creative"
+description = "Photogrammétrie Agisoft Metashape Professional 2.1.3 dans /opt/metashape-pro, lanceurs (Metashape, Viewer, Network Monitor) et commande fish « metashape »."
+manual = true
+
+[[files]]
+src = "files/metashape.fish"
+dst = "~/.config/fish/functions/metashape.fish"
+
+[[files]]
+src = "files/agisoft-metashape-pro.desktop"
+dst = "/usr/share/applications/agisoft-metashape-pro.desktop"
+root = true
+mode = "644"
+
+[[files]]
+src = "files/agisoft-viewer.desktop"
+dst = "/usr/share/applications/agisoft-viewer.desktop"
+root = true
+mode = "644"
+
+[[files]]
+src = "files/agisoft-monitor.desktop"
+dst = "/usr/share/applications/agisoft-monitor.desktop"
+root = true
+mode = "644"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Régénère le catalogue des modules dans README.md
+DOTFILES="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+python3 - "$DOTFILES/README.md" "$("$DOTFILES/bin/dotctl" list --md)" <<'PY'
+import re, sys
+p, block = sys.argv[1], sys.argv[2]
+s = open(p).read()
+s = re.sub(r"<!-- modules -->.*<!-- /modules -->", lambda _: f"<!-- modules -->\n{block}\n\n✋ = étapes manuelles (voir le README du module)\n<!-- /modules -->", s, flags=re.S)
+open(p, "w").write(s)
+PY

@@ -1,0 +1,6 @@
+name = "Docker + GPU NVIDIA"
+category = "base"
+description = "Docker avec accès au GPU NVIDIA dans les conteneurs (nvidia-container-toolkit), utilisateur dans le groupe docker."
+
+[packages]
+pacman = ["docker", "docker-compose", "nvidia-container-toolkit"]

@@ -1,0 +1,4 @@
+name = "Snap Assist (KWin)"
+category = "kde"
+description = "Quand on colle une fenêtre sur un bord, propose les autres fenêtres pour remplir le reste (comme Windows)."
+notes = "Basé sur RoccoRakete/plasma-snap-assist (GPL-2.0+)."

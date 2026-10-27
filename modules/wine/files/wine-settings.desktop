@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Wine — Réglages
+Comment=Configurer Wine et la taille des textes des applications Windows
+Exec=/usr/bin/env WINEPREFIX=${HOME}/.wine /usr/bin/winecfg
+Icon=wine
+Terminal=false
+Categories=Settings;
+Keywords=Wine;Windows;DPI;Affichage;Configuration;
+StartupNotify=true

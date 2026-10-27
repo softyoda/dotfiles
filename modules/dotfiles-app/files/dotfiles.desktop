@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Dotfiles
+Comment=Installer ou mettre à jour mes modules (config, applis, fonctionnalités)
+Exec=${HOME}/.local/bin/dotctl gui
+Icon=preferences-system
+Categories=Settings;System;
+Terminal=false

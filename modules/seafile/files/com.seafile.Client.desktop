@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories=Network;FileTransfer;
+Comment=Seafile desktop sync client
+Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=seafile-applet com.seafile.Client
+Icon=com.seafile.Client
+Name=Seafile
+Type=Application
+X-Flatpak=com.seafile.Client
+X-Flatpak-RenamedFrom=com.seafile.seafile-applet.desktop;

@@ -1,0 +1,10 @@
+name = "Vesktop (Discord)"
+category = "apps"
+description = "Client Discord Vesktop (Vencord intégré), démarré réduit dans la barre système, hors VPN Mullvad, gestionnaire des liens discord://."
+
+[packages]
+aur = ["vesktop"]
+
+[[files]]
+src = "files/settings.json"
+dst = "~/.config/vesktop/settings.json"

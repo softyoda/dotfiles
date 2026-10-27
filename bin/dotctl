@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Lanceur : fonctionne depuis le repo ou via un lien dans ~/.local/bin
+DOTFILES="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec env PYTHONPATH="$DOTFILES${PYTHONPATH:+:$PYTHONPATH}" python3 -m dotctl "$@"

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Flatpak Installer
+Exec=${HOME}/.local/bin/flatpakref-install %f
+MimeType=application/vnd.flatpak.ref;
+Type=Application
+NoDisplay=true

@@ -1,0 +1,4 @@
+name = "Connexion automatique"
+category = "base"
+description = "Ouvre automatiquement la session de l'utilisateur au démarrage (Plasma Login Manager)."
+manual = true

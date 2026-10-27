@@ -1,0 +1,13 @@
+name = "Installeur de fichiers .flatpakref"
+category = "apps"
+description = "Un double-clic sur un fichier .flatpakref lance l'installation Flatpak correspondante."
+
+[[files]]
+src = "files/flatpakref-handler.desktop"
+dst = "~/.local/share/applications/flatpakref-handler.desktop"
+template = true
+
+[[files]]
+src = "files/flatpakref-install"
+dst = "~/.local/bin/flatpakref-install"
+mode = "755"

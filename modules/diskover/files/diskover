@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+compose=(docker compose -f ${HOME}/.local/opt/diskover-community/compose.yaml)
+case "${1:-open}" in
+  open)
+    "${compose[@]}" up -d
+    exec xdg-open http://localhost:8000
+    ;;
+  start) exec "${compose[@]}" up -d ;;
+  stop) exec "${compose[@]}" stop ;;
+  status) exec "${compose[@]}" ps ;;
+  logs) exec "${compose[@]}" logs --tail=100 ;;
+  rescan)
+    for source in ${DISKOVER_PATHS}; do
+      timeout 15 stat "$source/." >/dev/null || exit 1
+      if ! mountpoint -q "$source"; then echo "Volume non monté : $source"; exit 1; fi
+    done
+    "${compose[@]}" up -d
+    if [ "${2:-}" = '--weekly' ]; then
+      exec "${compose[@]}" exec -T -u abc diskover bash -c 'exec bash /config/scan-volumes.sh --weekly >>/config/scan-logs/all.status.log 2>&1'
+    fi
+    "${compose[@]}" exec -T -d -u abc diskover bash -c 'exec bash /config/scan-volumes.sh >>/config/scan-logs/all.status.log 2>&1'
+    echo 'Scan commun lancé. Progression : diskover scan-status'
+    ;;
+  scan-status)
+    exec "${compose[@]}" exec -T diskover sh -c 'tail -n 8 /config/scan-logs/all.status.log; tail -n 8 /config/scan-logs/tout.log'
+    ;;
+  scan)
+    if [ "$#" -ne 3 ]; then echo 'Usage: diskover scan ${HOME}/dossier diskover-nom'; exit 2; fi
+    target=$(realpath -e -- "$2")
+    case "$target" in
+      ${HOME}) target=/data ;;
+      ${HOME}/*) target="/data/${target#${HOME}/}" ;;
+      *) echo 'Le dossier doit être dans ${HOME}.'; exit 2 ;;
+    esac
+    case "$3" in diskover-*) ;; *) echo 'Le nom de l’index doit commencer par diskover-.'; exit 2 ;; esac
+    "${compose[@]}" up -d
+    exec "${compose[@]}" exec -T -u abc diskover python3 /app/diskover/diskover.py -i "$3" "$target"
+    ;;
+  *) echo 'Usage: diskover [open|start|stop|status|logs|rescan|scan-status|scan DOSSIER diskover-NOM]'; exit 2 ;;
+esac

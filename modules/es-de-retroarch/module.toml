@@ -1,0 +1,43 @@
+name = "ES-DE + RetroArch (salon rétro)"
+category = "retro"
+description = "Frontend ES-DE (thème Aura) branché sur RetroArch : systèmes personnalisés, collections multijoueur, manette Xbox, menu RetroArch épuré. Sans cœurs, BIOS ni ROMs."
+vars = ["ROMS_DIR", "NAS_ROMS_DIR"]
+secrets = ["SCREENSCRAPER_USER", "SCREENSCRAPER_PASSWORD"]
+manual = true
+
+[packages]
+pacman = ["retroarch", "retroarch-assets-xmb", "retroarch-assets-ozone", "retroarch-assets-glui", "libretro-overlays", "libretro-shaders-slang", "git", "curl", "fuse2"]
+
+[[files]]
+src = "files/custom_systems/es_systems.xml"
+dst = "~/ES-DE/custom_systems/es_systems.xml"
+template = true
+
+[[files]]
+src = "files/settings/es_settings.xml"
+dst = "~/ES-DE/settings/es_settings.xml"
+template = true
+
+[[files]]
+src = "files/settings/retroarch-session.cfg"
+dst = "~/ES-DE/settings/retroarch-session.cfg"
+template = true
+
+[[files]]
+src = "files/settings/Microsoft_Xbox_Series_xone.cfg"
+dst = "~/ES-DE/settings/retroarch-autoconfig/udev/Microsoft_Xbox_Series_xone.cfg"
+
+[[files]]
+src = "files/collections/custom-2-3 players.cfg"
+dst = "~/ES-DE/collections/custom-2-3 players.cfg"
+template = true
+
+[[files]]
+src = "files/collections/custom-4 players.cfg"
+dst = "~/ES-DE/collections/custom-4 players.cfg"
+template = true
+
+[[files]]
+src = "files/collections/custom-5+ players.cfg"
+dst = "~/ES-DE/collections/custom-5+ players.cfg"
+template = true

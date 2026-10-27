@@ -1,0 +1,39 @@
+name = "TouchDesigner (Wine)"
+category = "creative"
+description = "TouchDesigner Windows lancé sous Wine : lanceur Wayland/XWayland qui injecte automatiquement les correctifs d'interface dans les projets .toe, associations de fichiers .toe/.tox et icônes."
+manual = true
+
+[[files]]
+src = "files/launch-touchdesigner.sh"
+dst = "~/.local/bin/launch-touchdesigner.sh"
+mode = "755"
+
+[[files]]
+src = "files/wine_ui_fixes.tox"
+dst = "~/.local/share/touchdesigner-linux/wine_ui_fixes.tox"
+
+[[files]]
+src = "files/TouchDesigner.svg"
+dst = "~/.local/share/touchdesigner-linux/TouchDesigner.svg"
+
+[[files]]
+src = "files/toe.svg"
+dst = "~/.local/share/icons/hicolor/scalable/mimetypes/TouchDesigner-toe.svg"
+
+[[files]]
+src = "files/tox.svg"
+dst = "~/.local/share/icons/hicolor/scalable/mimetypes/TouchDesigner-tox.svg"
+
+[[files]]
+src = "files/touchdesigner.xml"
+dst = "~/.local/share/mime/packages/touchdesigner.xml"
+
+[[files]]
+src = "files/touchdesigner.desktop"
+dst = "~/.local/share/applications/touchdesigner.desktop"
+template = true
+
+[[files]]
+src = "files/touchdesigner-file.desktop"
+dst = "~/.local/share/applications/touchdesigner-file.desktop"
+template = true

@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=/opt/metashape-pro/metashape.sh
+Icon=/opt/metashape-pro/metashape.png
+Name=Agisoft Metashape Professional
+Comment=Surface reconstruction from photos
+Categories=Science;
+StartupWMClass=Metashape Pro

@@ -1,0 +1,26 @@
+name = "Machines distantes (SSHFS)"
+category = "homelab"
+description = "Monte le dossier personnel d’une ou plusieurs machines du réseau (ex. flystation) dans ~/Mounts, avec un raccourci Dolphin et « Exécuter sur la machine distante » au clic droit."
+vars = ["REMOTE_WORKSTATIONS", "REMOTE_WS_KEY"]
+# REMOTE_WORKSTATIONS = "nom=user@hôte[:/chemin] …"   ex. "flystation=yoann@flystation.local"
+# REMOTE_WS_KEY       = "~/.ssh/flystation"           (générée si absente)
+# Optionnel : REMOTE_WS_WHISPER = "nom:/chemin/distant/watchfolder.sh" (lanceur Whisper)
+manual = true   # ssh-copy-id vers chaque machine (une fois)
+
+[packages]
+pacman = ["sshfs", "openssh", "nss-mdns", "konsole"]
+
+[[files]]
+src = "files/remote-ws-mount@.service"
+dst = "~/.config/systemd/user/remote-ws-mount@.service"
+
+[[files]]
+src = "files/remote-ws-run"
+dst = "~/.local/bin/remote-ws-run"
+mode = "755"
+
+[[files]]
+src = "files/remote-ws-run.desktop"
+dst = "~/.local/share/kio/servicemenus/remote-ws-run.desktop"
+mode = "755"
+template = true

@@ -1,0 +1,27 @@
+name = "Paseo"
+category = "ai"
+description = "Une seule interface (bureau + mobile) pour piloter les agents Claude Code, Codex et OpenCode, chacun avec son abonnement."
+requires = ["claude-code", "codex", "opencode-poe"]
+manual = true   # appairage de l’appli mobile, connexions des 3 agents
+
+[packages]
+aur = ["paseo-bin"]
+
+[[files]]
+src = "files/paseo-wrapper"
+dst = "~/.local/bin/paseo"
+mode = "755"
+
+[[files]]
+src = "files/paseo.desktop"
+dst = "~/.local/share/applications/paseo.desktop"
+template = true
+
+[[files]]
+src = "files/config.json"
+dst = "~/.paseo/config.json"
+mode = "600"
+
+[[files]]
+src = "files/desktop-settings.json"
+dst = "~/.config/Paseo/desktop-settings.json"

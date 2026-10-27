@@ -1,0 +1,96 @@
+diff --git a/custom-collections/theme.xml b/custom-collections/theme.xml
+index ec8ca97..f1ef3d7 100644
+--- a/custom-collections/theme.xml
++++ b/custom-collections/theme.xml
+@@ -1,3 +1,10 @@
+ <theme>
+-    <include>./../theme.xml</include>
++ <include>./../theme.xml</include>
++ <view name="system">
++  <carousel name="system-carousel"><staticImage>./multijoueur-card.png</staticImage><text>Multijoueur</text></carousel>
++ </view>
++ <view name="gamelist">
++  <image name="system-logo-main"><path>./multijoueur-logo.png</path></image>
++  <image name="system-logo-shadow"><path>./multijoueur-logo.png</path></image>
++ </view>
+ </theme>
+\ No newline at end of file
+diff --git a/gamelist-basic-grid.xml b/gamelist-basic-grid.xml
+index 684f4e5..a088e06 100644
+--- a/gamelist-basic-grid.xml
++++ b/gamelist-basic-grid.xml
+@@ -51,8 +51,9 @@
+          </grid>
+ 
+          <video name="game-video">
+-            <delay>3.5</delay>
+-            <fadeInTime>0.5</fadeInTime>
++            <delay>3</delay>
++            <fadeInTime>0.8</fadeInTime>
++            <audio>true</audio>
+          </video>
+          <badges name="badges">
+             <origin>0 0.5</origin>
+diff --git a/gamelist-carousel-boxart.xml b/gamelist-carousel-boxart.xml
+index d344da7..99204c9 100644
+--- a/gamelist-carousel-boxart.xml
++++ b/gamelist-carousel-boxart.xml
+@@ -96,11 +96,12 @@
+          <video name="game-video">
+             <origin>0.5 1</origin>
+                <pos>0.5 1</pos>
+-            <delay>5</delay>
+-            <fadeInTime>0.25</fadeInTime>
++            <delay>3</delay>
++            <fadeInTime>0.8</fadeInTime>
+             <brightness>-0.25</brightness>
+                <zIndex>7</zIndex>
+                <cropSize>1 1</cropSize>
++            <audio>true</audio>
+          </video> 
+ 
+          <text name="bullet1,bullet2,bullet1-shadow,bullet2-shadow">
+diff --git a/gamelist-detailed-grid.xml b/gamelist-detailed-grid.xml
+index d501d25..d41f55b 100644
+--- a/gamelist-detailed-grid.xml
++++ b/gamelist-detailed-grid.xml
+@@ -88,13 +88,15 @@
+          <video name="game-media">
+             <maxSize>${imagemaxSize}</maxSize>
+             <origin>0.5 0.5</origin>
+-            <delay>5</delay>
++            <delay>3</delay>
+             <videoCornerRadius>0.005</videoCornerRadius>
+             <pillarboxes>false</pillarboxes>
+-            <iterationCount>1</iterationCount>
++            <iterationCount>0</iterationCount>
+             <onIterationsDone>image</onIterationsDone>
+             <imageType>${scaledimagetype}</imageType>
+             <imageCornerRadius>${scaledimageCornerRadius}</imageCornerRadius>
++            <fadeInTime>0.8</fadeInTime>
++            <audio>true</audio>
+          </video>
+ 
+          
+diff --git a/gamelist-textlist.xml b/gamelist-textlist.xml
+index ddf7b26..2d0ae79 100644
+--- a/gamelist-textlist.xml
++++ b/gamelist-textlist.xml
+@@ -20,13 +20,15 @@
+          <video name="game-media">
+             <maxSize>${imagemaxSize}</maxSize>
+             <origin>0.5 0.5</origin>
+-            <delay>5</delay>
++            <delay>3</delay>
+             <videoCornerRadius>0.005</videoCornerRadius>
+             <pillarboxes>false</pillarboxes>
+-            <iterationCount>1</iterationCount>
++            <iterationCount>0</iterationCount>
+             <onIterationsDone>image</onIterationsDone>
+             <imageType>${scaledimagetype}</imageType>
+             <imageCornerRadius>${scaledimageCornerRadius}</imageCornerRadius>
++            <fadeInTime>0.8</fadeInTime>
++            <audio>true</audio>
+          </video>      
+       <clock name="clock">
+             <pos>0.016 0.01</pos>

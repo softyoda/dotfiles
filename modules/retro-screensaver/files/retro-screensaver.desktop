@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=/usr/bin/xscreensaver --no-splash
+Hidden=true
+Name=Économiseur rétro
+OnlyShowIn=KDE;
+Type=Application

@@ -1,0 +1,10 @@
+name = "Cachy-Update : mode automatique"
+category = "base"
+description = "Ajoute le choix « A » à Cachy-Update : mise à jour complète (pacman, AUR, Flatpak, nettoyages) sans confirmations."
+
+[packages]
+pacman = ["cachy-update"]
+
+[[files]]
+src = "files/arch-update.conf"
+dst = "~/.config/arch-update/arch-update.conf"

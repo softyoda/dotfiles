@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# nas-mounter : GUI simple pour monter/démonter les partages du NAS (SMB & NFS)
+# KDE Plasma - utilise yad + pkexec. La liste des partages est lue dans le bloc
+# « dotfiles nas-mounts » de /etc/fstab (module dotfiles nas-mounts) : options,
+# identifiants et serveur viennent donc de fstab.
+set -uo pipefail
+
+FSTAB=/etc/fstab
+BEGIN_MARK='# >>> dotfiles nas-mounts'
+END_MARK='# <<< dotfiles nas-mounts'
+
+# Lignes « TYPE|SOURCE|POINT_DE_MONTAGE » du bloc géré
+read_shares() {
+  sed -n "/^${BEGIN_MARK}/,/^${END_MARK}/p" "$FSTAB" | grep -v '^#' |
+    while read -r src mnt fstype _; do
+      [ -n "$mnt" ] || continue
+      case "$fstype" in cifs) type=SMB ;; nfs*) type=NFS ;; *) type="$fstype" ;; esac
+      printf '%s|%s|%s\n' "$type" "$src" "$mnt"
+    done
+}
+
+mapfile -t SHARES < <(read_shares)
+if [ "${#SHARES[@]}" -eq 0 ]; then
+  yad --error --center --text="Aucun partage NAS dans $FSTAB.\nAppliquer le module dotfiles <b>nas-mounts</b>." --button="OK:0"
+  exit 1
+fi
+
+# Monté réellement (pas seulement le point d’automontage autofs)
+is_mounted() { findmnt -n -M "$1" -t cifs,smb3,nfs,nfs4 >/dev/null 2>&1; }
+
+# Construit les lignes du tableau yad
+build_rows() {
+  for entry in "${SHARES[@]}"; do
+    IFS='|' read -r type share mnt <<< "$entry"
+    if is_mounted "$mnt"; then
+      state="✅ Monté"
+    else
+      state="⛔ Démonté"
+    fi
+    printf '%s\n%s\n%s\n%s\n' "$type" "$share" "$mnt" "$state"
+  done
+}
+
+# L’entrée fstab fournit type, options et identifiants
+do_mount()  { IFS='|' read -r _ _ mnt <<< "$1"; pkexec mount "$mnt"; }
+do_umount() { IFS='|' read -r _ _ mnt <<< "$1"; pkexec umount "$mnt"; }
+
+# --- Boucle GUI -----------------------------------------------------------
+while true; do
+  SEL=$(build_rows | yad --list \
+    --title="Partages NAS" \
+    --width=760 --height=340 --center \
+    --window-icon="drive-network" \
+    --text="Sélectionne un partage puis clique <b>Monter</b> ou <b>Démonter</b>." \
+    --column="Type" --column="Partage" --column="Point de montage" --column="État" \
+    --print-column=3 \
+    --button="🔄 Rafraîchir!view-refresh:10" \
+    --button="⏏ Démonter!media-eject:2" \
+    --button="⬇ Monter!go-down:0" \
+    --button="Fermer!application-exit:1")
+  ret=$?
+  mnt_sel="${SEL%|}"   # yad ajoute un | final
+
+  case $ret in
+    10) continue ;;                      # Rafraîchir
+    1|252) exit 0 ;;                      # Fermer / croix
+  esac
+
+  [ -z "$mnt_sel" ] && {
+    yad --error --center --text="Aucun partage sélectionné." --button="OK:0"
+    continue
+  }
+
+  # Retrouve l'entrée complète correspondant au point de montage sélectionné
+  chosen=""
+  for entry in "${SHARES[@]}"; do
+    IFS='|' read -r type share mnt <<< "$entry"
+    if [ "$mnt" = "$mnt_sel" ]; then chosen="$entry"; break; fi
+  done
+  [ -z "$chosen" ] && continue
+
+  IFS='|' read -r type share mnt <<< "$chosen"
+
+  if [ $ret -eq 0 ]; then
+    if is_mounted "$mnt"; then
+      yad --info --center --text="<b>$share</b> est déjà monté sur\n$mnt" --button="OK:0"
+    else
+      if err=$(do_mount "$chosen" 2>&1); then
+        yad --info --center --text="✅ <b>$share</b> monté sur\n$mnt" --button="OK:0"
+      else
+        yad --error --center --width=500 --text="Échec du montage de <b>$share</b> :\n\n$err" --button="OK:0"
+      fi
+    fi
+  elif [ $ret -eq 2 ]; then
+    if is_mounted "$mnt"; then
+      if err=$(do_umount "$chosen" 2>&1); then
+        yad --info --center --text="⏏ <b>$share</b> démonté." --button="OK:0"
+      else
+        yad --error --center --width=500 --text="Échec du démontage :\n\n$err" --button="OK:0"
+      fi
+    else
+      yad --info --center --text="<b>$share</b> n'est pas monté." --button="OK:0"
+    fi
+  fi
+done

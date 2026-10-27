@@ -1,0 +1,8 @@
+name = "DNS chiffré (DNS over TLS)"
+category = "base"
+description = "Résolution DNS chiffrée via Cloudflare et Quad9 (systemd-resolved, DNS over TLS)."
+
+[[files]]
+src = "files/dot.conf"
+dst = "/etc/systemd/resolved.conf.d/dot.conf"
+root = true

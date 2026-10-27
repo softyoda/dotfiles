@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Re-détecter l'écran HDMI
+Comment=Force la re-détection de la TV quand elle reste sans signal
+Exec=sudo -n /usr/local/bin/hdmi-redetect
+Icon=video-display
+Categories=System;

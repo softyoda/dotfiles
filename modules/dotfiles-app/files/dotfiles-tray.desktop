@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Dotfiles (notification)
+Exec=${HOME}/.local/bin/dotctl tray
+Icon=preferences-system
+Terminal=false
+X-KDE-autostart-after=panel

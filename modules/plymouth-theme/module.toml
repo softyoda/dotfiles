@@ -1,0 +1,62 @@
+name = "Thème de démarrage (Plymouth)"
+category = "base"
+description = "Écran de démarrage « Cogwheel spinner » : roue crantée animée et barre de progression pendant le boot."
+manual = true
+
+[packages]
+pacman = ["plymouth"]
+
+[[files]]
+src = "files/cogwheel-spinner/BACKGROUND.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/BACKGROUND.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/BOX.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/BOX.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/BULLET.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/BULLET.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/cogwheel-spinner.plymouth"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/cogwheel-spinner.plymouth"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/cogwheel-spinner.script"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/cogwheel-spinner.script"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/ENTRY.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/ENTRY.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/LOCK.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/LOCK.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/LOGO_BOX.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/LOGO_BOX.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/PROGRESS_BAR.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/PROGRESS_BAR.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/PROGRESS_BOX.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/PROGRESS_BOX.PNG"
+root = true
+
+[[files]]
+src = "files/cogwheel-spinner/SPINNER.PNG"
+dst = "/usr/share/plymouth/themes/cogwheel-spinner/SPINNER.PNG"
+root = true

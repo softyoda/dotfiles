@@ -1,0 +1,21 @@
+name = "Manettes Xbox"
+category = "hardware"
+description = "Manettes Xbox en Bluetooth (xpadneo) et via le dongle sans fil Xbox (xone), avec un Bluetooth stable pour les manettes."
+
+[packages]
+pacman = ["xpadneo-dkms", "xone-dkms", "xone-dongle-firmware"]
+
+[[files]]
+src = "files/xpadneo.conf"
+dst = "/etc/modprobe.d/xpadneo.conf"
+root = true
+
+[[files]]
+src = "files/bluetooth.conf"
+dst = "/etc/modprobe.d/bluetooth.conf"
+root = true
+
+[[files]]
+src = "files/50-realtek-bt-no-autosuspend.rules"
+dst = "/etc/udev/rules.d/50-realtek-bt-no-autosuspend.rules"
+root = true

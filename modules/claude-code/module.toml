@@ -1,0 +1,16 @@
+name = "Claude Code (abonnement)"
+category = "ai"
+description = "Installe Claude Code (installeur natif officiel) avec ma config, l’agent gemini et un shell nettoyé des variables API pour utiliser l’abonnement."
+manual = true   # connexion : `claude` puis /login
+
+[[files]]
+src = "files/settings.json"
+dst = "~/.claude/settings.json"
+
+[[files]]
+src = "files/agents/gemini.md"
+dst = "~/.claude/agents/gemini.md"
+
+[[files]]
+src = "files/claude-subscription.fish"
+dst = "~/.config/fish/conf.d/claude-subscription.fish"

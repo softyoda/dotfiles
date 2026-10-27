@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Type=Application
+Terminal=false
+Exec=/opt/metashape-pro/viewer.sh
+Icon=/opt/metashape-pro/viewer.png
+Name=Agisoft Viewer
+Comment=View 3D data
+Categories=Science;
+StartupWMClass=Viewer

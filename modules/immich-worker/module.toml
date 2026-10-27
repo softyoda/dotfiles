@@ -1,0 +1,41 @@
+name = "Worker Immich (GPU)"
+category = "homelab"
+description = "Déporte les jobs lourds d'Immich (miniatures, transcodage, reconnaissance) du NAS vers le GPU de cette machine, avec mise à jour sûre NAS + worker."
+requires = ["docker-nvidia", "nas-mounts"]
+vars = ["IMMICH_URL", "IMMICH_NAS_HOST"]
+secrets = ["IMMICH_DB_USERNAME", "IMMICH_DB_PASSWORD"]
+# Optionnels : IMMICH_ML_ACCEL (cpu|cuda, défaut cuda), IMMICH_WORKER_IP (auto),
+# IMMICH_NAS_SSH (défaut nas), IMMICH_NAS_DIR, IMMICH_DB_NAME (défaut immich), IMMICH_API_KEY (affichage des jobs)
+
+[packages]
+pacman = ["python-pyqt6", "curl"]
+
+[[files]]
+src = "files/docker-compose.yml"
+dst = "/opt/docker/immich-worker/docker-compose.yml"
+root = true
+
+[[files]]
+src = "files/docker-compose.ml-cuda.yml"
+dst = "/opt/docker/immich-worker/docker-compose.ml-cuda.yml"
+root = true
+
+[[files]]
+src = "files/immich-worker.service"
+dst = "/etc/systemd/system/immich-worker.service"
+root = true
+
+[[files]]
+src = "files/immich-worker"
+dst = "~/.local/bin/immich-worker"
+mode = "755"
+
+[[files]]
+src = "files/immich-worker-tray"
+dst = "~/.local/bin/immich-worker-tray"
+mode = "755"
+
+[[files]]
+src = "files/immich-worker-tray.desktop"
+dst = "~/.config/autostart/immich-worker-tray.desktop"
+template = true

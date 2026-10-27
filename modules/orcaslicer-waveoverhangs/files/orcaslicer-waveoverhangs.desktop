@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OrcaSlicer WaveOverhangs
+Comment=OrcaSlicer avec surplombs en vagues
+Exec=${HOME}/Applications/OrcaSlicerWaveOverhangs.AppImage %F
+TryExec=${HOME}/Applications/OrcaSlicerWaveOverhangs.AppImage
+Icon=orcaslicer-waveoverhangs
+Type=Application
+PrefersNonDefaultGPU=true
+X-KDE-RunOnDiscreteGpu=true
+Categories=Utility;
+MimeType=model/stl;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;application/x-amf;

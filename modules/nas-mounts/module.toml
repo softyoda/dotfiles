@@ -1,0 +1,25 @@
+name = "Partages NAS (SMB/NFS)"
+category = "homelab"
+description = "Monte automatiquement les partages du NAS (SMB, et NFS Immich en option) au premier accès, avec une petite fenêtre pour monter/démonter."
+vars = ["NAS_HOST", "NAS_SMB_SHARES"]
+# Optionnels : NAS_IMMICH_MOUNTS = "yes" + NAS_IMMICH_EXPORTS = "export:montage[:ro] …" (voir README)
+secrets = ["NAS_SMB_USER", "NAS_SMB_PASSWORD"]
+
+[packages]
+pacman = ["cifs-utils", "nfs-utils", "yad"]
+
+[[files]]
+src = "files/smbcredentials"
+dst = "~/.smbcredentials-nas"
+mode = "600"
+template = true
+
+[[files]]
+src = "files/nas-mounter"
+dst = "~/.local/bin/nas-mounter"
+mode = "755"
+
+[[files]]
+src = "files/nas-mounter.desktop"
+dst = "~/.local/share/applications/nas-mounter.desktop"
+template = true

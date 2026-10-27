@@ -1,0 +1,28 @@
+name = "Mixxx « rgb » (build perso 2.5.6)"
+category = "creative"
+description = "Mixxx 2.5.6 recompilé avec des formes d'onde RGB façon Rekordbox (patch maison), installé dans ~/.local/opt, avec raccourcis clavier perso, alias Espace → lecture et lanceur XWayland."
+
+[packages]
+# Fournit les bibliothèques d'exécution ; le build perso vit à côté, dans ~/.local/opt/mixxx-rgb
+pacman = ["mixxx"]
+
+[[files]]
+src = "files/spacealias.cpp"
+dst = "~/.local/lib/mixxx-space-alias/spacealias.cpp"
+
+[[files]]
+src = "files/spacealias.json"
+dst = "~/.local/lib/mixxx-space-alias/spacealias.json"
+
+[[files]]
+src = "files/Custom.kbd.cfg"
+dst = "~/.mixxx/Custom.kbd.cfg"
+
+[[files]]
+src = "files/effects.xml"
+dst = "~/.mixxx/effects.xml"
+
+[[files]]
+src = "files/org.mixxx.Mixxx.desktop"
+dst = "~/.local/share/applications/org.mixxx.Mixxx.desktop"
+template = true

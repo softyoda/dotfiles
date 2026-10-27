@@ -1,0 +1,309 @@
+<?xml version='1.0' encoding='utf-8'?>
+<systemList>
+  <system>
+    <name>atari2600</name>
+    <fullname>Atari - 2600</fullname>
+    <path>${NAS_ROMS_DIR}/Atari - 2600</path>
+    <extension>.A26 .a26</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/stella_libretro.so %ROM%</command>
+    <platform>atari2600</platform>
+    <theme>atari2600</theme>
+  </system>
+  <system>
+    <name>atari5200</name>
+    <fullname>Atari - 5200</fullname>
+    <path>${NAS_ROMS_DIR}/Atari - 5200</path>
+    <extension>.A52 .BIN .a52 .bin</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/a5200_libretro.so %ROM%</command>
+    <platform>atari5200</platform>
+    <theme>atari5200</theme>
+  </system>
+  <system>
+    <name>atari7800</name>
+    <fullname>Atari - 7800</fullname>
+    <path>${ROMS_DIR}/Atari 7800</path>
+    <extension>.a78 .A78 .bin .BIN .cdf .CDF</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/prosystem_libretro.so %ROM%</command>
+    <platform>atari7800</platform>
+    <theme>atari7800</theme>
+  </system>
+  <system>
+    <name>atarijaguar</name>
+    <fullname>Atari - Jaguar</fullname>
+    <path>${ROMS_DIR}/Jaguar</path>
+    <extension>.j64 .J64 .jag .JAG .rom .ROM .abs .ABS .cof .COF .bin .BIN .prg .PRG .cue .CUE .cdi .CDI .chd .CHD</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/virtualjaguar_libretro.so %ROM%</command>
+    <platform>atarijaguar</platform>
+    <theme>atarijaguar</theme>
+  </system>
+  <system>
+    <name>pcengine</name>
+    <fullname>NEC - PC Engine</fullname>
+    <path>${NAS_ROMS_DIR}/NEC - TurboGrafx-16</path>
+    <extension>.PCE .pce</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mednafen_pce_fast_libretro.so %ROM%</command>
+    <platform>pcengine</platform>
+    <theme>pcengine</theme>
+  </system>
+  <system>
+    <name>nes</name>
+    <fullname>Nintendo - NES</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - NES</path>
+    <extension>.BIN .FDS .NES .bin .fds .nes</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mesen_libretro.so %ROM%</command>
+    <platform>nes</platform>
+    <theme>nes</theme>
+  </system>
+  <system>
+    <name>snes</name>
+    <fullname>Nintendo - Super Nintendo</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - SNES</path>
+    <extension>.SFC .SMC .sfc .smc</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/snes9x_libretro.so %ROM%</command>
+    <platform>snes</platform>
+    <theme>snes</theme>
+  </system>
+  <system>
+    <name>n64</name>
+    <fullname>Nintendo - Nintendo 64</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - N64</path>
+    <extension>.Z64 .z64</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mupen64plus_next_libretro.so %ROM%</command>
+    <platform>n64</platform>
+    <theme>n64</theme>
+  </system>
+  <system>
+    <name>gc</name>
+    <fullname>Nintendo - GameCube</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - GameCube</path>
+    <extension>.M3U .RVZ .m3u .rvz</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/dolphin_libretro.so %ROM%</command>
+    <platform>gc</platform>
+    <theme>gc</theme>
+  </system>
+  <system>
+    <name>wii</name>
+    <fullname>Nintendo - Wii</fullname>
+    <path>${ROMS_DIR}/Wii</path>
+    <extension>.elf .ELF .dol .DOL .gcm .GCM .iso .ISO .tgc .TGC .wbfs .WBFS .ciso .CISO .gcz .GCZ .wad .WAD .wia .WIA .rvz .RVZ .m3u .M3U</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/dolphin_libretro.so %ROM%</command>
+    <platform>wii</platform>
+    <theme>wii</theme>
+  </system>
+  <system>
+    <name>gb</name>
+    <fullname>Nintendo - Game Boy</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - Game Boy</path>
+    <extension>.GB .gb</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/gambatte_libretro.so %ROM%</command>
+    <platform>gb</platform>
+    <theme>gb</theme>
+  </system>
+  <system>
+    <name>gbc</name>
+    <fullname>Nintendo - Game Boy Color</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - Game Boy Color</path>
+    <extension>.GBC .gbc</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/gambatte_libretro.so %ROM%</command>
+    <platform>gbc</platform>
+    <theme>gbc</theme>
+  </system>
+  <system>
+    <name>gba</name>
+    <fullname>Nintendo - Game Boy Advance</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - Game Boy Advance</path>
+    <extension>.GBA .gba</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mgba_libretro.so %ROM%</command>
+    <platform>gba</platform>
+    <theme>gba</theme>
+  </system>
+  <system>
+    <name>nds</name>
+    <fullname>Nintendo - Nintendo DS</fullname>
+    <path>${NAS_ROMS_DIR}/Nintendo - DS</path>
+    <extension>.NDS .nds</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/melondsds_libretro.so %ROM%</command>
+    <platform>nds</platform>
+    <theme>nds</theme>
+  </system>
+  <system>
+    <name>n3ds</name>
+    <fullname>Nintendo - Nintendo 3DS</fullname>
+    <path>${ROMS_DIR}/Nintendo 3DS</path>
+    <extension>.3ds .3DS .3dsx .3DSX .z3dsx .Z3DSX .elf .ELF .axf .AXF .cci .CCI .zcci .ZCCI .cxi .CXI .zcxi .ZCXI .app .APP</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/azahar_libretro.so %ROM%</command>
+    <platform>n3ds</platform>
+    <theme>n3ds</theme>
+  </system>
+  <system>
+    <name>mastersystem</name>
+    <fullname>Sega - Master System</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Master System</path>
+    <extension>.BIN .SMS .bin .sms</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/genesis_plus_gx_libretro.so %ROM%</command>
+    <platform>mastersystem</platform>
+    <theme>mastersystem</theme>
+  </system>
+  <system>
+    <name>megadrive</name>
+    <fullname>Sega - Mega Drive</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Genesis</path>
+    <extension>.MD .md</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/genesis_plus_gx_libretro.so %ROM%</command>
+    <platform>megadrive</platform>
+    <theme>megadrive</theme>
+  </system>
+  <system>
+    <name>segacd</name>
+    <fullname>Sega - Mega-CD</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Sega CD</path>
+    <extension>.CHD .chd</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/genesis_plus_gx_libretro.so %ROM%</command>
+    <platform>segacd</platform>
+    <theme>segacd</theme>
+  </system>
+  <system>
+    <name>sega32x</name>
+    <fullname>Sega - 32X</fullname>
+    <path>${ROMS_DIR}/32X</path>
+    <extension>.bin .BIN .gen .GEN .smd .SMD .md .MD .32x .32X .cue .CUE .iso .ISO .chd .CHD .m3u .M3U .sms .SMS .gg .GG .sg .SG .sc .SC .68k .68K .sgd .SGD .pco .PCO .vgm .VGM .vgz .VGZ</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/picodrive_libretro.so %ROM%</command>
+    <platform>sega32x</platform>
+    <theme>sega32x</theme>
+  </system>
+  <system>
+    <name>saturn</name>
+    <fullname>Sega - Saturn</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Saturn</path>
+    <extension>.CHD .M3U .chd .m3u</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/kronos_libretro.so %ROM%</command>
+    <platform>saturn</platform>
+    <theme>saturn</theme>
+  </system>
+  <system>
+    <name>dreamcast</name>
+    <fullname>Sega - Dreamcast</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Dreamcast</path>
+    <extension>.CHD .M3U .chd .m3u</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/flycast_libretro.so %ROM%</command>
+    <platform>dreamcast</platform>
+    <theme>dreamcast</theme>
+  </system>
+  <system>
+    <name>gamegear</name>
+    <fullname>Sega - Game Gear</fullname>
+    <path>${NAS_ROMS_DIR}/Sega - Game Gear</path>
+    <extension>.GG .SMS .gg .sms</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/genesis_plus_gx_libretro.so %ROM%</command>
+    <platform>gamegear</platform>
+    <theme>gamegear</theme>
+  </system>
+  <system>
+    <name>ngpc</name>
+    <fullname>SNK - Neo Geo Pocket</fullname>
+    <path>${ROMS_DIR}/Neo Geo Pocket</path>
+    <extension>.ngp .NGP .ngc .NGC .ngpc .NGPC .npc .NPC</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mednafen_ngp_libretro.so %ROM%</command>
+    <platform>ngpc</platform>
+    <theme>ngpc</theme>
+  </system>
+  <system>
+    <name>psx</name>
+    <fullname>Sony - PlayStation</fullname>
+    <path>${NAS_ROMS_DIR}/Sony - PS1</path>
+    <extension>.CHD .M3U .PBP .chd .m3u</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/swanstation_libretro.so %ROM%</command>
+    <platform>psx</platform>
+    <theme>psx</theme>
+  </system>
+  <system>
+    <name>ps2</name>
+    <fullname>Sony - PlayStation 2</fullname>
+    <path>${ROMS_DIR}/PlayStation 2</path>
+    <extension>.elf .ELF .iso .ISO .ciso .CISO .cue .CUE .gz .GZ .chd .CHD .cso .CSO .zso .ZSO .m3u .M3U</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/pcsx2_libretro.so %ROM%</command>
+    <platform>ps2</platform>
+    <theme>ps2</theme>
+  </system>
+  <system>
+    <name>psp</name>
+    <fullname>Sony - PSP</fullname>
+    <path>${NAS_ROMS_DIR}/Sony - PSP</path>
+    <extension>.ISO .iso</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/ppsspp_libretro.so %ROM%</command>
+    <platform>psp</platform>
+    <theme>psp</theme>
+  </system>
+  <system>
+    <name>arcade</name>
+    <fullname>MAME 2003-Plus</fullname>
+    <platform>arcade</platform>
+    <theme>arcade</theme>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f %ROM%</command>
+    <path>${NAS_ROMS_DIR}/Arcade - Mame 2003 Plus</path>
+    <extension>.ZIP .zip</extension>
+  </system>
+  <system>
+    <name>pcenginecd</name>
+    <fullname>NEC - PC Engine CD</fullname>
+    <platform>pcenginecd</platform>
+    <theme>pcenginecd</theme>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mednafen_pce_fast_libretro.so %ROM%</command>
+    <path>${NAS_ROMS_DIR}/NEC - TurboGrafx CD</path>
+    <extension>.CHD .chd</extension>
+  </system>
+  <system>
+    <name>neogeo</name>
+    <fullname>SNK - Neo Geo</fullname>
+    <platform>neogeo</platform>
+    <theme>neogeo</theme>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f %ROM%</command>
+    <path>${NAS_ROMS_DIR}/SNK - NEO GEO</path>
+    <extension>.ZIP .zip</extension>
+  </system>
+  <system>
+    <name>xbox</name>
+    <fullname>Microsoft - Xbox</fullname>
+    <path>${NAS_ROMS_DIR}/Xbox/xbox</path>
+    <extension>.iso .ISO</extension>
+    <command>${HOME}/.local/bin/xemu -full-screen -dvd_path %ROM%</command>
+    <platform>xbox</platform>
+    <theme>xbox</theme>
+  </system>
+  <system>
+    <name>universal</name>
+    <fullname>Arcade - Universal</fullname>
+    <platform>arcade</platform>
+    <theme>arcade</theme>
+    <path>${NAS_ROMS_DIR}/Arcade - Universal</path>
+    <extension>.ZIP .zip</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mame_libretro.so %ROM%</command>
+  </system>
+  <system>
+    <name>gamate</name>
+    <fullname>Bit Corporation - Gamate</fullname>
+    <platform>gamate</platform>
+    <theme>gamate</theme>
+    <path>${NAS_ROMS_DIR}/Bit Corporation - Gamate</path>
+    <extension>.BIN .bin</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mame_libretro.so %ROM%</command>
+  </system>
+  <system>
+    <name>colecovision</name>
+    <fullname>Coleco - ColecoVision</fullname>
+    <platform>colecovision</platform>
+    <theme>colecovision</theme>
+    <path>${NAS_ROMS_DIR}/Coleco - ColecoVision</path>
+    <extension>.COL .col</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/gearcoleco_libretro.so %ROM%</command>
+  </system>
+  <system>
+    <name>pv1000</name>
+    <fullname>Casio - PV-1000</fullname>
+    <platform>pv1000</platform>
+    <theme>pv1000</theme>
+    <path>${NAS_ROMS_DIR}/Casio - PV-1000</path>
+    <extension>.BIN .bin</extension>
+    <command>/usr/bin/retroarch --appendconfig "${HOME}/ES-DE/settings/retroarch-session.cfg" -f -L ${HOME}/.config/retroarch/cores/mame_libretro.so %ROM%</command>
+  </system>
+</systemList>

@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/x-shellscript;application/x-desktop;text/x-shellscript;text/plain;
+Actions=remote_ws_run_term;remote_ws_run_bg;
+X-KDE-Submenu=Machine distante
+X-KDE-Protocols=file
+
+[Desktop Action remote_ws_run_term]
+Name=Exécuter sur la machine distante (terminal)
+Icon=utilities-terminal
+Exec=${HOME}/.local/bin/remote-ws-run term %f
+
+[Desktop Action remote_ws_run_bg]
+Name=Exécuter sur la machine distante (arrière-plan)
+Icon=system-run
+Exec=${HOME}/.local/bin/remote-ws-run bg %f

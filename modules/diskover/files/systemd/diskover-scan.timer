@@ -1,0 +1,8 @@
+[Unit]
+Description=Actualisation hebdomadaire Diskover
+[Timer]
+OnCalendar=Sun *-*-* 04:00:00
+Persistent=true
+RandomizedDelaySec=10m
+[Install]
+WantedBy=timers.target

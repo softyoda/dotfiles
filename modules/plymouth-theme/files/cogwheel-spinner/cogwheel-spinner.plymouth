@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Cogwheel spinner
+Description=Roue crantée animée avec barre de progression (COGWHEEL-A-SPINNER-LOG-PGR-2-INVERSION V1.0)
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/cogwheel-spinner
+ScriptFile=/usr/share/plymouth/themes/cogwheel-spinner/cogwheel-spinner.script

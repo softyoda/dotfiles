@@ -1,0 +1,11 @@
+name = "Firefox : second profil (colocataire / invité)"
+category = "apps"
+description = "Un profil Firefox séparé (marque-pages, mots de passe, sessions) avec son propre lanceur « Firefox (<nom>) » dans le menu."
+vars = ["FIREFOX_EXTRA_PROFILE"]
+
+[packages]
+pacman = ["firefox"]
+
+[[files]]
+src = "files/firefox-profile.svg"
+dst = "~/.local/share/icons/hicolor/scalable/apps/firefox-profile-extra.svg"

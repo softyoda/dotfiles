@@ -1,0 +1,7 @@
+[Unit]
+Description=Mission Center
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=missioncenter io.missioncenter.MissionCenter
+Restart=no

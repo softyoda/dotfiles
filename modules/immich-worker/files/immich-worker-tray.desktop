@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Immich worker
+Comment=État du worker Immich et mises à jour
+Exec=python3 ${HOME}/.local/bin/immich-worker-tray
+Icon=immich
+Terminal=false
+X-KDE-autostart-after=panel

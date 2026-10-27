@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""Icône de notification du worker Immich (PyQt6, KDE).
+
+Vert : serveur + worker OK et alignés · Orange : worker arrêté ou désaligné ·
+Rouge : serveur injoignable. Les actions passent par la commande `immich-worker`.
+"""
+import shutil
+import subprocess
+import sys
+import threading
+
+from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PyQt6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel, QMenu,
+                             QMessageBox, QPlainTextEdit, QPushButton, QSystemTrayIcon,
+                             QVBoxLayout)
+
+CLI = shutil.which("immich-worker") or str(__import__("pathlib").Path.home() / ".local/bin/immich-worker")
+sys.path.insert(0, str(__import__("pathlib").Path(CLI).parent))
+import importlib.machinery, importlib.util  # noqa: E402
+
+_loader = importlib.machinery.SourceFileLoader("immich_worker", CLI)
+_spec = importlib.util.spec_from_loader("immich_worker", _loader)
+iw = importlib.util.module_from_spec(_spec)
+_loader.exec_module(iw)
+
+
+def dot(color: str) -> QIcon:
+    px = QPixmap(22, 22)
+    px.fill(Qt.GlobalColor.transparent)
+    p = QPainter(px)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing)
+    p.setBrush(QColor(color))
+    p.setPen(Qt.PenStyle.NoPen)
+    p.drawEllipse(3, 3, 16, 16)
+    p.end()
+    return QIcon(px)
+
+
+class RunDialog(QDialog):
+    """Lance `immich-worker <args>` et affiche la sortie en direct."""
+    line = pyqtSignal(str)
+    finished_rc = pyqtSignal(int)
+
+    def __init__(self, title, args):
+        super().__init__()
+        self.setWindowTitle(title)
+        self.resize(640, 380)
+        lay = QVBoxLayout(self)
+        self.out = QPlainTextEdit(readOnly=True)
+        self.out.setStyleSheet("font-family:monospace;")
+        lay.addWidget(self.out)
+        self.btn = QPushButton("Fermer", enabled=False)
+        self.btn.clicked.connect(self.close)
+        lay.addWidget(self.btn)
+        self.line.connect(self.out.appendPlainText)
+        self.finished_rc.connect(self._done)
+        threading.Thread(target=self._run, args=(args,), daemon=True).start()
+
+    def _run(self, args):
+        p = subprocess.Popen([CLI, *args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for l in p.stdout:
+            self.line.emit(l.rstrip())
+        self.finished_rc.emit(p.wait())
+
+    def _done(self, rc):
+        self.out.appendPlainText("\n✓ Terminé." if rc == 0 else f"\n✗ Échec (code {rc}).")
+        self.btn.setEnabled(True)
+
+
+class Tray(QObject):
+    state = pyqtSignal(dict)
+
+    def __init__(self):
+        super().__init__()
+        self.tray = QSystemTrayIcon(dot("#888"))
+        self.notified = None
+        m = QMenu()
+        self.a_info = m.addAction("…")
+        self.a_info.setEnabled(False)
+        m.addSeparator()
+        m.addAction("Statut détaillé", lambda: self.run("Statut Immich", ["status"]))
+        m.addAction("Aligner le worker sur le serveur", lambda: self.run("Alignement du worker", ["align"]))
+        self.a_up = m.addAction("⬆ Mettre à jour Immich (NAS + worker)", self.upgrade)
+        m.addSeparator()
+        m.addAction("Démarrer le worker", lambda: self.run("Démarrage", ["start"]))
+        m.addAction("Arrêter le worker", lambda: self.run("Arrêt", ["stop"]))
+        m.addAction("Logs", lambda: subprocess.Popen(["konsole", "-e", CLI, "logs"]))
+        m.addSeparator()
+        m.addAction("Quitter", QApplication.quit)
+        self.tray.setContextMenu(m)
+        self.tray.activated.connect(lambda r: r == QSystemTrayIcon.ActivationReason.Trigger and self.run("Statut Immich", ["status"]))
+        self.tray.show()
+        self.state.connect(self._apply)
+        self.dialogs = []
+        self.refresh()
+        t = QTimer(self)
+        t.timeout.connect(self.refresh)
+        t.start(60_000)
+        u = QTimer(self)
+        u.timeout.connect(lambda: self.refresh(check_release=True))
+        u.start(6 * 3600_000)
+        QTimer.singleShot(5_000, lambda: self.refresh(check_release=True))
+
+    def refresh(self, check_release=False):
+        threading.Thread(target=self._probe, args=(check_release,), daemon=True).start()
+
+    def _probe(self, check_release):
+        env = iw.load_env()
+        s = {"srv": iw.server_version(env) if env else None, "loc": env.get("IMMICH_VERSION"),
+             "ml": iw.ml_ping(env) if env else False, "ms": iw.container_state(iw.MS)}
+        if check_release:
+            s["latest"] = iw.latest_release()
+        self.state.emit(s)
+
+    def _apply(self, s):
+        if "latest" in s:
+            self.latest = s["latest"]
+        latest = getattr(self, "latest", None)
+        running = s["ml"] and s["ms"].startswith("running")
+        aligned = s["srv"] == s["loc"]
+        if not s["srv"]:
+            color, tip = "#ef4444", "Serveur Immich injoignable"
+        elif not running:
+            color, tip = "#f59e0b", "Worker arrêté"
+        elif not aligned:
+            color, tip = "#f59e0b", f"Worker {s['loc']} ≠ serveur {s['srv']} → aligner"
+        else:
+            color, tip = "#22c55e", f"Immich {s['srv']} — worker actif"
+        upd = latest and s["srv"] and iw.parse(latest) > iw.parse(s["srv"])
+        if upd:
+            tip += f"\nNouvelle version : {latest}"
+            if self.notified != latest:
+                self.notified = latest
+                self.tray.showMessage("Immich", f"Version {latest} disponible (serveur en {s['srv']}).",
+                                      QSystemTrayIcon.MessageIcon.Information, 8000)
+        self.a_up.setText(f"⬆ Mettre à jour Immich → {latest}" if upd else "⬆ Mettre à jour Immich (NAS + worker)")
+        self.a_info.setText(tip.replace("\n", " · "))
+        self.tray.setIcon(dot(color))
+        self.tray.setToolTip(tip)
+
+    def run(self, title, args):
+        d = RunDialog(title, args)
+        d.finished_rc.connect(lambda _rc: self.refresh())
+        self.dialogs = [x for x in self.dialogs if x.isVisible()] + [d]
+        d.show()
+
+    def upgrade(self):
+        latest = getattr(self, "latest", None) or "la dernière version"
+        r = QMessageBox.question(
+            None, "Mettre à jour Immich",
+            f"Mettre à jour le serveur Immich du NAS vers {latest} ?\n\n"
+            "1. sauvegarde de la base sur le NAS\n2. téléchargement puis bascule du serveur\n"
+            "3. alignement automatique de ce worker (retour arrière s'il ne démarre pas)\n\n"
+            "Pense à lire les notes de version en cas de version majeure.")
+        if r == QMessageBox.StandardButton.Yes:
+            self.run("Mise à jour Immich", ["upgrade-nas", "--yes"])
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+    if not QSystemTrayIcon.isSystemTrayAvailable():
+        sys.exit("Pas de zone de notification disponible")
+    tray = Tray()
+    sys.exit(app.exec())

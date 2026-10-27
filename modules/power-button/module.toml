@@ -1,0 +1,8 @@
+name = "Bouton power = extinction directe"
+category = "kde"
+description = "Le bouton d'alimentation éteint immédiatement, sans dialogue ni inhibition."
+
+[[files]]
+src = "files/logind-power.conf"
+dst = "/etc/systemd/logind.conf.d/power.conf"
+root = true

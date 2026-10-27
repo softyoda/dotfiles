@@ -1,0 +1,11 @@
+name = "Montage auto des disques NTFS"
+category = "hardware"
+description = "Les disques externes NTFS (Windows) se montent tout seuls au branchement, en lecture-écriture et au nom de l'utilisateur."
+
+[packages]
+pacman = ["udisks2", "ntfs-3g"]
+
+[[files]]
+src = "files/mount_options.conf"
+dst = "/etc/udisks2/mount_options.conf"
+root = true

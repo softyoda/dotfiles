@@ -1,0 +1,11 @@
+[Unit]
+Description=Relance HDMI ${HDMI_TV_EDID_MATCH} au retour de la TV
+PartOf=graphical-session.target
+After=graphical-session.target
+[Service]
+Environment=HDMI_TV_EDID_MATCH=${HDMI_TV_EDID_MATCH}
+ExecStart=/usr/bin/python %h/.local/share/hdmi-recovery/recover.py
+Restart=on-failure
+RestartSec=3
+[Install]
+WantedBy=graphical-session.target

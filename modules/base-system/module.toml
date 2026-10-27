@@ -1,0 +1,6 @@
+name = "Système de base"
+category = "base"
+description = "Prépare le système : paru, Flathub, pacman plus rapide et coloré, paru sans revue des PKGBUILD, mot de passe sudo graphique (ksshaskpass)."
+
+[packages]
+pacman = ["base-devel", "git", "flatpak", "ksshaskpass"]

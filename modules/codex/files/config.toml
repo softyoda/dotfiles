@@ -1,0 +1,21 @@
+# ~/.codex/config.toml — base déployée par le module dotfiles `codex`.
+# Codex réécrit ce fichier (projets de confiance, réglages TUI…) : le module ne
+# l’installe que s’il est absent, puis garantit seulement les clés ci-dessous.
+
+# Grand contexte (abonnement ChatGPT)
+model_context_window = 872000
+model_auto_compact_token_limit = 800000
+
+[tui]
+screen_reader_detection_done = true
+
+# Projets de confiance : propres à chaque machine, ajoutés par Codex au premier lancement.
+# [projects."/chemin/vers/projet"]
+# trust_level = "trusted"
+
+# Serveur MCP Blender (optionnel) : pointe vers le venv d’un projet local.
+# [mcp_servers.blender]
+# command = "/chemin/vers/projet/.venv/bin/blender-mcp"
+#
+# [mcp_servers.blender.env]
+# DISABLE_TELEMETRY = "true"

@@ -1,0 +1,86 @@
+{
+  // Copie autonome (sans NAS) de la config OpenCode partagée, déployée par le module
+  // dotfiles `opencode-poe`. Clé Poe : `opencode auth login` ou {env:POE_API_KEY}.
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "build-astra",
+  "small_model": "poe/deepseek-v4.1-flash",
+  "permission": {
+    "external_directory": {
+      "*": "ask",
+      "${OPENCODE_DIR}/*": "allow"
+    }
+  },
+  "lsp": true,
+  "agent": { "build": { "disable": true }, "plan": { "disable": true } },
+
+  // Règles injectées dans chaque session (la mémoire MEMORY.md reste sur le NAS).
+  // Absolute path: relative paths resolve against the CWD, not this config file.
+  "instructions": ["${OPENCODE_DIR}/CODING-RULES.md"],
+
+  // Shared skills (each subfolder needs a SKILL.md).
+  "skills": { "paths": ["${OPENCODE_DIR}/skills"] },
+
+  // Shared MCP servers. All run via npx -> require node/npm on the machine.
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "oauth": false,
+      "timeout": 10000
+    },
+    "duckduckgo": {
+      "type": "local",
+      "command": ["npx", "-y", "-p", "mcp-duckduckgo", "duckduckgo-mcp"]
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest"]
+    },
+    "open-computer-use": {
+      "type": "local",
+      "command": ["npx", "-y", "open-computer-use@0.3.5", "mcp"]
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  },
+
+  // Shared plugins: drop .ts/.js files in ./plugin and add the relative path here.
+  // session-sync (export des sessions vers le NAS) n'est pas inclus dans la copie autonome.
+  // reasoning-effort: sets Qwen local reasoning depth per agent (build/plan = xhigh).
+  "plugin": [
+    "${OPENCODE_DIR}/plugin/reasoning-effort.ts",
+    "@cortexkit/opencode-magic-context@latest",
+    "envsitter-guard@0.0.4",
+    "${OPENCODE_DIR}/plugin/team-workflow.ts"
+  ],
+
+  "provider": {
+    "poe": {
+      "models": {
+        "deepseek-v4.1-flash": {
+          "id": "deepseek-v4.1-flash",
+          "name": "DeepSeek V4.1 Flash (Novita / Poe)",
+          "tool_call": true,
+          "limit": { "context": 1048576, "output": 32768 }
+        }
+      }
+    },
+    "anthropic": {
+      "options": {
+        "baseURL": "https://api.poe.com",
+        "apiKey": "{env:POE_API_KEY}"
+      }
+    },
+    "qwen-local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Qwen Local",
+      "options": { "baseURL": "${LLM_SERVER_URL}", "headerTimeout": 10000, "timeout": 300000 },
+      "models": {
+        "qwen38-uncensored": { "name": "Qwen3.8-27B (local)", "tool_call": true, "limit": { "context": 260000, "output": 16384 } }
+      }
+    }
+  },
+  "compaction": { "auto": false, "prune": false }
+}

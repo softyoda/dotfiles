@@ -1,0 +1,27 @@
+[Unit]
+Description=SSHFS : dossier personnel de %i (reconnexion automatique)
+After=network-online.target
+Wants=network-online.target
+# Relance sans limite : la machine distante peut être éteinte ou en veille longtemps
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+# HOST, REMOTE (user@hôte), REMOTE_PATH, MOUNT, KEY — écrit par le module remote-workstation
+EnvironmentFile=%h/.config/remote-workstations/%i.conf
+ExecStartPre=/usr/bin/mkdir -p ${MOUNT}
+# Pas de montage tant que la machine ne répond pas (évite de figer Dolphin)
+ExecStartPre=/bin/sh -c 'ping -c1 -W3 "$HOST" >/dev/null 2>&1'
+# -f : premier plan, pour que systemd suive le processus et gère Restart.
+# ServerAlive* : une machine qui disparaît est détectée en ~45 s, puis le montage est retiré.
+ExecStart=/usr/bin/sshfs -f \
+  -o reconnect,ServerAliveInterval=15,ServerAliveCountMax=3,ConnectTimeout=10 \
+  -o IdentityFile=${KEY},IdentitiesOnly=yes,StrictHostKeyChecking=accept-new,BatchMode=yes \
+  -o allow_other,default_permissions,idmap=user \
+  ${REMOTE}:${REMOTE_PATH} ${MOUNT}
+ExecStopPost=-/usr/bin/fusermount3 -uz ${MOUNT}
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=default.target

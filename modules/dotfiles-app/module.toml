@@ -1,0 +1,16 @@
+name = "Appli Dotfiles (menu + notification)"
+category = "base"
+description = "Commande `dotctl`, entrée « Dotfiles » dans le menu et icône de notification qui synchronise le repo et signale les mises à jour et les secrets qui expirent."
+
+[packages]
+pacman = ["python-pyqt6", "git", "ksshaskpass"]
+
+[[files]]
+src = "files/dotfiles.desktop"
+dst = "~/.local/share/applications/dotfiles.desktop"
+template = true
+
+[[files]]
+src = "files/dotfiles-tray.desktop"
+dst = "~/.config/autostart/dotfiles-tray.desktop"
+template = true

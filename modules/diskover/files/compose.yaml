@@ -1,0 +1,49 @@
+name: diskover-community
+services:
+  diskover:
+    image: lscr.io/linuxserver/diskover:latest
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Europe/Paris
+      ES_HOST: elasticsearch
+      ES_PORT: "9200"
+    volumes:
+      - ${HOME}/.local/share/diskover/config:/config
+      - ${HOME}:/data:ro
+      - ${HOME}:/scan/linux${HOME}:ro
+      - /usr:/scan/linux/usr:ro
+      - /opt:/scan/linux/opt:ro
+      - /run/media/${USER}/SSD_INTEL:/scan/intel:ro
+      - /mnt/nas:/scan/truenas:ro
+      - /mnt/qbittorrent:/scan/truenas-qbittorrent:ro
+      - /mnt/immich-uploads:/scan/truenas-immich-uploads:ro
+      - /mnt/immich-thumbs:/scan/truenas-immich-thumbs:ro
+    ports:
+      - "127.0.0.1:8000:80"
+    mem_limit: 2g
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.6
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.ml.enabled: "false"
+      cluster.routing.allocation.disk.watermark.low: 20gb
+      cluster.routing.allocation.disk.watermark.high: 10gb
+      cluster.routing.allocation.disk.watermark.flood_stage: 5gb
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    mem_limit: 3g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+volumes:
+  elasticsearch-data:

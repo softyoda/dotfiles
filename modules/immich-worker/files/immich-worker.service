@@ -1,0 +1,15 @@
+[Unit]
+Description=Worker Immich (microservices + machine-learning)
+Requires=docker.service
+After=docker.service network-online.target mnt-immich\x2duploads.mount mnt-immich\x2dthumbs.mount
+Wants=network-online.target mnt-immich\x2duploads.mount mnt-immich\x2dthumbs.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/docker/immich-worker
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose stop
+
+[Install]
+WantedBy=multi-user.target

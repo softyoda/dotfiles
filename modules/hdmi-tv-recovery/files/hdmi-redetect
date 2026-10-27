@@ -1,0 +1,17 @@
+#!/bin/sh
+# Force la re-détection de la TV HDMI quand elle reste en « pas de signal »
+for status in /sys/class/drm/card*-HDMI-A-*/status; do
+    card=$(basename "$(dirname "$status")" | cut -d- -f1)
+    echo detect > "$status"
+    udevadm trigger --action=change "/sys/class/drm/$card"
+    sleep 1
+    if [ "$(cat "$status")" != connected ]; then
+        # La TV ne signale pas sa présence : on force la sortie quelques secondes
+        echo on > "$status"
+        udevadm trigger --action=change "/sys/class/drm/$card"
+        sleep 3
+        echo detect > "$status"
+        udevadm trigger --action=change "/sys/class/drm/$card"
+    fi
+    logger -t hdmi-redetect "$status -> $(cat "$status")"
+done

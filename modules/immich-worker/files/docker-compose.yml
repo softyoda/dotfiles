@@ -1,0 +1,48 @@
+# Worker Immich déporté : exécute les jobs lourds (miniatures, transcodage,
+# métadonnées, ML) pour le serveur Immich du NAS. Plusieurs workers peuvent
+# tourner en même temps : ils piochent dans la même file Redis du NAS.
+# Toutes les valeurs viennent de .env (généré par `dotctl apply immich-worker`).
+name: immich-worker
+
+services:
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION}${ML_IMAGE_SUFFIX:-}
+    container_name: immich-machine-learning
+    volumes:
+      - ./cache:/cache
+    ports:
+      - "${WORKER_BIND_IP}:3003:3003"
+    restart: unless-stopped
+
+  immich-microservices:
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION}
+    container_name: immich-microservices
+    restart: unless-stopped
+    environment:
+      - IMMICH_WORKERS_INCLUDE=microservices
+      - DB_HOSTNAME=${NAS_DB_HOST}
+      - DB_PORT=5432
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOSTNAME=${NAS_DB_HOST}
+      - REDIS_PORT=6379
+      - IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
+      - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
+    volumes:
+      - /mnt/immich-uploads:/usr/src/app/upload
+      # Miniatures au même endroit que le serveur (SSD du NAS) : évite le split-brain
+      - /mnt/immich-thumbs:/usr/src/app/upload/thumbs
+      # Bibliothèques externes (lecture seule)
+      - /mnt/immich-photos:/mnt/library/photos:ro
+      - /mnt/immich-videos:/mnt/library/videos:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - immich-machine-learning
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

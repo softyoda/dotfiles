@@ -1,0 +1,8 @@
+name = "Pas de mise en veille USB"
+category = "hardware"
+description = "Désactive la mise en veille automatique des périphériques USB (évite les souris, claviers, DAC ou dongles qui décrochent)."
+
+[[files]]
+src = "files/50-usb-autosuspend.rules"
+dst = "/etc/udev/rules.d/50-usb-autosuspend.rules"
+root = true
