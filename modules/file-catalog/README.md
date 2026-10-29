@@ -11,3 +11,5 @@ Pour héberger le serveur : consulter `docs/deployment.md` dans le dépôt de l�
 Après une évolution : tester et pousser le dépôt privé, actualiser `revision`, appliquer ce module, déployer la même version sur le serveur puis vérifier `dotctl info file-catalog` et `dotctl status` avant de pousser les dotfiles.
 
 L’ancien module Diskover est remplacé. Sa désinstallation ne doit jamais supprimer les fichiers indexés ni les applications Docker sans rapport.
+
+Le frontend découvre les sources du serveur ; ses paramètres permettent de choisir un autre service et les montages locaux. Les vues liste/grille et la densité sont propres au navigateur. Le serveur peut utiliser une image Docker autonome avec `bundled_app` et un Compose placé dans Dockge ; voir le guide de déploiement du dépôt privé. Les noms de domaines et règles de proxy restent dans la configuration privée, avec un script de restauration dédié.
