@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Diskover
-Comment=Recherche et analyse des fichiers
-Exec=${HOME}/.local/bin/diskover open
-Icon=system-search
-Terminal=false
-Categories=Utility;System;

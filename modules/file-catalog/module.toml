@@ -1,0 +1,43 @@
+name = "Siftbay"
+category = "homelab"
+description = "Moteur SQLite modulaire, API versionnée, interface web de recherche et carte des tailles. Agent local hebdomadaire et suivi Linux à la demande."
+vars = ["CATALOG_URL", "CATALOG_PATH_MAP", "CATALOG_AGENT_ID", "CATALOG_LOCAL_SOURCES", "CATALOG_LAUNCH_KEY_SOURCE", "CATALOG_AGENT_KEY_SOURCE", "CATALOG_NAS_SSH", "CATALOG_SERVER_COMPOSE"]
+manual = false
+
+[packages]
+pacman = ["python", "xdg-utils", "glib2", "file", "openssh", "git", "github-cli", "desktop-file-utils"]
+
+[[files]]
+src = "files/client.json"
+dst = "~/.config/file-catalog/client.json"
+mode = "600"
+template = true
+
+[[files]]
+src = "files/local-paths.json"
+dst = "~/.config/file-catalog/local-paths.json"
+mode = "600"
+template = true
+
+[[files]]
+src = "files/sources.json"
+dst = "~/.config/file-catalog/sources.json"
+mode = "600"
+template = true
+
+[[files]]
+src = "files/agent.json"
+dst = "~/.config/file-catalog/agent.json"
+mode = "600"
+template = true
+
+[[files]]
+src = "files/systemd/file-catalog-agent.service"
+dst = "~/.config/systemd/user/file-catalog-agent.service"
+mode = "644"
+template = true
+
+[[files]]
+src = "files/systemd/file-catalog-agent.timer"
+dst = "~/.config/systemd/user/file-catalog-agent.timer"
+mode = "644"

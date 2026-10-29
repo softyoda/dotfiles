@@ -1,7 +1,7 @@
 [Unit]
-Description=Actualisation hebdomadaire Diskover
+Description=Scan hebdomadaire du poste
 [Timer]
-OnCalendar=Sun *-*-* 04:00:00
+OnCalendar=Mon *-*-* 00:00:00
 Persistent=true
 RandomizedDelaySec=10m
 [Install]

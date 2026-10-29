@@ -1,0 +1,1 @@
+{"url":"${CATALOG_URL}","agent_id":"${CATALOG_AGENT_ID}","key_file":"${HOME}/.config/file-catalog/agent.key","state_dir":"${HOME}/.local/state/file-catalog","max_watches":250000,"sources":${CATALOG_LOCAL_SOURCES}}

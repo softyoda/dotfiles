@@ -1,6 +1,0 @@
-[Unit]
-Description=Scan hebdomadaire du catalogue Diskover
-[Service]
-Type=oneshot
-ExecStart=${HOME}/.local/bin/diskover rescan --weekly
-TimeoutStartSec=infinity

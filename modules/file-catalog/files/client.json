@@ -1,0 +1,1 @@
+{"url":"${CATALOG_URL}","ssh":"${CATALOG_NAS_SSH}","compose":"${CATALOG_SERVER_COMPOSE}","agent_id":"${CATALOG_AGENT_ID}"}

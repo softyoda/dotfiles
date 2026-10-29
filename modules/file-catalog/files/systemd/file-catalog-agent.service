@@ -1,0 +1,10 @@
+[Unit]
+Description=Actualisation du catalogue de cette workstation
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 ${HOME}/.local/share/file-catalog/app/agent.py --config ${HOME}/.config/file-catalog/agent.json --weekly
+TimeoutStartSec=infinity
+Nice=15
+IOSchedulingClass=idle
+Restart=on-failure
+RestartSec=30min

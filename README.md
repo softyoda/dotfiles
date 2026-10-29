@@ -161,7 +161,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 | Module | Ce que ça fait |
 |---|---|
-| [`diskover`](modules/diskover/) | Moteur de recherche de fichiers Diskover Community en local (http://localhost:8000) : catalogue du poste et du NAS, rescan hebdomadaire automatique le dimanche à 04:00. ✋ |
+| [`file-catalog`](modules/file-catalog/) | Moteur SQLite modulaire, API versionnée, interface web de recherche et carte des tailles. Agent local hebdomadaire et suivi Linux à la demande. |
 | [`immich-worker`](modules/immich-worker/) | Déporte les jobs lourds d'Immich (miniatures, transcodage, reconnaissance) du NAS vers le GPU de cette machine, avec mise à jour sûre NAS + worker. |
 | [`nas-mounts`](modules/nas-mounts/) | Monte automatiquement les partages du NAS (SMB, et NFS Immich en option) au premier accès, avec une petite fenêtre pour monter/démonter. |
 | [`remote-workstation`](modules/remote-workstation/) | Monte le dossier personnel d’une ou plusieurs machines du réseau (ex. flystation) dans ~/Mounts, avec un raccourci Dolphin et « Exécuter sur la machine distante » au clic droit. ✋ |
