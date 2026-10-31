@@ -1,31 +1,45 @@
-# Écran rond (Waveshare 5" 1080×1080)
+# Linux Rond — installation par les dotfiles
 
-Le cadre visible est le cercle inscrit : les coins du carré 1080×1080 n'existent pas.
+Le projet est désormais maintenu dans **[softyoda/linux-rond](https://github.com/softyoda/linux-rond)**.
+Le code Plasma/KWin, les scripts de configuration et le maillage approuvé ont été
+retirés de ces dotfiles. Les développements et validations doivent être commités
+et publiés dans ce nouveau dépôt.
 
-- **Échelle 150 %** (`ROUND_SCALE`) : ~5" à 1080 px, sinon tout est minuscule.
-- **Barres en arc** : conteneur Plasma `org.softyoda.arcpanel`, fond courbe et icônes orientées vers le centre.
-- **Haut** : son, réseau, heure, périphériques, luminosité.
-- **Dock en bas** : menu, applis ouvertes, notifications et icônes d’applications.
-  Espacements réguliers, séparateurs radiaux et traits d’état courbes côté intérieur :
-  long accentué = active, court accentué = ouverte, court gris et icône estompée = réduite.
-- Restauration : `dotctl apply round-screen` dans la session Plasma de la machine cible.
-  Le module installe le conteneur, recrée les panneaux de l’écran rond puis relance Plasma
-  pour configurer la zone de notification. Les autres écrans conservent leurs panneaux.
-- **Script KWin `round-safe-area`** : sur la sortie carrée, chaque appli occupe le carré inscrit
-  (côté = d/√2), façon Android ; les dialogues y sont centrés. Plein écran (vidéo, jeux) non touché.
-  Réglages dans `kwinrc` `[Script-round-safe-area]` : `Inset` (0.7071), `AndroidMode`,
-  `ConstrainFullscreen`, `OutputName`.
-- Aperçu à distance : `spectacle -b -n -f -o /tmp/round.png` puis `tools/preview.py` (masque du cercle).
+Ce module est uniquement un adaptateur d’installation :
 
-## Limites connues
+- `upstream.env` fixe l’URL et la révision Git validée ; aucune mise à jour implicite de `main`.
+- Le dépôt est récupéré dans `${XDG_DATA_HOME:-~/.local/share}/linux-rond/source`.
+- Les réglages `ROUND_SCALE` et `ROUND_OUTPUT` restent dans le profil/réglage privé de la machine.
+- Un checkout modifié localement ou provenant d’une autre origine est conservé ; l’installation s’arrête.
 
-- **Curseur** : Wayland/KWin n'offre pas de « barrière » de pointeur ; il peut entrer dans les coins
-  invisibles (sans conséquence : aucune fenêtre n'y est).
-- **Overscan** non pris en charge par le pilote NVIDIA (resterait la solution la plus simple).
-- **Tactile** : le contrôleur USB de l'écran n'énumère plus (testé : 3 câbles data, 2 PC).
-  Une fois revenu : Configuration → Écran tactile → associer à cette sortie.
+## Appliquer
 
-Revenir en arrière : supprimer les barres, restaurer `plasma-org.kde.plasma.desktop-appletsrc.bak-avant-rond`,
-`kwriteconfig6 --file kwinrc --group Plugins --key round-safe-areaEnabled false`.
+```sh
+dotctl info round-screen --json
+dotctl plan round-screen --json
+dotctl apply round-screen
+```
 
-Les essais de projection sur captures de terminal ne font pas partie de cette configuration validée.
+Le socle installe/actualise le conteneur de panneau et le script de zone sûre.
+Il conserve les panneaux actuels. Pour créer ou refaire les deux barres en arc,
+choisir explicitement la sous-partie **`round-screen/panels`** :
+
+```sh
+dotctl plan round-screen/panels --json
+dotctl apply round-screen/panels
+```
+
+Cette sous-partie remplace les panneaux de l’unique sortie carrée, sauvegarde la
+configuration complète et relance Plasma. Elle refuse les sorties carrées multiples.
+Pour restaurer une disposition, utiliser `scripts/restore-panels.sh` du dépôt installé
+avec le chemin de sauvegarde affiché lors de la configuration.
+
+## Statut du mode projeté
+
+La barre et le maillage sont validés ; la projection interactive, la correction souris/tactile,
+les préférences par application et le partage en demi-disques sont suivis dans
+[la feuille de route Linux Rond](https://github.com/softyoda/linux-rond/blob/main/docs/ROADMAP.md).
+Ils ne sont pas annoncés comme déjà installés par ce module.
+
+Après validation d’une nouvelle version : commiter/pousser dans `linux-rond`,
+puis actualiser `LINUX_ROND_REVISION` ici et vérifier le module sur la machine cible.

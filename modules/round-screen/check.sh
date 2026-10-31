@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
-[[ $(kreadconfig6 --file kwinrc --group Plugins --key round-safe-areaEnabled) == true ]] &&
-cmp -s "$MODULE_DIR/kwin-script/round-safe-area/contents/code/main.js" ~/.local/share/kwin/scripts/round-safe-area/contents/code/main.js &&
-diff -qr "$MODULE_DIR/org.softyoda.arcpanel" ~/.local/share/plasma/plasmoids/org.softyoda.arcpanel >/dev/null
+set -euo pipefail
+source "$MODULE_DIR/source.sh"
+[[ -d $LINUX_ROND_SOURCE/.git ]]
+[[ $(git -C "$LINUX_ROND_SOURCE" remote get-url origin) == "$LINUX_ROND_URL" ]]
+[[ $(git -C "$LINUX_ROND_SOURCE" rev-parse HEAD) == "$LINUX_ROND_REVISION" ]]
+[[ -z $(git -C "$LINUX_ROND_SOURCE" status --porcelain) ]]
+"$LINUX_ROND_SOURCE/scripts/check.sh"

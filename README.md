@@ -111,7 +111,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 |---|---|
 | [`hdmi-tv-recovery`](modules/hdmi-tv-recovery/) | Quand la TV HDMI reste « sans signal » (au rallumage ou en changeant d'entrée), le signal est relancé tout seul ; Alt+F9 force une re-détection. |
 | [`ntfs-automount`](modules/ntfs-automount/) | Les disques externes NTFS (Windows) se montent tout seuls au branchement, en lecture-écriture et au nom de l'utilisateur. |
-| [`round-screen`](modules/round-screen/) | Barres Plasma en arc, icônes orientées et indicateurs courbes ; fenêtres conservées dans le carré visible de l’écran rond. |
+| [`round-screen`](modules/round-screen/) | Installe softyoda/linux-rond à une révision validée : barres en arc et zone sûre. Le code du projet est maintenu dans son dépôt dédié. |
 | [`usb-no-autosuspend`](modules/usb-no-autosuspend/) | Désactive la mise en veille automatique des périphériques USB (évite les souris, claviers, DAC ou dongles qui décrochent). |
 | [`xbox-controllers`](modules/xbox-controllers/) | Manettes Xbox en Bluetooth (xpadneo) et via le dongle sans fil Xbox (xone), avec un Bluetooth stable pour les manettes. |
 

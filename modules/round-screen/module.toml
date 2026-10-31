@@ -1,5 +1,29 @@
-name = "Écran rond (interface adaptée)"
+name = "Linux Rond (écran circulaire)"
 category = "hardware"
-description = "Barres Plasma en arc, icônes orientées et indicateurs courbes ; fenêtres conservées dans le carré visible de l’écran rond."
-vars = ["ROUND_SCALE"]
-# Optionnels : ROUND_OUTPUT (nom de la sortie, sinon : la première sortie carrée)
+description = "Installe softyoda/linux-rond à une révision validée : barres en arc et zone sûre. Le code du projet est maintenu dans son dépôt dédié."
+vars = ["ROUND_SCALE", "ROUND_OUTPUT"]
+
+[packages]
+pacman = ["git"]
+
+[[inputs]]
+key = "ROUND_SCALE"
+label = "Échelle de l’écran rond"
+type = "text"
+default = "1.5"
+pattern = "^[0-9]+([.][0-9]+)?$"
+
+[[inputs]]
+key = "ROUND_OUTPUT"
+label = "Nom de la sortie ronde"
+type = "text"
+required = false
+help = "Laisser vide si une seule sortie carrée est connectée."
+
+[[parts]]
+id = "panels"
+name = "Configurer les barres en arc"
+description = "Remplace les panneaux de l’unique sortie carrée après sauvegarde, puis relance Plasma. Inutile pour une simple mise à jour du code."
+default = false
+apply = "configure-panels.sh"
+check = "check-panels.sh"
