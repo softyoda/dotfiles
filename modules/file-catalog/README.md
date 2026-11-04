@@ -1,15 +1,9 @@
 # Siftbay
 
-Le dépôt privé `softyoda/siftbay` contient le moteur, les agents, le frontend et leur documentation. Le fichier `revision` épingle la version installée ; ce module ne duplique pas le code.
+Le module installe une révision épinglée du dépôt privé `softyoda/siftbay`. Le lancement ouvre le client local : aucun serveur distant ni volume à scanner n’est préconfiguré. Les volumes accessibles sont détectés, puis sélectionnés dans « Volumes et scans ». Les paramètres permettent une connexion explicite à un serveur.
 
-Prérequis : accès GitHub authentifié avec `gh auth login`, accès au serveur, sources et clés dans le profil privé. Le module installe les lanceurs utilisateur et le timer hebdomadaire persistant du poste. Le suivi en direct reste à la demande.
+Le mode temporaire oublie le catalogue à la fermeture du dernier client ; les fichiers analysés ne sont jamais supprimés. Le mode conservé permet les mises à jour manuelles, planifiées ou en temps réel. La copie d’un serveur peut être conservée sur disque ou chargée en RAM, sur choix explicite. Le moteur local du prototype est Python ; Windows et le moteur SQLite WebAssembly restent des adaptations distinctes.
 
-Les variables CATALOG_* décrivent le serveur, les correspondances entre sources et montages, les sources du poste et les fichiers de clés privés. Ne pas réutiliser les chemins d’un autre ordinateur sans les adapter. La clé d’agent est distincte de celle des actions desktop ; le serveur limite ses sources autorisées.
+La sous-partie facultative `file-catalog/publisher` restaure l’ancien agent qui envoie les scans du poste à un serveur. Elle n’est pas activée par défaut et utilise uniquement les variables et clés du profil privé. Ne pas l’activer pour une installation locale ordinaire.
 
-Pour héberger le serveur : consulter `docs/deployment.md` dans le dépôt de l’application et utiliser `scripts/render_server.py` avec une configuration privée. Le serveur peut désactiver son frontend web et servir uniquement l’API. Les données SQLite restent sur le disque local du serveur.
-
-Après une évolution : tester et pousser le dépôt privé, actualiser `revision`, appliquer ce module, déployer la même version sur le serveur puis vérifier `dotctl info file-catalog` et `dotctl status` avant de pousser les dotfiles.
-
-L’ancien module Diskover est remplacé. Sa désinstallation ne doit jamais supprimer les fichiers indexés ni les applications Docker sans rapport.
-
-Le frontend découvre les sources du serveur ; ses paramètres permettent de choisir un autre service et les montages locaux. Les vues liste/grille et la densité sont propres au navigateur. Le serveur peut utiliser une image Docker autonome avec `bundled_app` et un Compose placé dans Dockge ; voir le guide de déploiement du dépôt privé. Les noms de domaines et règles de proxy restent dans la configuration privée, avec un script de restauration dédié.
+Pour le serveur Docker, lire `docs/deployment.md` et `docs/architecture.md` dans le dépôt privé. Les domaines, montages et clés de déploiement sont dans les dotfiles privés. Mettre à jour le pin, appliquer et vérifier `dotctl status`, puis pousser les modifications. L’administration possède une clé initiale dans le volume de données ; la publication Internet doit être protégée par un fournisseur d’identité adapté. Ne jamais exposer une API de configuration sans contrôle d’accès.
