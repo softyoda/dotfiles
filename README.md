@@ -180,3 +180,5 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 ✋ = étapes manuelles (voir le README du module)
 <!-- /modules -->
+
+Diagnostic Xbox et état de la correction du dongle : [dossier de reprise du 7 novembre 2026](modules/xbox-controllers/REPRISE-XBOX-2026-11-07.md).

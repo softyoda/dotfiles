@@ -1,0 +1,12 @@
+[Unit]
+Description=Historique local des connexions de manettes Xbox
+
+[Service]
+ExecStart=/usr/bin/python3 %h/.local/share/diagnostic-manettes/diagnostic-manettes.py collect
+Restart=on-failure
+RestartSec=10
+UMask=0077
+Nice=10
+
+[Install]
+WantedBy=default.target

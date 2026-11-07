@@ -19,3 +19,35 @@ root = true
 src = "files/50-realtek-bt-no-autosuspend.rules"
 dst = "/etc/udev/rules.d/50-realtek-bt-no-autosuspend.rules"
 root = true
+
+# Optional: do not deploy an experimental dongle correction to unrelated adapters.
+[[parts]]
+id = "diagnostics"
+name = "Historique des manettes Xbox"
+description = "Collecte automatique locale des connexions et erreurs, jusqu’à 30 jours / 256 Mio, avec export de rapport."
+default = false
+apply = "apply-diagnostics.sh"
+check = "check-diagnostics.sh"
+[parts.packages]
+pacman = ["python", "zenity"]
+[[parts.files]]
+src = "files/diagnostic-manettes.py"
+dst = "~/.local/share/diagnostic-manettes/diagnostic-manettes.py"
+mode = "755"
+[[parts.files]]
+src = "files/diagnostic-manettes.service"
+dst = "~/.config/systemd/user/diagnostic-manettes.service"
+[[parts.files]]
+src = "files/diagnostic-manettes.desktop"
+dst = "~/.local/share/applications/diagnostic-manettes.desktop"
+template = true
+
+[[parts]]
+id = "xone-reconnect"
+name = "Correctif de reconnexion du dongle MT7612"
+description = "Pilote local xone 0.5.8.1 : rechargement complet du firmware et nettoyage des connexions fantômes. Tests matériels documentés."
+default = false
+apply = "apply-reconnect.sh"
+check = "check-reconnect.sh"
+[parts.packages]
+pacman = ["dkms", "clang", "llvm", "gcc", "make"]

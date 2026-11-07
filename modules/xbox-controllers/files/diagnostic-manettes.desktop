@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Diagnostic manettes Xbox
+Comment=Signaler une coupure et exporter les journaux manettes
+Exec=${HOME}/.local/bin/diagnostic-manettes
+Icon=input-gaming
+Terminal=false
+Categories=Utility;

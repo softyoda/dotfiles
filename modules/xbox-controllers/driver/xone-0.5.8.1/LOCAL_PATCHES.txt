@@ -1,0 +1,5 @@
+Snapshot local documenté le 2026-11-07. Modifications : transport/mt76.c, transport/dongle.c et dkms.conf.
+Local build 0.5.8.1 from installed xone0.5.8.
+1. Firmware RAM reload: upstream PR225 revision a0271a53aa66568204fc42abd7cae544eb96c4c9. https://github.com/dlundqvist/xone/pull/225
+2. Shared ordinary-reset/reset-resume host cleanup; driver clients, work queues and pairing state are invalidated with firmware.
+Original driver remains registered as DKMS xone/0.5.8 for rollback.

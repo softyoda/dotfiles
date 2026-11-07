@@ -1,0 +1,2 @@
+# Unified patches need their context-space prefix before tabs and empty lines.
+*.patch -whitespace

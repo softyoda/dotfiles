@@ -1,0 +1,248 @@
+--- a/transport/dongle.c
++++ b/transport/dongle.c
+@@ -1438,25 +1438,46 @@
+ 			__func__, err);
+ }
+ 
+-static int xone_dongle_pre_reset(struct usb_interface *intf)
+-{
+-	struct xone_dongle *dongle = usb_get_intfdata(intf);
++/*
++ * A USB/MCU reset invalidates both the firmware association table and every
++ * GIP adapter. Stop all producers before freeing clients; preserving host
++ * WCIDs here makes repeated association requests look like duplicates even
++ * though the firmware no longer knows those clients.
++ */
++static void xone_dongle_reset_cleanup(struct xone_dongle *dongle)
++{
++	struct xone_dongle_client *client;
+ 	struct urb *urb;
+-
+-	pr_debug("%s", __func__);
+-
+-	/* For reset during probe */
+-	if (!dongle)
+-		return 0;
+-
+-	if (dongle->fw_state != XONE_DONGLE_FW_STATE_READY)
+-		dongle->fw_state = XONE_DONGLE_FW_STATE_STOP_LOADING;
+-
++	unsigned long flags;
++	int i;
++
++	WRITE_ONCE(dongle->fw_state, XONE_DONGLE_FW_STATE_STOP_LOADING);
+ 	cancel_delayed_work_sync(&dongle->pairing_work);
+ 	cancel_delayed_work_sync(&dongle->pairing_scan_work);
++	cancel_work_sync(&dongle->load_fw_work);
++
++	/* The load worker may have finished and marked the dongle ready. */
++	WRITE_ONCE(dongle->fw_state, XONE_DONGLE_FW_STATE_STOP_LOADING);
+ 	usb_kill_anchored_urbs(&dongle->urbs_in_busy);
++	drain_workqueue(dongle->event_wq);
++	/* Catch work scheduled by an in-flight firmware/event worker. */
++	cancel_delayed_work_sync(&dongle->pairing_work);
++	cancel_delayed_work_sync(&dongle->pairing_scan_work);
++
++	for (i = 0; i < XONE_DONGLE_MAX_CLIENTS; i++) {
++		spin_lock_irqsave(&dongle->clients_lock, flags);
++		client = dongle->clients[i];
++		dongle->clients[i] = NULL;
++		spin_unlock_irqrestore(&dongle->clients_lock, flags);
++		if (!client)
++			continue;
++		gip_destroy_adapter(client->adapter);
++		kfree(client);
++	}
++	atomic_set(&dongle->client_count, 0);
++
++	/* Adapter destruction stops driver work that could send output. */
+ 	usb_kill_anchored_urbs(&dongle->urbs_out_busy);
+-
+ 	while ((urb = usb_get_from_anchor(&dongle->urbs_out_idle)))
+ 		usb_free_urb(urb);
+ 
+@@ -1466,81 +1487,36 @@
+ 		usb_free_urb(urb);
+ 	}
+ 
+-	return 0;
+-}
+-
+-static int xone_dongle_post_reset(struct usb_interface *intf)
+-{
+-	struct xone_dongle *dongle = usb_get_intfdata(intf);
+-
+-	pr_debug("%s", __func__);
+-
+-	/* For reset during probe */
+-	if (!dongle)
+-		return 0;
+-
+-	pr_debug("%s: Re-initializing dongle after reset", __func__);
+-	return xone_dongle_init(dongle);
+-}
+-
+-static int xone_dongle_reset_resume(struct usb_interface *intf)
+-{
+-	struct xone_dongle *dongle = usb_get_intfdata(intf);
+-	struct xone_dongle_client *client;
+-	struct urb *urb;
+-	int i;
+-
+-	pr_debug("%s", __func__);
+-
+-	/*
+-	 * The kernel already reset the USB device before calling
+-	 * reset_resume — a second usb_reset_device() is redundant and
+-	 * can leave the XHCI port in a bad state (the same class of bug
+-	 * as the former usb_reset_device() call in probe).
+-	 *
+-	 * Instead, clean up all stale state and reinitialize from scratch.
+-	 * This also ensures old GIP adapters are destroyed so the
+-	 * reconnecting controller gets a fresh input device.
+-	 */
+-	if (dongle->fw_state < XONE_DONGLE_FW_STATE_ERROR)
+-		dongle->fw_state = XONE_DONGLE_FW_STATE_STOP_LOADING;
+-
+-	usb_kill_anchored_urbs(&dongle->urbs_in_busy);
+-	cancel_work_sync(&dongle->load_fw_work);
+-	/*
+-	 * If load_fw_work raced past the STOP_LOADING check and created
+-	 * new URBs before cancel_work_sync returned, kill them now.
+-	 */
+-	usb_kill_anchored_urbs(&dongle->urbs_in_busy);
+-	drain_workqueue(dongle->event_wq);
+-	cancel_delayed_work_sync(&dongle->pairing_work);
+-	cancel_delayed_work_sync(&dongle->pairing_scan_work);
+-
+-	for (i = 0; i < XONE_DONGLE_MAX_CLIENTS; i++) {
+-		client = dongle->clients[i];
+-		if (!client)
+-			continue;
+-		gip_destroy_adapter(client->adapter);
+-		kfree(client);
+-		dongle->clients[i] = NULL;
+-	}
+-	atomic_set(&dongle->client_count, 0);
+-
+-	usb_kill_anchored_urbs(&dongle->urbs_out_busy);
+-
+-	while ((urb = usb_get_from_anchor(&dongle->urbs_out_idle)))
+-		usb_free_urb(urb);
+-
+-	while ((urb = usb_get_from_anchor(&dongle->urbs_in_idle))) {
+-		usb_free_coherent(urb->dev, urb->transfer_buffer_length,
+-				  urb->transfer_buffer, urb->transfer_dma);
+-		usb_free_urb(urb);
+-	}
+-
+ 	dongle->pairing = false;
+ 	dongle->pairing_scan_idx = 0;
+ 	dongle->last_wlan_rx = 0;
+-
++	wake_up(&dongle->disconnect_wait);
++}
++
++static int xone_dongle_pre_reset(struct usb_interface *intf)
++{
++	struct xone_dongle *dongle = usb_get_intfdata(intf);
++
++	/* For reset during probe. */
++	if (dongle)
++		xone_dongle_reset_cleanup(dongle);
++	return 0;
++}
++
++static int xone_dongle_post_reset(struct usb_interface *intf)
++{
++	struct xone_dongle *dongle = usb_get_intfdata(intf);
++
++	if (!dongle)
++		return 0;
++	return xone_dongle_init(dongle);
++}
++
++static int xone_dongle_reset_resume(struct usb_interface *intf)
++{
++	struct xone_dongle *dongle = usb_get_intfdata(intf);
++
++	xone_dongle_reset_cleanup(dongle);
+ 	return xone_dongle_init(dongle);
+ }
+ 
+@@ -1583,5 +1559,5 @@
+ MODULE_DEVICE_TABLE(usb, xone_dongle_id_table);
+ MODULE_AUTHOR("Severin von Wnuck-Lipinski <severinvonw@outlook.de>");
+ MODULE_DESCRIPTION("xone dongle driver");
+-MODULE_VERSION("0.5.8");
++MODULE_VERSION("0.5.8.1");
+ MODULE_LICENSE("GPL");
+--- a/transport/mt76.c
++++ b/transport/mt76.c
+@@ -492,22 +492,15 @@
+ 
+ static int xone_mt76_reset_firmware(struct xone_mt76 *mt)
+ {
+-	u32 val;
+-	int err;
+-
+-	/* apply power-on RF patch */
+-	val = xone_mt76_read_register(mt, XONE_MT_RF_PATCH | MT_VEND_TYPE_CFG);
+-	xone_mt76_write_register(mt, XONE_MT_RF_PATCH | MT_VEND_TYPE_CFG,
+-				 val & ~BIT(19));
+-
+-	err = xone_mt76_load_ivb(mt);
+-	if (err)
+-		return err;
+-
+-	/* wait for reset */
+-	if (!xone_mt76_poll(mt, MT_FCE_DMA_ADDR | MT_VEND_TYPE_CFG,
+-			    0x80000000, 0x80000000))
+-		return -ETIMEDOUT;
++	int err;
++
++	err = usb_control_msg(mt->udev, usb_sndctrlpipe(mt->udev, 0),
++			      MT_VEND_DEV_MODE, USB_DIR_OUT | USB_TYPE_VENDOR,
++			      0x01, 0, NULL, 0, XONE_MT_USB_TIMEOUT);
++	if (err)
++		return err;
++
++	usleep_range(5000, 10000);
+ 
+ 	return 0;
+ }
+@@ -522,14 +515,6 @@
+ 		err = xone_mt76_reset_firmware(mt);
+ 		if (err)
+ 			return err;
+-		/*
+-		 * The MCU needs time to complete its startup sequence after the
+-		 * firmware reset before it can handle the bulk USB commands sent
+-		 * by xone_mt76_init_radio(). Without this delay init_radio
+-		 * reliably times out (-ETIMEDOUT) on warm reboot.
+-		 */
+-		msleep(500);
+-		return 0;
+ 	}
+ 
+ 	dev_dbg(mt->dev, "%s: loading firmware...\n", __func__);
+--- a/dkms.conf
++++ b/dkms.conf
+@@ -1,5 +1,5 @@
+ PACKAGE_NAME="xone"
+-PACKAGE_VERSION="0.5.8"
++PACKAGE_VERSION="0.5.8.1"
+ BUILT_MODULE_NAME[0]="xone_gip"
+ BUILT_MODULE_NAME[1]="xone_wired"
+ BUILT_MODULE_NAME[2]="xone_dongle"
+@@ -19,3 +19,10 @@
+ DEST_MODULE_LOCATION[7]="/kernel/drivers/input/joystick"
+ DEST_MODULE_LOCATION[8]="/kernel/drivers/input/joystick"
+ AUTOINSTALL="yes"
++
++# Match the compiler used by each installed kernel (CachyOS and CachyOS LTS differ).
++xone_compiler_flags="LLVM= CC=gcc LD=ld"
++if grep -q '^CONFIG_CC_IS_CLANG=y$' "/lib/modules/${kernelver}/build/.config"; then
++    xone_compiler_flags="LLVM=1"
++fi
++MAKE[0]="make -C /lib/modules/${kernelver}/build M=${dkms_tree}/${PACKAGE_NAME}/${PACKAGE_VERSION}/build ${xone_compiler_flags} -j4 modules"
