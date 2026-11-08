@@ -1,6 +1,6 @@
 name = "Emplacements des applications KDE"
 category = "kde"
-description = "Ajoute au clic droit des applications les dossiers du programme et du raccourci, avec suivi des mises à jour sans modifier les fichiers système."
+description = "Ajoute au clic droit des applications les dossiers du programme et du raccourci, avec suivi événementiel des raccourcis locaux."
 
 [packages]
 pacman = ["python", "dolphin", "desktop-file-utils"]
@@ -12,8 +12,8 @@ mode = "755"
 
 [[parts]]
 id = "auto-sync"
-name = "Suivre les installations et mises à jour"
-description = "Synchronise toutes les deux minutes et retire uniquement les copies générées devenues inutiles."
+name = "Suivre les changements des raccourcis locaux"
+description = "Réagit aux changements des dossiers locaux, sans timer ni téléchargement, et retire les copies générées inutiles."
 default = true
 apply = "enable-sync.sh"
 check = "check-sync.sh"
@@ -23,5 +23,5 @@ src = "files/kde-app-locations.service"
 dst = "~/.config/systemd/user/kde-app-locations.service"
 
 [[parts.files]]
-src = "files/kde-app-locations.timer"
-dst = "~/.config/systemd/user/kde-app-locations.timer"
+src = "files/kde-app-locations.path"
+dst = "~/.config/systemd/user/kde-app-locations.path"

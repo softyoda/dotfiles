@@ -1,6 +1,9 @@
 [Unit]
-Description=Synchronize KDE application location actions
+Description=Update location actions after local launcher changes
+StartLimitIntervalSec=30s
+StartLimitBurst=20
 
 [Service]
 Type=oneshot
+ExecStartPre=/usr/bin/sleep 1
 ExecStart=%h/.local/bin/kde-app-locations sync

@@ -20,7 +20,11 @@ dotctl apply kde-app-locations
 ```
 
 Le socle ajoute les actions une fois. La partie `auto-sync`, activée par défaut,
-suit les nouvelles installations et les mises à jour toutes les deux minutes.
+réagit aux changements des dossiers de raccourcis locaux via une unité systemd
+`.path` (inotify). Il n’y a plus de timer, de scrutation périodique ni de processus
+Python résident. Le traitement ne se lance que sur un changement local, avec une
+seconde de regroupement des événements. Les sous-dossiers existants sont aussi
+surveillés ; la liste est ajustée lorsqu’un nouveau sous-dossier apparaît.
 Les fichiers système ne sont pas modifiés. Les copies utilisateur générées sont
 suivies dans `~/.local/state/kde-app-locations/managed.json` : leurs mises à jour
 repartent du raccourci source, et une copie inchangée est retirée quand sa source
@@ -30,6 +34,25 @@ personnels déjà orphelins ne sont pas supprimés arbitrairement.
 Cette personnalisation ne remplace pas Kickoff, ne change pas les favoris ni la
 disposition du panneau. Elle fonctionne via les actions standard des raccourcis,
 pas par modification du binaire ou des fichiers QML système de Plasma.
+
+## Périmètre et sécurité
+
+Ce module **ne télécharge rien, n’installe aucune application et ne met à jour
+aucun logiciel**. « Suivre les changements » signifie uniquement adapter les
+actions de clic droit quand un raccourci installé localement change. Il ne lance
+pas la commande `Exec` des applications qu’il inspecte et n’utilise pas sudo.
+Les fichiers système sont seulement lus. Les écritures sont limitées aux copies
+utilisateur gérées et à l’état local nécessaire pour leur restauration.
+
+La surveillance est assurée par le systemd utilisateur déjà présent, sans
+vérification planifiée à intervalle fixe. Les événements peuvent produire un
+second passage sans modification après les propres écritures du module ; les
+passages suivants ne changent rien et ne créent pas de boucle. Une limite de
+déclenchements protège contre une avalanche d’événements.
+
+Les chemins XDG observés sont générés localement dans
+`~/.config/systemd/user/kde-app-locations.path.d/sources.conf`, jamais copiés
+dans le dépôt. L’ancien timer est désactivé lors de la migration.
 
 ## Vérifier
 

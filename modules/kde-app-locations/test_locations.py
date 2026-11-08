@@ -28,6 +28,11 @@ class Locations(unittest.TestCase):
   marker=self.root/'must-not-exist';self.assertEqual(m.resolve_executable('[Desktop Entry]\nExec=/bin/sh -c "touch '+str(marker)+'"\n'),pathlib.Path('/bin/sh').resolve());self.assertFalse(marker.exists())
  def test_action_carries_explicit_launcher_uri(self):
   p=self.system/'with spaces.desktop';p.write_text(BASE);self.sync();text=(self.user/p.name).read_text();self.assertNotIn('%k',text);self.assertIn('with%%20spaces.desktop',text)
+ def test_personal_permissions_are_preserved(self):
+  p=self.user/'private.desktop';p.write_text(BASE);p.chmod(0o600);self.sync();self.assertEqual(p.stat().st_mode & 0o777,0o600);self.sync(restore=True);self.assertEqual(p.stat().st_mode & 0o777,0o600)
+ def test_watch_config_is_event_based_and_covers_subdirs(self):
+  nested=self.system/'nested';nested.mkdir();text=m.watch_config(self.roots)
+  self.assertIn('PathChanged='+str(nested),text);self.assertNotIn('OnUnitActiveSec',text);self.assertNotIn('Timer',text)
  def test_file_url_with_spaces(self):
   path=self.root/'with spaces.desktop';self.assertEqual(m.reference(path.as_uri()),path)
 if __name__=='__main__':unittest.main()

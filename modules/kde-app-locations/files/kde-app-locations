@@ -57,9 +57,35 @@ def data_roots():
   if p not in roots:roots.append(p)
  return roots
 
+def watch_file():
+ return pathlib.Path(os.environ.get('XDG_CONFIG_HOME',pathlib.Path.home()/'.config'))/'systemd/user/kde-app-locations.path.d/sources.conf'
+
+def watch_config(roots):
+ paths=set()
+ for root in roots:
+  paths.add(root.absolute())
+  if root.is_dir():paths.update(p.absolute() for p in root.rglob('*') if p.is_dir() and not p.is_symlink())
+ lines=['# Generated from local XDG application directories. No polling.','[Path]','PathChanged=']
+ for path in sorted(paths):
+  value=str(path).replace('%','%%')
+  if any(ord(c)<32 for c in value):continue
+  lines.append('PathChanged='+value)
+ return '\n'.join(lines)+'\n'
+
+def configure_watch(roots,check=False):
+ path=watch_file();wanted=watch_config(roots)
+ try:current=path.read_text()
+ except OSError:current=None
+ changed=current!=wanted
+ if changed and not check:write(path,wanted)
+ return changed
+
 def digest(text):return hashlib.sha256(text.encode()).hexdigest()
 
-def write(path,text,mode=0o644):
+def write(path,text,mode=None):
+ if mode is None:
+  try:mode=path.stat().st_mode & 0o777
+  except FileNotFoundError:mode=0o644
  path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_name(path.name+'.app-locations-tmp');tmp.write_text(text);tmp.chmod(mode);os.replace(tmp,path)
 
 def sync(roots,state_path,helper,check=False,restore=False):
@@ -154,7 +180,7 @@ def reference(value):
  return pathlib.Path(value).expanduser().absolute()
 
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('action',choices=['sync','check','restore','open']);ap.add_argument('kind',nargs='?',choices=['program','launcher']);ap.add_argument('desktop',nargs='?');ap.add_argument('--json',action='store_true');a=ap.parse_args()
+ ap=argparse.ArgumentParser();ap.add_argument('action',choices=['sync','check','restore','open','watch','watch-check']);ap.add_argument('kind',nargs='?',choices=['program','launcher']);ap.add_argument('desktop',nargs='?');ap.add_argument('--json',action='store_true');a=ap.parse_args()
  try:
   if a.action=='open':
    if not a.kind or not a.desktop:raise ValueError('Raccourci manquant')
@@ -168,12 +194,19 @@ def main():
     result=subprocess.run(['gdbus','call','--session','--dest','org.freedesktop.FileManager1','--object-path','/org/freedesktop/FileManager1','--method','org.freedesktop.FileManager1.'+method,json.dumps([target.absolute().as_uri()]),''],capture_output=True,text=True,timeout=10)
     if result.returncode==0:return
    subprocess.run(['dolphin',str(target)] if target.is_dir() else ['dolphin','--select',str(target)],check=True);return
+  if a.action in ('watch','watch-check'):
+   changed=configure_watch(data_roots(),check=a.action=='watch-check')
+   if a.action=='watch-check' and changed:raise SystemExit(1)
+   print('Surveillance locale sur changement configurée.');return
   if a.action=='restore' and shutil.which('systemctl'):
-   subprocess.run(['systemctl','--user','disable','--now','kde-app-locations.timer'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+   subprocess.run(['systemctl','--user','disable','--now','kde-app-locations.timer','kde-app-locations.path'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
    subprocess.run(['systemctl','--user','stop','kde-app-locations.service'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
   state_dir=pathlib.Path(os.environ.get('XDG_STATE_HOME',pathlib.Path.home()/'.local/state'))/'kde-app-locations';state_dir.mkdir(parents=True,exist_ok=True)
   with (state_dir/'lock').open('w') as lock:
    fcntl.flock(lock,fcntl.LOCK_EX);changes=sync(data_roots(),state_dir/'managed.json',pathlib.Path(__file__).resolve(),check=a.action=='check',restore=a.action=='restore')
+  if a.action=='sync' and watch_file().exists() and configure_watch(data_roots()):
+   subprocess.run(['systemctl','--user','daemon-reload'],check=True)
+   subprocess.run(['systemctl','--user','try-restart','kde-app-locations.path'],check=True)
   if changes and a.action!='check':
    if shutil.which('kbuildsycoca6'):subprocess.run(['kbuildsycoca6'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)
   print(json.dumps({'changes':len(changes),'operations':changes},ensure_ascii=False) if a.json else f'{len(changes)} raccourci(s) à jour')

@@ -1,0 +1,11 @@
+[Unit]
+Description=Watch local KDE application launcher changes
+
+[Path]
+PathChanged=/usr/share/applications
+Unit=kde-app-locations.service
+TriggerLimitIntervalSec=30s
+TriggerLimitBurst=20
+
+[Install]
+WantedBy=default.target

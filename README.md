@@ -97,7 +97,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 | Module | Ce que ça fait |
 |---|---|
-| [`kde-app-locations`](modules/kde-app-locations/) | Ajoute au clic droit des applications les dossiers du programme et du raccourci, avec suivi des mises à jour sans modifier les fichiers système. |
+| [`kde-app-locations`](modules/kde-app-locations/) | Ajoute au clic droit des applications les dossiers du programme et du raccourci, avec suivi événementiel des raccourcis locaux. |
 | [`kde-shortcuts`](modules/kde-shortcuts/) | Raccourcis globaux : Meta+C bascule le cube, Meta+A / Meta+Maj+A parcourent les activités, Ctrl+Alt+T n'ouvre plus Konsole. |
 | [`kde-theme`](modules/kde-theme/) | Apparence complète du bureau : thème We10XOS sombre, accent gris, icônes We10X, effets KWin (verre, flou, fenêtres molles), splash Watch_Dogs et fond d'écran flouté en diaporama. ✋ |
 | [`media-key-f9`](modules/media-key-f9/) | La touche F9 met en pause ou relance la musique/vidéo en cours, pour les claviers sans touches multimédia. |
