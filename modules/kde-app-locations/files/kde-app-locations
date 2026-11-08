@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""Desktop actions for locating application executables and launcher files.
+Never executes the application's Exec command. User installation only.
+"""
+import argparse,configparser,fcntl,hashlib,json,os,pathlib,re,shlex,shutil,subprocess,sys,urllib.parse
+ACTIONS={'DotfilesOpenProgram':('Open executable folder','Ouvrir le dossier du programme','program'),'DotfilesOpenLauncher':('Open launcher folder','Ouvrir le dossier du raccourci','launcher')}
+PREFIX='X-Dotfiles-AppLocations-'
+
+def desktop(text):
+ p=configparser.ConfigParser(interpolation=None,strict=False);p.optionxform=str;p.read_string(text);return p
+
+def clean(text):
+ out=[];section=''
+ for line in text.splitlines():
+  if line.startswith('[') and line.endswith(']'):section=line[1:-1]
+  if section in {'Desktop Action '+a for a in ACTIONS}:continue
+  if section=='Desktop Entry':
+   if line.startswith(PREFIX):continue
+   if line.startswith('Actions='):
+    remaining=[a for a in line[8:].split(';') if a and a not in ACTIONS]
+    if remaining:out.append('Actions='+';'.join(remaining)+';')
+    continue
+  out.append(line)
+ return '\n'.join(out).rstrip()+'\n'
+
+def decorated(text,helper,generated,source,launcher=None):
+ text=clean(text);p=desktop(text)
+ if 'Desktop Entry' not in p or p['Desktop Entry'].get('Type')!='Application':return None
+ entry=p['Desktop Entry']
+ if entry.get('Hidden','false').lower()=='true' or entry.get('NoDisplay','false').lower()=='true':return None
+ if not entry.get('Exec') and entry.get('DBusActivatable','false').lower()!='true':return None
+ lines=text.splitlines();start=lines.index('[Desktop Entry]');end=next((i for i in range(start+1,len(lines)) if lines[i].startswith('[')),len(lines))
+ old=[a for a in entry.get('Actions','').split(';') if a]
+ action_line=next((i for i in range(start+1,end) if lines[i].startswith('Actions=')),None)
+ action='Actions='+';'.join(old+list(ACTIONS))+';'
+ if action_line is not None:lines[action_line]=action
+ else:
+  while end>start+1 and not lines[end-1].strip():end-=1
+  lines.insert(end,action)
+ end=next((i for i in range(start+1,len(lines)) if lines[i].startswith('[')),len(lines))
+ while end>start+1 and not lines[end-1].strip():end-=1
+ lines[end:end]=[PREFIX+'Managed=true',PREFIX+'Generated='+str(generated).lower(),PREFIX+'Source='+source]
+ quoted='"'+str(helper).replace('\\','\\\\').replace('"','\\"').replace('%','%%')+'"'
+ uri=pathlib.Path(launcher).absolute().as_uri() if launcher is not None else source
+ reference_arg='"'+uri.replace('%','%%')+'"'
+ for key,(english,french,kind) in ACTIONS.items():
+  lines+=['','[Desktop Action '+key+']','Name='+english,'Name[fr]='+french,'Icon=folder-open','Exec='+quoted+' open '+kind+' '+reference_arg]
+ return '\n'.join(lines)+'\n'
+
+def data_roots():
+ home=pathlib.Path(os.environ.get('XDG_DATA_HOME',pathlib.Path.home()/'.local/share'))
+ roots=[home/'applications']
+ values=os.environ.get('XDG_DATA_DIRS','/usr/local/share:/usr/share').split(':')
+ values+=[str(pathlib.Path.home()/'.local/share/flatpak/exports/share'),'/var/lib/flatpak/exports/share']
+ for value in values:
+  p=pathlib.Path(value)/'applications'
+  if p not in roots:roots.append(p)
+ return roots
+
+def digest(text):return hashlib.sha256(text.encode()).hexdigest()
+
+def write(path,text,mode=0o644):
+ path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_name(path.name+'.app-locations-tmp');tmp.write_text(text);tmp.chmod(mode);os.replace(tmp,path)
+
+def sync(roots,state_path,helper,check=False,restore=False):
+ user=roots[0];state=json.loads(state_path.read_text()) if state_path.exists() else {};changes=[];new=dict(state);effective={};processed=set()
+ if not restore:
+  for base in roots:
+   if not base.is_dir():continue
+   for path in sorted(base.rglob('*.desktop')):
+    id=str(path.relative_to(base)).replace('/','-')
+    if id in effective:continue
+    record=state.get(str(path))
+    try:text=path.read_text()
+    except (OSError,UnicodeError):continue
+    if record and record['kind']=='generated' and digest(text)==record['managed_hash']:continue
+    if record and record['kind']=='symlink' and digest(text)==record['managed_hash']:
+     origin=pathlib.Path(record['origin'])
+     try:text=origin.read_text()
+     except (OSError,UnicodeError):continue
+     effective[id]=(path,text,record['origin'],record['kind'],record.get('link_target'));continue
+    kind='personal' if base==user else 'generated';origin=str(path);link=None
+    if base==user and path.is_symlink():kind='symlink';link=os.readlink(path);origin=str(path.resolve())
+    effective[id]=(path,text,origin,kind,link)
+  for id,(path,text,origin,kind,link) in effective.items():
+   destination=path if kind in ('personal','symlink') else user/id
+   old=state.get(str(destination));baseline=clean(text)
+   try:wanted=decorated(baseline,helper,kind=='generated',pathlib.Path(origin).as_uri(),destination)
+   except (ValueError,configparser.Error):continue
+   if wanted is None:continue
+   processed.add(str(destination))
+   try:current=destination.read_text()
+   except OSError:current=None
+   if current!=wanted or destination.is_symlink():
+    changes.append(('update',str(destination)))
+    if not check:write(destination,wanted)
+   new[str(destination)]={'kind':kind,'origin':origin,'link_target':link,'managed_hash':digest(wanted),'baseline':baseline}
+ # Remove only owned copies. Never discard a user's subsequent edits.
+ for name,record in state.items():
+  path=pathlib.Path(name)
+  if not restore and name in processed:continue
+  try:current=path.read_text()
+  except OSError:new.pop(name,None);continue
+  if record['kind']=='generated' and digest(current)==record['managed_hash']:
+   changes.append(('remove-generated',name))
+   if not check:path.unlink()
+  elif record['kind']=='symlink' and digest(current)==record['managed_hash']:
+   changes.append(('restore-link',name))
+   if not check:path.unlink();path.symlink_to(record['link_target'])
+  else:
+   original=clean(current)
+   if current!=original:
+    changes.append(('remove-actions',name))
+    if not check:write(path,original)
+  new.pop(name,None)
+ if not check:
+  state_path.parent.mkdir(parents=True,exist_ok=True);write(state_path,json.dumps(new,ensure_ascii=False,indent=2),0o600)
+ return changes
+
+def resolve_executable(text):
+ p=desktop(text);entry=p['Desktop Entry'];tokens=shlex.split(entry.get('Exec',''))
+ while tokens and tokens[0].startswith('%'):tokens.pop(0)
+ if tokens and pathlib.Path(tokens[0]).name=='env':
+  tokens.pop(0)
+  while tokens:
+   if tokens[0] in ('-u','--unset','-C','--chdir'):tokens=tokens[2:]
+   elif tokens[0]=='--':tokens.pop(0);break
+   elif tokens[0].startswith('-') or '=' in tokens[0]:tokens.pop(0)
+   else:break
+ if not tokens:raise ValueError('Ce raccourci ne fournit pas de commande exécutable.')
+ if pathlib.Path(tokens[0]).name=='flatpak' and 'run' in tokens:
+  ids=[t for t in tokens[tokens.index('run')+1:] if re.fullmatch(r'[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){2,}',t)]
+  if ids and shutil.which('flatpak'):
+   r=subprocess.run(['flatpak','info','--show-location',ids[0]],capture_output=True,text=True,timeout=10)
+   if r.returncode==0:
+    files=pathlib.Path(r.stdout.strip())/'files';commands=[t.split('=',1)[1] for t in tokens if t.startswith('--command=')]
+    if '--command' in tokens:
+     index=tokens.index('--command');commands=tokens[index+1:index+2]
+    if commands:
+     target=files/commands[0].removeprefix('/app/').lstrip('/') if commands[0].startswith('/app/') else files/'bin'/commands[0]
+     if target.exists():return target.resolve()
+    return files
+ target=pathlib.Path(tokens[0]).expanduser() if '/' in tokens[0] else pathlib.Path(shutil.which(tokens[0]) or tokens[0])
+ if not target.is_file():raise ValueError('Programme introuvable : '+tokens[0])
+ return target.resolve()
+
+def reference(value):
+ if value.startswith('file:'):return pathlib.Path(urllib.parse.unquote(urllib.parse.urlparse(value).path))
+ if value.startswith('applications:'):
+  name=value.split(':',1)[1]
+  for base in data_roots():
+   p=base/name
+   if p.is_file():return p
+ return pathlib.Path(value).expanduser().absolute()
+
+def main():
+ ap=argparse.ArgumentParser();ap.add_argument('action',choices=['sync','check','restore','open']);ap.add_argument('kind',nargs='?',choices=['program','launcher']);ap.add_argument('desktop',nargs='?');ap.add_argument('--json',action='store_true');a=ap.parse_args()
+ try:
+  if a.action=='open':
+   if not a.kind or not a.desktop:raise ValueError('Raccourci manquant')
+   path=reference(a.desktop);target=resolve_executable(path.read_text()) if a.kind=='program' else path
+   if not target.exists():raise ValueError('Emplacement introuvable : '+str(target))
+   if a.json:print(json.dumps({'path':str(target),'directory':str(target if target.is_dir() else target.parent)},ensure_ascii=False));return
+   # Let the desktop's file-manager service own the window lifetime. A detached
+   # child of a short-lived Desktop Action may otherwise be killed by systemd.
+   if shutil.which('gdbus'):
+    method='ShowFolders' if target.is_dir() else 'ShowItems'
+    result=subprocess.run(['gdbus','call','--session','--dest','org.freedesktop.FileManager1','--object-path','/org/freedesktop/FileManager1','--method','org.freedesktop.FileManager1.'+method,json.dumps([target.absolute().as_uri()]),''],capture_output=True,text=True,timeout=10)
+    if result.returncode==0:return
+   subprocess.run(['dolphin',str(target)] if target.is_dir() else ['dolphin','--select',str(target)],check=True);return
+  if a.action=='restore' and shutil.which('systemctl'):
+   subprocess.run(['systemctl','--user','disable','--now','kde-app-locations.timer'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+   subprocess.run(['systemctl','--user','stop','kde-app-locations.service'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+  state_dir=pathlib.Path(os.environ.get('XDG_STATE_HOME',pathlib.Path.home()/'.local/state'))/'kde-app-locations';state_dir.mkdir(parents=True,exist_ok=True)
+  with (state_dir/'lock').open('w') as lock:
+   fcntl.flock(lock,fcntl.LOCK_EX);changes=sync(data_roots(),state_dir/'managed.json',pathlib.Path(__file__).resolve(),check=a.action=='check',restore=a.action=='restore')
+  if changes and a.action!='check':
+   if shutil.which('kbuildsycoca6'):subprocess.run(['kbuildsycoca6'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)
+  print(json.dumps({'changes':len(changes),'operations':changes},ensure_ascii=False) if a.json else f'{len(changes)} raccourci(s) à jour')
+  if a.action=='check' and changes:raise SystemExit(1)
+ except (OSError,ValueError,configparser.Error,subprocess.TimeoutExpired) as e:
+  if a.action=='open' and not a.json and shutil.which('kdialog'):subprocess.Popen(['kdialog','--error',str(e)])
+  else:print(str(e),file=sys.stderr)
+  raise SystemExit(1)
+if __name__=='__main__':main()

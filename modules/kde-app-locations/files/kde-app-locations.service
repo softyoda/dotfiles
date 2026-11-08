@@ -1,0 +1,6 @@
+[Unit]
+Description=Synchronize KDE application location actions
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/kde-app-locations sync
