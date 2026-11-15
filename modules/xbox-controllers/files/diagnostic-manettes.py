@@ -69,7 +69,7 @@ def snapshot():
     pairing = {str(p): read(p) for p in Path('/sys/bus/usb/drivers/xone-dongle').glob('*/pairing')}
     driver = {key: read(Path('/sys/module/xone_dongle')/key) for key in ('version', 'srcversion')}
     gip = sorted(p.name for p in Path('/sys/bus/xone-gip/devices').glob('*'))
-    return {'controllers': inputs, 'usb': usb, 'active_clients': clients, 'pairing': pairing, 'batteries': batteries, 'driver': driver, 'gip_devices': gip}
+    return {'controllers': inputs, 'usb': usb, 'active_clients': clients, 'pairing': pairing, 'batteries': batteries, 'driver': driver, 'gip_devices': gip, 'event_trace_config': read('/etc/modprobe.d/xone-event-traces.conf')}
 
 def collect():
     record('start', {'boot_id': read('/proc/sys/kernel/random/boot_id'), 'kernel': run(['uname', '-r']).strip()})
@@ -130,6 +130,7 @@ def report():
         kernel = run(['journalctl', '_TRANSPORT=kernel', '--since', '-7days', '-n', '50000', '--no-pager', '-o', 'short-iso-precise'])
         (root/'noyau-recent.txt').write_text('\n'.join(l for l in kernel.splitlines() if MATCH.search(l)))
         sources = {
+            'xone-event-traces.conf': Path('/etc/modprobe.d/xone-event-traces.conf'),
             'steam-controller.txt': HOME/'.local/share/Steam/logs/controller.txt',
             'esde.txt': HOME/'ES-DE/logs/es_log.txt',
             'esde-precedent.txt': HOME/'ES-DE/logs/es_log.txt.bak',

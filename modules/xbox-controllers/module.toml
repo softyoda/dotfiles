@@ -51,3 +51,21 @@ apply = "apply-reconnect.sh"
 check = "check-reconnect.sh"
 [parts.packages]
 pacman = ["dkms", "clang", "llvm", "gcc", "make"]
+
+[[parts]]
+id = "event-traces"
+name = "Traces détaillées des connexions Xbox"
+description = "Événements de perte radio, connexion GIP et firmware, persistants au chargement des modules ; aucun paquet de boutons."
+default = false
+requires = ["xbox-controllers/diagnostics"]
+apply = "apply-event-traces.sh"
+check = "check-event-traces.sh"
+[[parts.files]]
+src = "files/xone-event-traces.conf"
+dst = "/etc/modprobe.d/xone-event-traces.conf"
+root = true
+[[parts.files]]
+src = "files/xone-event-traces.py"
+dst = "/usr/local/libexec/xone-event-traces.py"
+root = true
+mode = "755"

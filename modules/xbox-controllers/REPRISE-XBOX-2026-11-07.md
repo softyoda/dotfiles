@@ -191,3 +191,19 @@ la progression et les autres réglages n’ont pas été effacés. Sauvegarde pr
 Résultat visé : A valide, B revient ; l’utilisateur avait confirmé la correction.
 Ces réglages du jeu n’expliquent pas les pertes radio et ne doivent pas être
 réinitialisés pour diagnostiquer le dongle. Les profils privés ne sont pas publiés.
+
+## Complément du 15 novembre : coupure spontanée en jeu
+
+À 22:10:37, Steam perd le périphérique ; à 22:10:38 le collecteur voit zéro input,
+zéro client et aucun GIP. Nouveau client à 22:10:44, input réel à 22:10:45, Steam
+rétabli à 22:10:46. L’utilisateur jouait activement à 007 et le voyant clignotait.
+Dongle resté présent, pas de reset/suspend USB ou erreur xone relevés dans cette
+fenêtre. Batterie High avant/après. Pilote local 0.5.8.1 et même srcversion chargés
+sur le nouveau noyau 7.3.3-1-cachyos : la recompilation DKMS a bien conservé le correctif.
+
+La vraie reconnexion a fonctionné sans intervention, mais une perte transitoire
+reste possible. Les seules traces alors actives ne donnent pas le motif de perte
+radio/GIP ; ne pas attribuer cet incident à des interférences ou à un défaut matériel
+sans preuve. Le rapport brut reste local dans `~/Documents/tmp/diagnostic-xbox-20261115/`.
+La sous-partie `event-traces`, décrite dans le README, prépare une instrumentation
+ciblée sans répéter de tests perturbateurs.
