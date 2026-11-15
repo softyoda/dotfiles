@@ -207,3 +207,21 @@ radio/GIP ; ne pas attribuer cet incident à des interférences ou à un défaut
 sans preuve. Le rapport brut reste local dans `~/Documents/tmp/diagnostic-xbox-20261115/`.
 La sous-partie `event-traces`, décrite dans le README, prépare une instrumentation
 ciblée sans répéter de tests perturbateurs.
+
+### Activation autorisée et vérifiée le 15 novembre à 22 h 18
+
+Après accord explicite de l’utilisateur, les deux fichiers de `event-traces` ont
+été installés. Le helper a activé et relu **28 points de trace disponibles sur 28**
+dans le noyau courant. Aucun reset, reload, appairage ou recompilation n’a été fait.
+Le collecteur utilisateur a été actualisé et redémarré ; actif et activé au login.
+Un état archivé contient la configuration des traces, le pilote 0.5.8.1 et une vraie
+manette toujours présente. `modprobe -c` reconnaît les deux options persistantes.
+Leur prise d’effet après le prochain redémarrage reste à vérifier ; l’activation
+immédiate, elle, a été vérifiée. Aucun nouvel essai de coupure n’a été provoqué.
+L’utilisateur part dormir et jouera un autre jour : ne pas lui demander une
+nouvelle session de tests pour cette activation. Les journaux locaux peuvent
+contenir des identifiants matériels ; les anonymiser avant publication.
+
+Le raccourci Diagnostic existant conserve les deux actions de localisation
+ajoutées par la fonctionnalité KDE des dotfiles ; leurs chemins sont templatisés,
+sans chemin utilisateur en dur dans Git.
