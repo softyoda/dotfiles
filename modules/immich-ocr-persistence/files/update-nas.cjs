@@ -32,6 +32,10 @@ async function backup(file){
  }finally{fs.closeSync(fd)}
  if(fs.statSync(file).size===0)throw Error('Sauvegarde vide');
 }
+function verifyOcr(){
+ const p=spawnSync('docker',['exec','immich-server','node','/opt/immich-ocr/apply.cjs'],{stdio:'inherit'});
+ if(p.error||p.status!==0)console.warn('AVERTISSEMENT : hook OCR indisponible ; mise à jour Immich conservée.');
+}
 async function main(){
  run(['docker','compose','config','--quiet']);
  const current=await version();
@@ -51,8 +55,8 @@ async function main(){
  if(older)throw Error('Refus de rétrograder le serveur');
  if(a[0]!==b[0])throw Error('Version majeure : lire les notes et effectuer une migration explicite');
  if(current===target){
-  run(['docker','exec','immich-server','node','/opt/immich-ocr/apply.cjs']);
-  console.log('Déjà à jour ; OCR vérifié.');return;
+  verifyOcr();
+  console.log('Déjà à jour ; contrôle OCR effectué.');return;
  }
  const stamp=new Date().toISOString().replace(/[:.]/g,'-');
  const dc=(...args)=>run(['docker','compose',...args],{env:{...process.env,IMMICH_VERSION:target}});
@@ -83,7 +87,7 @@ async function main(){
  }
  if(!healthy)throw Error('Serveur non sain : workers maintenus en pause, consulter les journaux');
  writeRequest({phase:'ready',token,target});
- run(['docker','exec','immich-server','node','/opt/immich-ocr/apply.cjs']);
- console.log('NAS à jour, OCR vérifié. Les workers se réalignent automatiquement quand le PC est disponible.');
+ verifyOcr();
+ console.log('NAS à jour, contrôle OCR effectué. Les workers se réalignent automatiquement quand le PC est disponible.');
 }
 main().catch(e=>{console.error('ÉCHEC : '+e.message);process.exitCode=1});

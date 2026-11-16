@@ -15,12 +15,16 @@ def main():
     if '--check' in sys.argv:
         return subprocess.run(ssh + ['sudo -n docker exec immich-server node /opt/immich-ocr/apply.cjs']).returncode
     payload = {'stack': config['nas_stack'], 'files': {
-        n: (ASSETS / n).read_text() for n in ['apply.cjs', 'update-nas.cjs']},
+        n: (ASSETS / n).read_text() for n in ['apply.cjs', 'panel.js', 'cache.cjs', 'update-nas.cjs']},
         'config': {'server_url': config['server_url'], 'worker_ping': config['worker_ping']}}
     # The remote program receives JSON as stdin, never shell-interpolated file content.
     script = (ASSETS / 'install-remote.py').read_text()
     subprocess.run(ssh + ['python3 -c ' + shlex.quote(script)],
                    input=json.dumps(payload), text=True, check=True)
+    result = subprocess.run(ssh + ['sudo -n docker exec immich-server node /opt/immich-ocr/apply.cjs'], check=True, text=True, stdout=subprocess.PIPE)
+    print(result.stdout, end='')
+    if 'OCR_ASSETS_CHANGED' in result.stdout:
+        subprocess.run(ssh + ['sudo -n docker restart immich-server'], check=True)
     dockge_payload = {'stack': config['dockge_host_stack'],
                       'patch': (ASSETS / 'patch-dockge.cjs').read_text()}
     subprocess.run(ssh + ['python3 -c ' + shlex.quote((ASSETS / 'install-dockge.py').read_text())],

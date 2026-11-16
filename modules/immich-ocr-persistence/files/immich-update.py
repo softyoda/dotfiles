@@ -26,11 +26,38 @@ def version():
     with urllib.request.urlopen(urllib.request.Request(CONFIG['server_url']+'/api/server/version', headers={'User-Agent':'immich-maintenance'}),timeout=8) as r:
         v=json.load(r)
     return 'v{major}.{minor}.{patch}'.format(**v)
+def notify_ocr_status(states, target):
+    # Read only the hook status on the existing NAS mount, never photo/OCR content.
+    try:
+        mounts = [m for s in states for m in s.get('Mounts', [])
+                  if m.get('Destination') == '/usr/src/app/upload']
+        if not mounts:
+            return
+        status = json.loads((Path(mounts[0]['Source']) / '.immich-maintenance/ocr-status.json').read_text())
+        state_dir = Path.home() / '.local/state/immich'
+        previous = state_dir / 'ocr-notification.json'
+        if status.get('enabled') is True:
+            previous.unlink(missing_ok=True)
+            return
+        signature = {'version': target, 'reason': status.get('reason'), 'revision': status.get('revision')}
+        if previous.exists() and json.loads(previous.read_text()) == signature:
+            return
+        subprocess.run(['notify-send', '--app-name=Immich', '--urgency=normal',
+                        'Extension OCR désactivée',
+                        'Le panneau Texte reconnu et sa préférence sont incompatibles avec cette interface. '
+                        'Immich fonctionne normalement. Voir le module immich-ocr-persistence des dotfiles.'],
+                       check=True, timeout=5)
+        state_dir.mkdir(parents=True, exist_ok=True)
+        previous.write_text(json.dumps(signature))
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass  # Notifications must never prevent alignment.
+
 def align():
     target=version()
     if not re.fullmatch(r'v\d+\.\d+\.\d+',target):
         raise RuntimeError('Version serveur invalide')
     states=[inspect(n) for n in SERVICES]
+    notify_ocr_status(states,target)
     if not any(s['State']['Running'] for s in states):
         print('Workers arrêtés volontairement : aucun démarrage automatique.',flush=True)
         return

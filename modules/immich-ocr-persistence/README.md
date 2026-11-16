@@ -6,8 +6,10 @@ OCR déjà disponibles sont affichées : aucun travail ML supplémentaire.
 
 Le correctif vérifie la structure du bundle compilé, conserve un original et
 régénère gzip/Brotli. Il est idempotent, testé sur Immich v3.4.1.
-Une structure incompatible laisse Immich démarrer avec l'interface standard
-et produit un avertissement. Après installation : recharger sans cache
+Le panneau de droite affiche désormais « Texte reconnu » et « Tout copier »,
+indépendamment de la visibilité des cadres sur la photo.
+Une structure incompatible désactive l'extension (panneau et préférence) ;
+Immich démarre avec son interface standard et produit un avertissement. Après installation : recharger sans cache
 (Ctrl+Maj+R). Le choix est propre au navigateur et à l'adresse du site.
 
 ## Restauration
@@ -82,3 +84,85 @@ personnalisée est indisponible ; utiliser le bouton du bureau dans ce cas.
 Validation : tests OCR sur le bundle réel, tests simulés de mise à jour avec
 worker présent/absent, refus sans accusé de pause et sauvegarde en échec,
 puis pause/reprise réelle sans changement de version et vérification HTTP gzip.
+
+
+## Texte reconnu et sécurité
+
+Le panneau reprend la police héritée, les marges et la sobriété du menu.
+Le panneau se place sous le titre Information, uniquement pour une photo avec
+des résultats OCR déjà chargés par le gestionnaire du visualiseur. Il n'appelle
+aucune API, ne lit aucun jeton et ne déclenche aucun travail ML. La transcription
+n'est ni stockée dans le navigateur ni envoyée à un service externe.
+Seule la préférence booléenne d'affichage des cadres reste dans localStorage.
+
+Les textes passent uniquement par textarea.value et textContent, jamais par
+innerHTML, un interpréteur Markdown ou une URL. Aucune permission Immich,
+politique CSP, authentification ou route réseau n'est modifiée. La copie
+utilise navigator.clipboard.writeText seulement à la suite d'un clic explicite.
+En cas de refus du navigateur, le texte est sélectionné pour Ctrl+C.
+Les raccourcis du visualiseur sont neutralisés dans le champ de texte.
+
+Les zones sont regroupées par ligne puis triées de gauche à droite ; l'ordre
+des colonnes complexes, textes inclinés et documents RTL reste approximatif.
+Les zones masquées sont exclues. Données mixtes, coordonnées non numériques
+ou volumes excessifs désactivent le panneau plutôt que d'afficher un résultat
+ambigu. Le texte est effacé au changement de photo et à la fermeture.
+L'observateur DOM se déconnecte à la sortie du visualiseur ; aucun polling web.
+
+## Compatibilité et notifications
+
+Le hook n'accepte que les empreintes SHA-256 des bundles originaux de la version
+v3.4.1 effectivement testée (MANAGER_HASH et VIEWER_HASH dans files/apply.cjs,
+INDEX_HASH dans files/cache.cjs).
+Un nouvel assemblage, même avec la même version, désactive l'extension tant qu'il
+n'a pas été relu et testé. Il ne suffit pas de remplacer les empreintes pour
+déclarer une nouvelle version compatible : revoir le gestionnaire OCR, la
+structure du panneau et exécuter les tests de navigation/sécurité.
+
+En cas d'incompatibilité :
+1. Aucun correctif n'est injecté ; un ancien correctif dans ce conteneur est
+   retiré à partir de sa sauvegarde originale et gzip/Brotli sont régénérés.
+2. Le serveur et sa mise à jour continuent ; la vérification OCR est facultative
+   dans update-nas.cjs. Une erreur OCR ne bloque pas l'alignement des workers.
+3. Un statut sans donnée personnelle est écrit dans
+   UPLOAD_LOCATION/.immich-maintenance/ocr-status.json.
+4. Le terminal Dockge et les logs indiquent la désactivation. Le timer utilisateur
+   lit ce statut sur le montage NAS existant et affiche une notification de bureau
+   sur Ryzen (au prochain contrôle, y compris après son retour). Une seule
+   notification par version/raison ; le rétablissement réarme cette notification.
+5. Un changement inattendu du DOM pendant l'utilisation désactive seulement le
+   panneau pour cette page et affiche un avertissement refermable dans Immich.
+
+Ce sont des notifications du bureau et un avertissement dans la page, pas une
+écriture dans la base de notifications native d'Immich. Sans session utilisateur,
+consulter les logs du NAS ; la notification de bureau attend le retour de Ryzen.
+
+Les ressources personnalisées sont publiées dans un répertoire statique
+/_app/immutable-ocr-<empreinte>/ et l'index HTML pointe vers celui-ci.
+Les imports absolus sont réécrits dans cette copie, les imports relatifs restent
+cohérents. Cela évite les anciens fichiers conservés dans le cache du navigateur
+ou du CDN, sans changer leurs politiques ni la CSP. La copie est d'environ
+27 Mo sur cette version, créée uniquement lors d'un changement du correctif.
+Le service worker Immich reste inchangé (il ne gère ici que les images API).
+
+L'index original est aussi vérifié par SHA-256 et sauvegardé. Une incompatibilité
+restaure cet index. L'installation redémarre le serveur uniquement lorsque les
+ressources ont changé, car Immich les charge en mémoire. Un onglet déjà ouvert
+doit être rechargé ; Ctrl+Maj+R reste utile en cas de cache ancien.
+
+## Tests de l'extension
+
+- node modules/immich-ocr-persistence/test.cjs
+- node modules/immich-ocr-persistence/test-update.cjs
+- python3 modules/immich-ocr-persistence/test-notify.py
+- node modules/immich-ocr-persistence/test-compat.cjs /chemin/bundles-originaux
+  (CUVvskNU.js, CC5MOeVu.js et index.html de v3.4.1, ne pas stocker les bundles dans Git).
+- test-browser.cjs utilise playwright-core et Chromium système. Installer
+  playwright-core dans un dossier de test temporaire, définir NODE_PATH vers
+  ses node_modules, puis lancer node sur ce test. OCR_TEST_SCREENSHOT permet
+  facultativement de conserver une capture de la page de test.
+
+Les tests navigateur utilisent des données synthétiques, sans compte connecté :
+injection HTML, copie explicite/refus, texte absent, chargement tardif, navigation,
+réouverture du panneau, structure incompatible et absence d'erreurs JavaScript.
+Les tests de notification interceptent notify-send ; ils n'envoient pas d'alerte.

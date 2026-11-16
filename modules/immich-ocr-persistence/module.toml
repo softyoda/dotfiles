@@ -1,9 +1,9 @@
 name = "Immich : préférence OCR et mise à jour"
 category = "homelab"
-description = "Mémorise le bouton OCR, réapplique le correctif au démarrage du serveur et relie Dockge à la mise à jour NAS + workers."
+description = "Ajoute le texte OCR et Tout copier, mémorise le bouton OCR, réapplique le correctif au démarrage du serveur et relie Dockge à la mise à jour NAS + workers."
 vars = ["IMMICH_UPDATE_LOCAL_STACK", "IMMICH_UPDATE_NAS_STACK", "IMMICH_UPDATE_NAS_SSH", "IMMICH_UPDATE_SERVER_URL", "IMMICH_UPDATE_WORKER_PING", "IMMICH_UPDATE_DOCKGE_STACK", "IMMICH_UPDATE_DOCKGE_HOST_STACK"]
 [packages]
-pacman = ["python-pyqt6", "python-yaml"]
+pacman = ["python-pyqt6", "python-yaml", "libnotify"]
 [[files]]
 src = "files/apply.cjs"
 dst = "~/.local/share/immich-ocr/apply.cjs"
@@ -53,3 +53,11 @@ dst = "~/.config/systemd/user/immich-worker-align.service"
 [[files]]
 src = "files/immich-worker-align.timer"
 dst = "~/.config/systemd/user/immich-worker-align.timer"
+
+[[files]]
+src = "files/panel.js"
+dst = "~/.local/share/immich-ocr/panel.js"
+
+[[files]]
+src = "files/cache.cjs"
+dst = "~/.local/share/immich-ocr/cache.cjs"
