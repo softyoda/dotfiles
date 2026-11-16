@@ -1,6 +1,6 @@
 name = "Récupération du signal TV HDMI"
 category = "hardware"
-description = "Quand la TV HDMI reste « sans signal » (au rallumage ou en changeant d'entrée), le signal est relancé tout seul ; Alt+F9 force une re-détection."
+description = "Quand la TV HDMI reste « sans signal » (au rallumage ou en changeant d'entrée), le signal est relancé tout seul ; Alt+F9 relance la liaison par un changement temporaire de mode."
 vars = ["HDMI_TV_EDID_MATCH"]
 
 [packages]
@@ -24,3 +24,8 @@ template = true
 [[files]]
 src = "files/hdmi-redetect.desktop"
 dst = "~/.local/share/applications/hdmi-redetect.desktop"
+template = true
+
+[[files]]
+src = "files/manual.py"
+dst = "~/.local/share/hdmi-recovery/manual.py"

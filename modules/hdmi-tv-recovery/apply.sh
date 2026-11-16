@@ -9,7 +9,9 @@ dst=/etc/sudoers.d/hdmi-redetect
 tmp=$(mktemp)
 trap 'rm -f -- "$tmp"' EXIT
 sed "s/\${USER}/$USER/g" "$MODULE_DIR/files/sudoers-hdmi-redetect" > "$tmp"
-if ! as_root cmp -s "$tmp" "$dst"; then
+if sudo -n -l /usr/local/bin/hdmi-redetect >/dev/null 2>&1; then
+    info "autorisation du helper HDMI déjà disponible"
+elif ! as_root cmp -s "$tmp" "$dst"; then
     as_root visudo -cf "$tmp" >/dev/null || { error "règle sudoers invalide, non installée"; exit 1; }
     as_root install -m 440 -o root -g root "$tmp" "$dst"
     info "règle sudoers installée : $dst"

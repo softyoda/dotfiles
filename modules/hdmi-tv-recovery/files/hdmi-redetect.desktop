@@ -1,7 +1,23 @@
 [Desktop Entry]
 Type=Application
-Name=Re-détecter l'écran HDMI
-Comment=Force la re-détection de la TV quand elle reste sans signal
-Exec=sudo -n /usr/local/bin/hdmi-redetect
+Name=Récupérer le signal HDMI
+Comment=Change brièvement de mode vidéo, puis rétablit le mode initial
+Exec=/usr/bin/python ${HOME}/.local/share/hdmi-recovery/manual.py
 Icon=video-display
 Categories=System;
+Actions=DotfilesOpenProgram;DotfilesOpenLauncher;
+X-Dotfiles-AppLocations-Managed=true
+X-Dotfiles-AppLocations-Generated=false
+X-Dotfiles-AppLocations-Source=file://${HOME}/.local/share/applications/hdmi-redetect.desktop
+
+[Desktop Action DotfilesOpenProgram]
+Name=Open executable folder
+Name[fr]=Ouvrir le dossier du programme
+Icon=folder-open
+Exec="${HOME}/.local/bin/kde-app-locations" open program "file://${HOME}/.local/share/applications/hdmi-redetect.desktop"
+
+[Desktop Action DotfilesOpenLauncher]
+Name=Open launcher folder
+Name[fr]=Ouvrir le dossier du raccourci
+Icon=folder-open
+Exec="${HOME}/.local/bin/kde-app-locations" open launcher "file://${HOME}/.local/share/applications/hdmi-redetect.desktop"
