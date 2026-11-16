@@ -23,7 +23,5 @@ python3 "$HOME/.local/share/immich-ocr/install-worker.py"
 python3 "$HOME/.local/share/immich-ocr/configure-ml.py"
 install -m 644 "$HOME/.local/share/immich-ocr/immich-update.desktop" "$HOME/.local/share/applications/immich-update.desktop"
 update-desktop-database "$HOME/.local/share/applications"
-desktop=$(xdg-user-dir DESKTOP)
-install -m 755 "$HOME/.local/share/applications/immich-update.desktop" "$desktop/Mettre à jour Immich.desktop"
 systemctl --user daemon-reload
 systemctl --user enable --now immich-worker-align.timer

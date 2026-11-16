@@ -26,7 +26,7 @@ Configurer les valeurs dans le profil privé :
 Examiner avec « dotctl plan immich-ocr-persistence --json », puis appliquer
 avec « dotctl apply immich-ocr-persistence ». Les Compose sont sauvegardés.
 Seuls Immich serveur, microservices et Dockge sont recréés, sans mise à jour
-de version. Un raccourci de bureau et un timer utilisateur sont installés.
+de version. Un timer utilisateur est installé. Aucun raccourci n’est créé sur le bureau.
 
 Prérequis : noms de conteneurs standard (immich-server, immich-db,
 immich-microservices, immich-machine-learning, dockge), Docker local,
@@ -38,7 +38,8 @@ stack locale.
 ## Boutons de mise à jour
 
 Le bouton existant de la zone de notification utilise immich-update.py.
-Le nouveau raccourci « Mettre à jour Immich » ouvre une confirmation.
+La mise à jour reste accessible depuis l’icône de l’application microservices
+dans la zone de notification.
 
 Dans Dockge, stack Immich, utiliser le bouton existant **Mettre à jour**.
 Il exécute la procédure côté NAS, même si le PC est éteint, sous l'authentification
@@ -79,7 +80,7 @@ empêcherait le démarrage. L'image officielle sans hook rétablit le web origin
 
 Le hook Dockge est également réappliqué à son démarrage. Si son code devient
 incompatible, Dockge démarre normalement et signale que son action Immich
-personnalisée est indisponible ; utiliser le bouton du bureau dans ce cas.
+personnalisée est indisponible ; utiliser le bouton de l’application microservices dans ce cas.
 
 Validation : tests OCR sur le bundle réel, tests simulés de mise à jour avec
 worker présent/absent, refus sans accusé de pause et sauvegarde en échec,
