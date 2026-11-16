@@ -58,7 +58,7 @@
     if (!panel) {
       panel = document.createElement('section'); panel.id = ID;
       panel.setAttribute('aria-labelledby', ID+'-title');
-      panel.className = 'p-4'; 
+      panel.className = 'p-4';
       const title = document.createElement('h2'); title.id = ID+'-title';
       title.textContent = 'Texte reconnu'; Object.assign(title.style,{marginBottom:'8px',fontSize:'14px',fontWeight:'400',color:'var(--color-immich-dark-fg, inherit)'});
       textarea = document.createElement('textarea'); textarea.readOnly = true;
