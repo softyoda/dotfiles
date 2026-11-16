@@ -20,6 +20,7 @@ p.chmod(0o600)
 PY
 python3 "$HOME/.local/share/immich-ocr/install-worker.py"
 "$HOME/.local/bin/immich-ocr-hook"
+python3 "$HOME/.local/share/immich-ocr/configure-ml.py"
 install -m 644 "$HOME/.local/share/immich-ocr/immich-update.desktop" "$HOME/.local/share/applications/immich-update.desktop"
 update-desktop-database "$HOME/.local/share/applications"
 desktop=$(xdg-user-dir DESKTOP)

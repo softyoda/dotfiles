@@ -166,3 +166,32 @@ Les tests navigateur utilisent des données synthétiques, sans compte connecté
 injection HTML, copie explicite/refus, texte absent, chargement tardif, navigation,
 réouverture du panneau, structure incompatible et absence d'erreurs JavaScript.
 Les tests de notification interceptent notify-send ; ils n'envoient pas d'alerte.
+
+
+## Recherche intelligente : liaison du serveur au moteur IA
+
+Le serveur API du NAS a lui aussi besoin du moteur IA pour encoder les requêtes
+de recherche. Des microservices sains sur le PC ne prouvent pas que cette liaison
+fonctionne. Avec un moteur déporté, le nom Docker immich-machine-learning n'est
+pas résolu depuis le réseau du NAS.
+
+configure-ml.py enregistre l'URL distante dans machineLearning.urls via l'API
+administrative officielle, à partir de IMMICH_UPDATE_WORKER_PING. Il remplace
+l'adresse Docker locale inapplicable et conserve les autres URLs personnalisées.
+Ce réglage persiste dans Immich après redémarrage et recréation du conteneur.
+Aucun extra_hosts temporaire ni changement d'exposition réseau n'est ajouté.
+
+Prérequis : IMMICH_API_KEY dans le .env existant de la stack locale, avec droit
+de lire/modifier les paramètres système. La clé n'est jamais copiée dans Git ni
+affichée. Le script lit la configuration complète en mémoire et ne change que
+machineLearning.urls. L'ancienne liste est sauvegardée dans le dossier d'état
+utilisateur, fichier ml-urls-before.json en mode 600.
+
+Validation effectuée : ping du moteur depuis le conteneur API, relecture de la
+configuration, puis requête authentifiée POST /api/search/smart (« cheval metal »),
+HTTP 200 avec dix résultats. Ne pas se limiter au healthcheck des conteneurs
+ou au chargement de la page de connexion.
+
+Si le PC hébergeant le moteur IA est éteint et qu'aucun autre moteur n'est
+configuré, la recherche intelligente est indisponible. Le panneau OCR utilise
+les résultats déjà enregistrés et ne dépend pas de ce moteur pour l'affichage.

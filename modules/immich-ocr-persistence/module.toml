@@ -61,3 +61,7 @@ dst = "~/.local/share/immich-ocr/panel.js"
 [[files]]
 src = "files/cache.cjs"
 dst = "~/.local/share/immich-ocr/cache.cjs"
+
+[[files]]
+src = "files/configure-ml.py"
+dst = "~/.local/share/immich-ocr/configure-ml.py"
