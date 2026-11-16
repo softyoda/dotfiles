@@ -164,6 +164,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 |---|---|
 | [`file-catalog`](modules/file-catalog/) | Client local Siftbay : volumes détectés, catalogue temporaire ou conservé, connexion explicite à un serveur. |
 | [`immich-ocr-persistence`](modules/immich-ocr-persistence/) | Ajoute le texte OCR et Tout copier, mémorise le bouton OCR, réapplique le correctif au démarrage du serveur et relie Dockge à la mise à jour NAS + workers. |
+| [`immich-search-local`](modules/immich-search-local/) | Recherche intelligente sur le CPU du NAS, ingestion IA sur le GPU du worker, même lorsque le PC est absent. |
 | [`immich-worker`](modules/immich-worker/) | Déporte les jobs lourds d'Immich (miniatures, transcodage, reconnaissance) du NAS vers le GPU de cette machine, avec mise à jour sûre NAS + worker. |
 | [`nas-mounts`](modules/nas-mounts/) | Monte automatiquement les partages du NAS (SMB, et NFS Immich en option) au premier accès, avec une petite fenêtre pour monter/démonter. |
 | [`remote-workstation`](modules/remote-workstation/) | Monte le dossier personnel d’une ou plusieurs machines du réseau (ex. flystation) dans ~/Mounts, avec un raccourci Dolphin et « Exécuter sur la machine distante » au clic droit. ✋ |

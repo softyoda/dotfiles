@@ -195,3 +195,10 @@ ou au chargement de la page de connexion.
 Si le PC hébergeant le moteur IA est éteint et qu'aucun autre moteur n'est
 configuré, la recherche intelligente est indisponible. Le panneau OCR utilise
 les résultats déjà enregistrés et ne dépend pas de ce moteur pour l'affichage.
+
+
+Avec le module immich-search-local installé, configure-ml.py conserve au contraire
+le nom Docker immich-machine-learning : il se résout vers le CPU sur le NAS et
+vers CUDA sur le worker. Le marqueur utilisateur local-search-enabled sélectionne
+cette architecture. La procédure de mise à jour inclut alors le moteur ML du NAS
+dans les téléchargements, la bascule et les contrôles de santé.

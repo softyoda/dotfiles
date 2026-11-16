@@ -38,6 +38,9 @@ function verifyOcr(){
 }
 async function main(){
  run(['docker','compose','config','--quiet']);
+ const nasServices=['immich-server'];
+ if(read(['docker','compose','config','--services']).split('\n').includes('immich-machine-learning'))
+  nasServices.push('immich-machine-learning');
  const current=await version();
  if(process.argv.includes('--resume')){
   const state=JSON.parse(read(['docker','inspect','immich-server','--format','{{json .}}']));
@@ -60,7 +63,7 @@ async function main(){
  }
  const stamp=new Date().toISOString().replace(/[:.]/g,'-');
  const dc=(...args)=>run(['docker','compose',...args],{env:{...process.env,IMMICH_VERSION:target}});
- console.log('Téléchargement du serveur…');dc('pull','immich-server');
+ console.log('Téléchargement du serveur…');dc('pull',...nasServices);
  console.log('Sauvegarde PostgreSQL…');await backup('db-backup-pre-'+target+'-'+stamp+'.sql');
  const token=crypto.randomUUID();writeRequest({phase:'pending',token,target});
  console.log('Mise en pause des workers ; attente de confirmation…');
@@ -78,11 +81,11 @@ async function main(){
  fs.copyFileSync(envFile,envFile+'.pre-update-'+stamp);
  const pattern=/^[ \t]*(?:export[ \t]+)?IMMICH_VERSION[ \t]*=.*$/m;
  fs.writeFileSync(envFile,pattern.test(old)?old.replace(pattern,'IMMICH_VERSION='+target):old+'\nIMMICH_VERSION='+target+'\n');
- console.log('Démarrage du nouveau serveur…');dc('up','-d','--no-deps','immich-server');
+ console.log('Démarrage du nouveau serveur…');dc('up','-d','--no-deps',...nasServices);
  let healthy=false;
  for(let i=0;i<90;i++){
-  const d=JSON.parse(read(['docker','inspect','immich-server','--format','{{json .}}']));
-  if(d.State.Health?.Status==='healthy'&&d.Config.Image.endsWith(':'+target)){healthy=true;break}
+  const states=nasServices.map(name=>JSON.parse(read(['docker','inspect',name,'--format','{{json .}}'])));
+  if(states.every(d=>d.State.Health?.Status==='healthy'&&d.Config.Image.endsWith(':'+target))){healthy=true;break}
   await sleep(4000);
  }
  if(!healthy)throw Error('Serveur non sain : workers maintenus en pause, consulter les journaux');

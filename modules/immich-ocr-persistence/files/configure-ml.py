@@ -27,7 +27,9 @@ def configure():
     config=api('GET')
     current=config['machineLearning']['urls']
     # No ML container exists on the NAS. Preserve any other custom fallback URLs.
-    desired=[remote]+[u for u in current if u not in (remote,'http://immich-machine-learning:3003')]
+    local_search=(Path.home()/'.config/immich-update/local-search-enabled').exists()
+    preferred='http://immich-machine-learning:3003' if local_search else remote
+    desired=[preferred]+[u for u in current if u not in (remote,'http://immich-machine-learning:3003')]
     if current!=desired:
         state=Path.home()/'.local/state/immich';state.mkdir(parents=True,exist_ok=True)
         backup=state/'ml-urls-before.json'
@@ -37,8 +39,8 @@ def configure():
         api('PUT',config)
         if api('GET')['machineLearning']['urls']!=desired:
             raise RuntimeError('Vérification de la configuration ML échouée')
-        print('URL du moteur IA distant corrigée et enregistrée dans Immich.')
-    else:print('URL du moteur IA distant déjà configurée.')
+        print('URL du moteur IA corrigée et enregistrée dans Immich.')
+    else:print('URL du moteur IA déjà configurée.')
 if __name__=='__main__':
     try:configure()
     except Exception as e:

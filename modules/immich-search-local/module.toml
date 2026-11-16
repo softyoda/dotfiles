@@ -1,0 +1,12 @@
+name = "Immich : recherche autonome et ingestion CUDA"
+category = "homelab"
+description = "Recherche intelligente sur le CPU du NAS, ingestion IA sur le GPU du worker, même lorsque le PC est absent."
+requires = ["immich-ocr-persistence"]
+[packages]
+pacman = ["python-yaml"]
+[[files]]
+src = "files/install.py"
+dst = "~/.local/share/immich-search-local/install.py"
+[[files]]
+src = "files/install-nas.py"
+dst = "~/.local/share/immich-search-local/install-nas.py"

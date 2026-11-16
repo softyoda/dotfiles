@@ -9,6 +9,7 @@ async function scenario(mode){
  const child={
  spawnSync(cmd,args,opts){
   execs.push(args.join(' '));
+  if(args.includes('--services'))return{status:0,stdout:mode==='nas-ml'?'immich-server\nimmich-machine-learning':'immich-server'};
   if(mode==='hook-fail' && args.includes('/opt/immich-ocr/apply.cjs'))return{status:2};
   if(args[0]==='inspect')return{status:0,stdout:JSON.stringify({State:{Health:{Status:'healthy'}},Config:{Image:'immich:v3.4.2'}})};
   if(args[0]==='exec'&&args[2]==='node'&&args[3]==='-e'){
@@ -27,8 +28,12 @@ async function scenario(mode){
   return{ok:mode==='no-ack'};
  },process:{argv:[],env:{}},AbortSignal,console:{log(){},error(){},warn(){}},setTimeout:f=>queueMicrotask(f)};
  let error;try{await vm.runInNewContext(source,ctx)}catch(e){error=e}
- if(mode==='online'||mode==='offline'||mode==='hook-fail'){assert(!error,String(error));assert(up);assert(backup);assert(!paused);assert(files.get('.env').includes('v3.4.2'))}
+ if(mode==='online'||mode==='offline'||mode==='hook-fail'||mode==='nas-ml'){assert(!error,String(error));assert(up);assert(backup);assert(!paused);assert(files.get('.env').includes('v3.4.2'))}
  else{assert(error);assert(!up);assert.equal(files.get('.env'),'IMMICH_VERSION=v3.4.1\n')}
+ if(mode==='nas-ml'){
+  assert(execs.includes('compose pull immich-server immich-machine-learning'));
+  assert(execs.includes('compose up -d --no-deps immich-server immich-machine-learning'));
+ }
  console.log('PASS updater '+mode);
 }
-(async()=>{for(const m of ['online','offline','no-ack','backup-fail','hook-fail'])await scenario(m)})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{for(const m of ['online','offline','no-ack','backup-fail','hook-fail','nas-ml'])await scenario(m)})().catch(e=>{console.error(e);process.exitCode=1});
