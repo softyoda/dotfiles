@@ -1,0 +1,7 @@
+[Unit]
+Description=Vérifier la version Immich au retour de ce PC
+[Timer]
+OnStartupSec=15
+OnUnitInactiveSec=60
+[Install]
+WantedBy=timers.target

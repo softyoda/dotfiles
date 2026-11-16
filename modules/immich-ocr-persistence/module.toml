@@ -1,0 +1,55 @@
+name = "Immich : préférence OCR et mise à jour"
+category = "homelab"
+description = "Mémorise le bouton OCR, réapplique le correctif au démarrage du serveur et relie Dockge à la mise à jour NAS + workers."
+vars = ["IMMICH_UPDATE_LOCAL_STACK", "IMMICH_UPDATE_NAS_STACK", "IMMICH_UPDATE_NAS_SSH", "IMMICH_UPDATE_SERVER_URL", "IMMICH_UPDATE_WORKER_PING", "IMMICH_UPDATE_DOCKGE_STACK", "IMMICH_UPDATE_DOCKGE_HOST_STACK"]
+[packages]
+pacman = ["python-pyqt6", "python-yaml"]
+[[files]]
+src = "files/apply.cjs"
+dst = "~/.local/share/immich-ocr/apply.cjs"
+[[files]]
+src = "files/install-hook.py"
+dst = "~/.local/bin/immich-ocr-hook"
+mode = "755"
+[[files]]
+src = "files/install-remote.py"
+dst = "~/.local/share/immich-ocr/install-remote.py"
+[[files]]
+src = "files/open-update.py"
+dst = "~/.local/share/immich-ocr/open-update.py"
+[[files]]
+src = "files/immich-update.py"
+dst = "~/.local/bin/immich-update.py"
+mode = "755"
+[[files]]
+src = "files/immich-update.desktop"
+dst = "~/.local/share/immich-ocr/immich-update.desktop"
+template = true
+
+[[files]]
+src = "files/worker-guard.cjs"
+dst = "~/.local/share/immich-ocr/worker-guard.cjs"
+
+[[files]]
+src = "files/update-nas.cjs"
+dst = "~/.local/share/immich-ocr/update-nas.cjs"
+
+[[files]]
+src = "files/patch-dockge.cjs"
+dst = "~/.local/share/immich-ocr/patch-dockge.cjs"
+
+[[files]]
+src = "files/install-dockge.py"
+dst = "~/.local/share/immich-ocr/install-dockge.py"
+
+[[files]]
+src = "files/install-worker.py"
+dst = "~/.local/share/immich-ocr/install-worker.py"
+
+[[files]]
+src = "files/immich-worker-align.service"
+dst = "~/.config/systemd/user/immich-worker-align.service"
+
+[[files]]
+src = "files/immich-worker-align.timer"
+dst = "~/.config/systemd/user/immich-worker-align.timer"

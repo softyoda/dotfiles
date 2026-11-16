@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Mettre à jour Immich
+Comment=Sauvegarde, mise à jour du NAS et des workers, puis vérification OCR
+Exec=python3 ${HOME}/.local/share/immich-ocr/open-update.py
+Icon=system-software-update
+Terminal=false
+Categories=System;

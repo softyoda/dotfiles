@@ -1,0 +1,5 @@
+[Unit]
+Description=Alignement des workers sur le serveur Immich
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/immich-update.py --align-only

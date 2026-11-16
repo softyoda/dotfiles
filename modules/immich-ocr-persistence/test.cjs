@@ -1,0 +1,22 @@
+const {patch,KEY}=require('./files/apply.cjs');
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const fixture='new class{#e=P(Ce([]));#t=P(!1);get showOverlay(){return j(this.#t)}set showOverlay(e){F(this.#t,e,!0)}#n=I(()=>j(this.#e).length>0);#r=new Wt;#i=!1;get data(){return j(this.#e)}get hasOcrData(){return j(this.#n)}async getAssetOcr(e){this.#i&&=(await this.#r.reset(),!1),await this.#r.execute(async()=>{F(this.#e,await rn.getAssetOcr(e),!0)},!1)}clear(){this.#i=!0,F(this.#e,[],!0),this.showOverlay=!1}toggleOcrBoundingBox(){this.showOverlay=!this.showOverlay}}';
+const src=process.argv[2]?fs.readFileSync(process.argv[2],'utf8'):fixture;
+const result=patch(src);
+assert.equal(patch(result),result);
+assert.throws(()=>patch('new class{}'),/inconnue/);
+const expr=result.split('/*immich-ocr-preference-v1*/')[1].match(/new class\{#e=P\(Ce\(\[\]\)\)[\s\S]*?toggleOcrBoundingBox\(\)[\s\S]*?catch\{\}\}\}/)[0];
+const store=new Map;
+const context={P:v=>({v}),Ce:v=>v,j:s=>s.get?s.get():s.v,F:(s,v)=>s.v=v,I:get=>({get}),
+ Wt:class{},rn:{},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)}};
+const make=()=>vm.runInNewContext(expr,context);
+let m=make();
+assert.equal(m.showOverlay,false);
+assert.equal(m.hasOcrData,false);
+m.toggleOcrBoundingBox(); assert.equal(store.get(KEY),'true');
+m.clear(); assert.equal(m.showOverlay,true); assert.equal(m.data.length,0);
+m=make(); assert.equal(m.showOverlay,true);
+m.toggleOcrBoundingBox(); assert.equal(make().showOverlay,false);
+context.localStorage={getItem(){throw Error('denied')},setItem(){throw Error('denied')}};
+m=make(); m.toggleOcrBoundingBox();m.clear();assert.equal(m.showOverlay,true);
+console.log('PASS: reload, navigation, on/off, no OCR data, blocked storage, idempotence, incompatible bundle');
