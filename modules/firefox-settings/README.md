@@ -37,7 +37,7 @@ Versionnés dans [`files/userscripts/`](files/userscripts/) :
 | X to XCancel Redirect | menu « View on XCancel » sur x.com | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/x-to-xcancel-redirect.user.js) |
 | Epic Games Overflow Fix | corrige le défilement du site Epic Games | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/epic-games-overflow-fix.user.js) |
 | SensCritique on Google Search | bouton SensCritique dans Google (dérivé de *Reddit on Google Search*, MIT) | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/senscritique-on-google-search.user.js) |
-| Original Youtube Audio | force la piste audio originale (auteur : LiefLayer) | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/original-youtube-audio.user.js) |
+| Original Youtube Audio | sélectionne la piste audio d'origine, interface YouTube en français ou autre langue (adapté de LiefLayer) | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/original-youtube-audio.user.js) |
 | Redirect translated Reddit post to original | retire la traduction automatique de Reddit (auteur : neozetare) | actif | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/reddit-redirect-translated-to-original.user.js) |
 | Calculating Empires – Tile Crawler | parcours et téléchargement des tuiles de calculatingempires.net | désactivé | [installer](https://raw.githubusercontent.com/softyoda/dotfiles/master/modules/firefox-settings/files/userscripts/calculating-empires-tile-crawler.user.js) |
 
@@ -50,8 +50,6 @@ Installés depuis leur source :
 | Reddit on Google Search | actif | [Greasy Fork 462356](https://greasyfork.org/scripts/462356) |
 | Blue Marble (wplace.live) | actif | [GitHub SwingTheVine/Wplace-BlueMarble](https://github.com/SwingTheVine/Wplace-BlueMarble) |
 | sketchfab (téléchargement de modèles) | désactivé | [Greasy Fork 492877](https://greasyfork.org/scripts/492877) |
-| DuckDuckGo Extended | désactivé, source morte | userscripts-mirror.org, script 129505 |
-| Reddit Place – Armée de Kameto | désactivé, événement terminé | [GitHub CorentinGC/reddit-place-kcorp](https://github.com/CorentinGC/reddit-place-kcorp) |
 Le module « Firefox : second profil » sert uniquement à créer un autre profil.
 
 ## Sauvegarder
