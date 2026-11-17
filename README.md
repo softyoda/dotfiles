@@ -65,6 +65,12 @@ HF_TOKEN=hf_…   # expire: 2027-01-31   ← l'icône prévient 3 semaines avant
 Sans dossier privé, tout fonctionne quand même ; les modules qui ont besoin
 d'une variable manquante sont simplement ignorés avec un message.
 
+## Ordi pro (Windows)
+
+Aide-mémoire séparé, sans module : applis winget, réglages Firefox/uBlock,
+PowerToys et FancyZones, outils à mettre en place plus tard →
+[`pro/README.md`](pro/README.md).
+
 ## Écrire un module
 
 Voir [`modules/README.md`](modules/README.md) : un dossier, un `module.toml`

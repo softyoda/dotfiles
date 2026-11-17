@@ -10,6 +10,15 @@ profil local et de cocher séparément :
 
 Le module ajoute aussi une entrée « Firefox — sauvegarde des réglages » au menu.
 Il ne restaure rien sans sélection explicite dans cet écran.
+
+## Mes filtres uBlock Origin
+
+Les filtres perso sont versionnés en clair dans
+[`files/ublock-mes-filtres.txt`](files/ublock-mes-filtres.txt) (Twitter, mise
+en page classique de YouTube). Pour les remettre sans restaurer tout le profil :
+tableau de bord uBlock Origin → **Mes filtres** → coller le contenu du fichier →
+**Appliquer les changements**. Après une modification dans uBlock, recopier
+l'onglet **Mes filtres** dans ce fichier.
 Le module « Firefox : second profil » sert uniquement à créer un autre profil.
 
 ## Sauvegarder
