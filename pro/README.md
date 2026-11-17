@@ -76,6 +76,19 @@ Raccourcis :
 - Maj + glisser pour aimanter, changement rapide de disposition activé,
   bascule entre fenêtres d'une même zone activée.
 
+## Windows 11 : menu contextuel classique
+
+Rétablit l'ancien menu du clic droit (sans « Afficher plus d'options »).
+Dans un terminal, sans droits admin (c'est une clé `HKCU`) :
+
+```bat
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+```
+
+Puis redémarrer l'Explorateur (`taskkill /f /im explorer.exe & start explorer.exe`)
+ou se déconnecter/reconnecter. Pour annuler : supprimer la clé
+`HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}`.
+
 ## À faire plus tard
 
 À reprendre une fois ces outils stabilisés :
