@@ -89,6 +89,96 @@ Puis redémarrer l'Explorateur (`taskkill /f /im explorer.exe & start explorer.e
 ou se déconnecter/reconnecter. Pour annuler : supprimer la clé
 `HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}`.
 
+## Windows 11 : réglages de l'Explorateur et de l'affichage
+
+**Explorateur** : ouvrir sur *Ce PC* au lieu d'*Accueil*, afficher les extensions
+de fichiers (décocher « Masquer les extensions des fichiers dont le type est
+connu ») et les fichiers cachés :
+
+```powershell
+$k='HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+Set-ItemProperty $k LaunchTo 1      # 1 = Ce PC, 2 = Accueil
+Set-ItemProperty $k HideFileExt 0   # afficher les extensions
+Set-ItemProperty $k Hidden 1        # afficher les fichiers cachés
+```
+
+**Écran** : résolution personnalisée **3840×1532 à 60 Hz**, avec la mise à
+l'échelle Windows à **100 %** (*Paramètres → Système → Affichage → Échelle*).
+La résolution se crée dans le Panneau de configuration NVIDIA
+(*Affichage → Modifier la résolution → Personnaliser… → Créer une résolution
+personnalisée*). Cette section n'apparaît que si un écran est branché sur la
+carte NVIDIA, pas sur la carte mère ni sur un écran virtuel de bureau à distance.
+Le panneau est une application du Microsoft Store (`9NF8H0H7WMLT`), absente du
+pilote : à installer à part.
+
+## Windows 11 : débloat, pubs et télémétrie
+
+À faire après l'installation, sans toucher aux paramètres de l'organisation.
+
+**Applications retirées** (`Remove-AppxPackage`) : Bing Actualités, Bing Météo,
+Bing Search, Clipchamp, Teams, Photos OneDrive, Get Help, Feedback Hub,
+Dev Home, Power Automate, To Do, Phone Link, Zune Music, Quick Assist,
+paquet Web Experience (widgets), et les composants Xbox (Gaming Overlay,
+Identity Provider, TCUI, Speech To Text Overlay). Ces derniers sont à réinstaller
+si on utilise la Xbox Game Bar ou des jeux du Store.
+
+```powershell
+$pat='Clipchamp|BingNews|BingWeather|BingSearch|GetHelp|WindowsFeedbackHub|DevHome|PowerAutomate|Todos|YourPhone|ZuneMusic|QuickAssist|MSTeams|WebExperience|OneDrive.Photos'
+Get-AppxPackage | ? { $_.Name -match $pat -and -not $_.NonRemovable } | Remove-AppxPackage
+```
+
+**OneDrive** : `winget uninstall -e --id Microsoft.OneDrive`.
+
+**AMD Adrenalin** : inutile si la carte est NVIDIA, à désinstaller
+(`winget uninstall` sur *AMD Radeon Software* et *AMD Software*). Garder
+*AMD Chipset Software*.
+
+**Menu Démarrer sans recherche web ni pubs** (sans droits admin, clés `HKCU`) :
+
+| Clé (`HKCU:\Software\Microsoft\Windows\CurrentVersion\…`) | Valeur | Effet |
+|---|---|---|
+| `Search\BingSearchEnabled` | `0` | pas de Bing dans la recherche |
+| `Search\CortanaConsent` | `0` | pas de Cortana |
+| `SearchSettings\IsDynamicSearchBoxEnabled` | `0` | pas de contenu dynamique dans la zone de recherche |
+| `SearchSettings\IsAADCloudSearchEnabled`, `IsMSACloudSearchEnabled` | `0` | pas de recherche cloud |
+| `Search\SearchboxTaskbarMode` | `0` | pas de zone de recherche dans la barre des tâches |
+| `AdvertisingInfo\Enabled` | `0` | pas d'identifiant publicitaire |
+| `Privacy\TailoredExperiencesWithDiagnosticDataEnabled` | `0` | pas d'expériences personnalisées |
+| `Explorer\Advanced\Start_IrisRecommendations`, `Start_AccountNotifications` | `0` | pas de recommandations dans Démarrer |
+| `Explorer\Advanced\ShowSyncProviderNotifications` | `0` | pas de pubs OneDrive/Office dans l'Explorateur |
+| `Explorer\Advanced\ShowTaskViewButton`, `ShowCopilotButton` | `0` | barre des tâches épurée |
+
+Dans `ContentDeliveryManager`, mettre à `0` : `ContentDeliveryAllowed`,
+`OemPreInstalledAppsEnabled`, `PreInstalledAppsEnabled`,
+`PreInstalledAppsEverEnabled`, `SilentInstalledAppsEnabled`, `SoftLandingEnabled`,
+`SystemPaneSuggestionsEnabled`, `RotatingLockScreenEnabled`,
+`RotatingLockScreenOverlayEnabled`, `SubscribedContentEnabled`,
+`FeatureManagementEnabled` et toutes les `SubscribedContent-*Enabled`.
+
+**Télémétrie et suivi** (PowerShell **administrateur**, clés `HKLM:\SOFTWARE\Policies\Microsoft\…`, `DWord`) :
+
+- `Windows\DataCollection` : `AllowTelemetry=0`, `DoNotShowFeedbackNotifications=1`, `AllowCommercialDataPipeline=0` ;
+- `Windows\AppCompat` : `AITEnable=0`, `DisableInventory=1`, `DisablePCA=1` ;
+- `SQMClient\Windows` : `CEIPEnable=0` ; `Windows\Windows Error Reporting` : `Disabled=1` ;
+- `Windows\System` : `PublishUserActivities=0`, `EnableActivityFeed=0`, `UploadUserActivities=0` ;
+- `Windows\AdvertisingInfo` : `DisabledByGroupPolicy=1` ;
+- `Windows\Windows Search` : `DisableWebSearch=1`, `ConnectedSearchUseWeb=0`, `AllowCortana=0`, `AllowSearchToUseLocation=0` ;
+- `Windows\Explorer` : `DisableSearchBoxSuggestions=1` ;
+- `Windows\WindowsCopilot` : `TurnOffWindowsCopilot=1` ; `Windows\WindowsAI` : `DisableAIDataAnalysis=1` ;
+- `Windows\CloudContent` : `DisableWindowsConsumerFeatures`, `DisableSoftLanding`, `DisableWindowsSpotlightFeatures`, `DisableTailoredExperiencesWithDiagnosticData` à `1` ;
+- `OneDrive` : `DisableFileSyncNGSC=1` ; `Windows\GameDVR` : `AllowGameDVR=0`.
+
+Services à désactiver : `DiagTrack` et `dmwappushservice`
+(`Stop-Service` puis `Set-Service -StartupType Disabled`). Tâches planifiées à
+désactiver (`schtasks /Change /TN … /Disable`) : *Microsoft Compatibility
+Appraiser*, *ProgramDataUpdater*, *Consolidator*, *UsbCeip*, *DmClient*,
+*DmClientOnScenarioDownload*. Redémarrer ensuite.
+
+Limites : `Policies\Microsoft\Dsh\AllowNewsAndInterests` est protégée par Windows
+même en administrateur (désactiver *Widgets* dans les paramètres de la barre des
+tâches). Une grosse mise à jour de Windows peut remettre certains réglages :
+rejouer alors ces commandes.
+
 ## À faire plus tard
 
 À reprendre une fois ces outils stabilisés :
