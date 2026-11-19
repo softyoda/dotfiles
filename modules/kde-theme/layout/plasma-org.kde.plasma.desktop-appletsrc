@@ -1,5 +1,6 @@
 [ActionPlugins][0]
 MiddleButton;NoModifier=org.kde.paste
+RightButton;NoModifier=org.kde.contextmenu
 
 [ActionPlugins][1]
 RightButton;NoModifier=org.kde.contextmenu
