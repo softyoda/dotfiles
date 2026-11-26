@@ -15,7 +15,7 @@ modules/<id>/
 
 ```toml
 name = "Nom lisible"
-category = "kde"            # base | kde | hardware | apps | ai | creative | retro | homelab
+category = "kde"            # base | kde | hardware | custom | apps | ai | creative | retro | homelab
 description = "Une phrase : ce que ça fait pour l'utilisateur."
 requires = ["autre-module"] # dépendances (appliquées avant)
 vars = ["NAS_HOST"]         # variables NON secrètes, fournies par le profil privé [vars]

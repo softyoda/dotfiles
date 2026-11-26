@@ -1,0 +1,10 @@
+[Unit]
+Description=Contrôle de la Panasonic par HDMI-CEC
+# Plasma stops its graphical target before requesting power-off from logind.
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/python3 %h/.local/libexec/panasonic-cec.py
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=yes

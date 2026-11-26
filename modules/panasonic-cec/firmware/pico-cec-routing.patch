@@ -1,0 +1,205 @@
+diff --git a/include/cec-id.h b/include/cec-id.h
+index 26e05e4..6859f01 100644
+--- a/include/cec-id.h
++++ b/include/cec-id.h
+@@ -23,6 +23,7 @@ typedef enum {
+   CEC_ID_SYSTEM_AUDIO_MODE_STATUS = 0x7e,
+   CEC_ID_REPORT_AUDIO_STATUS = 0x7a,
+   CEC_ID_ROUTING_CHANGE = 0x80,
++  CEC_ID_ROUTING_INFORMATION = 0x81,
+   CEC_ID_ACTIVE_SOURCE = 0x82,
+   CEC_ID_GIVE_PHYSICAL_ADDRESS = 0x83,
+   CEC_ID_REPORT_PHYSICAL_ADDRESS = 0x84,
+@@ -34,7 +35,7 @@ typedef enum {
+   CEC_ID_MENU_REQUEST = 0x8d,
+   CEC_ID_GIVE_DEVICE_POWER_STATUS = 0x8f,
+   CEC_ID_REPORT_POWER_STATUS = 0x90,
+-  CEC_ID_GET_MENU_LANGUAGE = 0x81,
++  CEC_ID_GET_MENU_LANGUAGE = 0x91,
+   CEC_ID_INACTIVE_SOURCE = 0x9d,
+   CEC_ID_CEC_VERSION = 0x9e,
+   CEC_ID_GET_CEC_VERSION = 0x9f,
+diff --git a/include/cec-task.h b/include/cec-task.h
+index 1be2b59..51e183a 100644
+--- a/include/cec-task.h
++++ b/include/cec-task.h
+@@ -7,6 +7,7 @@
+ #define CEC_TASK_NAME "cec"
+ 
+ uint16_t cec_get_physical_address(void);
++uint16_t cec_get_active_address(void);
+ uint8_t cec_get_logical_address(void);
+ bool cec_send_msg(const cec_message_t *msg);
+ void cec_task(void *param);
+diff --git a/src/cec-config.c b/src/cec-config.c
+index d7fe06c..b0295e8 100644
+--- a/src/cec-config.c
++++ b/src/cec-config.c
+@@ -18,7 +18,7 @@ static const uint32_t default_edid_delay_ms = 5000;
+  * 0x0000 is typically reserved for the television and we never claim it.
+  * Thus, use 0x0000 to indicate "auto-query over HDMI-DCD".
+  */
+-static const uint16_t default_physical_addr = 0x0000;
++static const uint16_t default_physical_addr = 0x1000;
+ 
+ /**
+  * Default logical address.
+diff --git a/src/cec-log.c b/src/cec-log.c
+index 26518cf..faee478 100644
+--- a/src/cec-log.c
++++ b/src/cec-log.c
+@@ -130,6 +130,7 @@ const char *cec_message[] = {
+     [CEC_ID_SYSTEM_AUDIO_MODE_STATUS] = "System Audio Mode Status",
+     [CEC_ID_REPORT_AUDIO_STATUS] = "Report Audio Status",
+     [CEC_ID_ROUTING_CHANGE] = "Routing Change",
++    [CEC_ID_ROUTING_INFORMATION] = "Routing Information",
+     [CEC_ID_ACTIVE_SOURCE] = "Active Source",
+     [CEC_ID_GIVE_PHYSICAL_ADDRESS] = "Give Physical Address",
+     [CEC_ID_REPORT_PHYSICAL_ADDRESS] = "Report Physical Address",
+@@ -185,6 +186,14 @@ void cec_log_frame(cec_frame_t *frame, bool recv) {
+         log_printf(initiator, destination, recv, frame->ack, "[%s][%02x%02x -> %02x%02x]",
+                    cec_message[cmd], msg->data[2], msg->data[3], msg->data[4], msg->data[5]);
+         break;
++      case CEC_ID_ROUTING_INFORMATION:
++      case CEC_ID_SET_STREAM_PATH:
++      case CEC_ID_INACTIVE_SOURCE:
++        if (msg->len >= 4) {
++          log_printf(initiator, destination, recv, frame->ack, "[%s][%02x%02x]",
++                     cec_message[cmd], msg->data[2], msg->data[3]);
++        }
++        break;
+       case CEC_ID_ACTIVE_SOURCE:
+         log_printf(initiator, destination, recv, frame->ack, "[%s][%02x%02x Display ON]",
+                    cec_message[cmd], msg->data[2], msg->data[3]);
+diff --git a/src/cec-task.c b/src/cec-task.c
+index 56671dc..f1be5a1 100644
+--- a/src/cec-task.c
++++ b/src/cec-task.c
+@@ -50,7 +50,7 @@ static uint8_t laddr = 0x0f;
+ static uint16_t paddr = 0x0000;
+ 
+ /* Active state. */
+-static uint16_t active_addr = 0x0000;
++static volatile uint16_t active_addr = UINT16_MAX;
+ 
+ /* Audio state. */
+ static bool audio_status = false;
+@@ -250,6 +250,10 @@ uint16_t cec_get_physical_address(void) {
+   return paddr;
+ }
+ 
++uint16_t cec_get_active_address(void) {
++  return active_addr;
++}
++
+ uint8_t cec_get_logical_address(void) {
+   return laddr;
+ }
+@@ -277,13 +281,16 @@ void cec_task(void *param) {
+   while (true) {
+     cec_message_t msg = {0x0};
+     uint8_t key = HID_KEY_NONE;
+-    uint8_t no_active = 0;
+-
+     cec_frame_recv(&msg, laddr);
+ 
+     cec_message_t tx_msg;
+     if (xQueueReceive(cec_tx_queue, &tx_msg, 0) == pdTRUE) {
+       cec_frame_send(&tx_msg);
++      if (tx_msg.opcode == CEC_ID_ACTIVE_SOURCE && tx_msg.len == 4 &&
++          (tx_msg.header & 0x0f) == 0x0f &&
++          (uint16_t)((tx_msg.operand[0] << 8) | tx_msg.operand[1]) == paddr) {
++        active_addr = paddr;
++      }
+       continue;
+     }
+ 
+@@ -298,7 +305,7 @@ void cec_task(void *param) {
+           break;
+         case CEC_ID_STANDBY:
+           if (destination == laddr || destination == 0x0f) {
+-            active_addr = 0x0000;
++            active_addr = UINT16_MAX;
+             blink_set_blink(BLINK_STATE_BLUE_2HZ);
+           }
+           break;
+@@ -324,18 +331,26 @@ void cec_task(void *param) {
+         case CEC_ID_SYSTEM_AUDIO_MODE_STATUS:
+           break;
+         case CEC_ID_ROUTING_CHANGE:
++          if (msg.len < 6 || destination != 0x0f) {
++            break;
++          }
+           active_addr = (msg.operand[2] << 8) | msg.operand[3];
+           paddr = get_physical_address(&config);
+           laddr = allocate_logical_address(&config);
+           if (paddr == active_addr) {
+             image_view_on(laddr, 0x00);
+             active_source(laddr, paddr);
+-            no_active = 0;
++          }
++          break;
++        case CEC_ID_ROUTING_INFORMATION:
++          if (msg.len >= 4 && destination == 0x0f) {
++            active_addr = (msg.operand[0] << 8) | msg.operand[1];
+           }
+           break;
+         case CEC_ID_ACTIVE_SOURCE:
+-          active_addr = (msg.operand[0] << 8) | msg.operand[1];
+-          no_active = 0;
++          if (msg.len >= 4 && destination == 0x0f) {
++            active_addr = (msg.operand[0] << 8) | msg.operand[1];
++          }
+           break;
+         case CEC_ID_REPORT_PHYSICAL_ADDRESS:
+           // On broadcast receive, do the same
+@@ -348,21 +363,20 @@ void cec_task(void *param) {
+           }
+           break;
+         case CEC_ID_REQUEST_ACTIVE_SOURCE:
+-          no_active++;
+-          if (paddr == active_addr || no_active > 2) {
+-            image_view_on(laddr, 0x00);
++          if (paddr != 0x0000 && paddr == active_addr) {
+             active_source(laddr, paddr);
+-            no_active = 0;
+           }
+           break;
+         case CEC_ID_SET_STREAM_PATH:
+-          if (paddr == ((msg.operand[0] << 8) | msg.operand[1])) {
+-            active_addr = paddr;
++          if (msg.len < 4 || destination != 0x0f) {
++            break;
++          }
++          active_addr = (msg.operand[0] << 8) | msg.operand[1];
++          if (paddr != 0x0000 && paddr == active_addr) {
+             image_view_on(laddr, 0x00);
+             active_source(laddr, paddr);
+             menu_state = true;
+             menu_status(laddr, 0x00, menu_state);
+-            no_active = 0;
+             blink_set_blink(BLINK_STATE_GREEN_2HZ);
+           }
+           break;
+@@ -408,6 +422,9 @@ void cec_task(void *param) {
+         case CEC_ID_GET_MENU_LANGUAGE:
+           break;
+         case CEC_ID_INACTIVE_SOURCE:
++          if (msg.len >= 4 && active_addr == ((msg.operand[0] << 8) | msg.operand[1])) {
++            active_addr = UINT16_MAX;
++          }
+           break;
+         case CEC_ID_CEC_VERSION:
+           break;
+diff --git a/src/usb-cdc.c b/src/usb-cdc.c
+index d2bbc80..1324565 100644
+--- a/src/usb-cdc.c
++++ b/src/usb-cdc.c
+@@ -229,6 +229,7 @@ static int exec_show(void *arg, int argc, const char **argv) {
+     } else if (strcmp(argv[1], "cec") == 0) {
+       print_physical_address(cec_get_physical_address());
+       print_logical_address(cec_get_logical_address());
++      cdc_printfln("%-17s: 0x%04x", "Active address", cec_get_active_address());
+     } else if (strcmp(argv[1], "version") == 0) {
+       return show_version(arg);
+     } else if (strcmp(argv[1], "nvs") == 0) {

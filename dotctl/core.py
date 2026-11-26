@@ -39,6 +39,7 @@ CATEGORIES = {
     "base": "Système de base",
     "kde": "KDE Plasma",
     "hardware": "Matériel",
+    "custom": "Bidouillage custom",
     "apps": "Applications",
     "ai": "IA & agents",
     "creative": "Création",

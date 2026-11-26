@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="cafe", ATTRS{idProduct}=="4005", ATTRS{serial}=="123456", ENV{ID_PATH}=="${PANASONIC_CEC_USB_PATH}", SYMLINK+="panasonic-cec", TAG+="uaccess"

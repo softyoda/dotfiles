@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Panasonic HDMI-CEC
+Comment=Réveil, entrée HDMI du PC et veille de la TV
+Icon=video-display
+Exec=/usr/bin/systemctl --user start panasonic-cec.service
+OnlyShowIn=KDE;
+Terminal=false

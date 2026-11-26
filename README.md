@@ -122,6 +122,12 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`usb-no-autosuspend`](modules/usb-no-autosuspend/) | Désactive la mise en veille automatique des périphériques USB (évite les souris, claviers, DAC ou dongles qui décrochent). |
 | [`xbox-controllers`](modules/xbox-controllers/) | Manettes Xbox en Bluetooth (xpadneo) et via le dongle sans fil Xbox (xone), avec un Bluetooth stable pour les manettes. |
 
+### Bidouillage custom
+
+| Module | Ce que ça fait |
+|---|---|
+| [`panasonic-cec`](modules/panasonic-cec/) | Super sélectionne le PC sur la TV, le démarrage la réveille et l’arrêt la met en veille quand l’entrée PC est active. ✋ |
+
 ### Applications
 
 | Module | Ce que ça fait |

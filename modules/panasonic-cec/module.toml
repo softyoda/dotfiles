@@ -1,0 +1,38 @@
+name = "Panasonic HDMI-CEC avec RP2040"
+category = "custom"
+description = "Super sélectionne le PC sur la TV, le démarrage la réveille et l’arrêt la met en veille quand l’entrée PC est active."
+manual = true
+vars = ["PANASONIC_CEC_USB_PATH"]
+
+[packages]
+pacman = ["python", "python-dbus", "python-gobject"]
+
+[[inputs]]
+key = "PANASONIC_CEC_USB_PATH"
+label = "Port USB de la carte CEC"
+type = "text"
+required = true
+pattern = "^[A-Za-z0-9_.:-]+$"
+help = "Valeur ID_PATH de la RP2040 donnée par udevadm info. Garder la carte sur ce port ou mettre à jour le champ après l’avoir déplacée."
+
+[[files]]
+src = "files/panasonic-cec.py"
+dst = "~/.local/libexec/panasonic-cec.py"
+mode = "755"
+
+[[files]]
+src = "files/panasonic-cec.service"
+dst = "~/.config/systemd/user/panasonic-cec.service"
+mode = "644"
+
+[[files]]
+src = "files/panasonic-cec.desktop"
+dst = "~/.config/autostart/panasonic-cec.desktop"
+mode = "644"
+
+[[files]]
+src = "files/70-panasonic-cec.rules"
+dst = "/etc/udev/rules.d/70-panasonic-cec.rules"
+root = true
+mode = "644"
+template = true
