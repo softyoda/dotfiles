@@ -2,32 +2,85 @@
 set -euo pipefail
 
 data="${XDG_DATA_HOME:-$HOME/.local/share}/spotify-launcher"
+config="${XDG_CONFIG_HOME:-$HOME/.config}"
+cache="${XDG_CACHE_HOME:-$HOME/.cache}"
+state="${XDG_STATE_HOME:-$HOME/.local/state}"
 apps="$data/install/usr/share/spotify/Apps"
 spicetify="$HOME/.spicetify/spicetify"
-version_prefs="$data/spicetify-version.prefs"
 
-[[ -x "$spicetify" ]] || exit 0
+is_running() { pgrep -u "$UID" -x spotify >/dev/null; }
+
+is_patched() {
+    [[ ! -e "$apps/xpui.spa" &&
+       -s "$apps/xpui/helper/spicetifyWrapper.js" &&
+       -s "$apps/xpui/spicetify-routes-marketplace.js" &&
+       -s "$apps/xpui/spicetify-routes-marketplace.json" ]] &&
+        grep -Fq 'spicetifyWrapper.js' "$apps/xpui/index.html"
+}
+
+backup_profile() (
+    umask 077
+    paths=()
+    for entry in spicetify/{config-xpui.ini,CustomApps,Extensions,Themes} spotify/prefs; do
+        if [[ -e "$config/$entry" ]]; then paths+=(-C "$config" "$entry"); fi
+    done
+    for entry in spotify/{Browser,Default}/{"Local Storage",IndexedDB}; do
+        if [[ -d "$cache/$entry" ]]; then paths+=(-C "$cache" "$entry"); fi
+    done
+    if (( ${#paths[@]} == 0 )); then exit 0; fi
+
+    backups="$state/spicetify-profile-backups"
+    mkdir -p "$backups"
+    archive=$(mktemp "$backups/.snapshot.XXXXXX")
+    trap 'rm -f -- "$archive"' EXIT
+    tar --sort=name --exclude='*/LOCK' -czf "$archive" "${paths[@]}"
+    digest=$(sha256sum "$archive")
+    snapshot="$backups/profile-${digest%% *}.tar.gz"
+    if [[ ! -e "$snapshot" ]]; then
+        mv -- "$archive" "$snapshot"
+    fi
+)
+
+if [[ ! -x "$spicetify" ]]; then
+    echo "Spicetify est introuvable." >&2
+    exit 1
+fi
+
 mkdir -p "$data"
 exec 9>"$data/spicetify-launch.lock"
 flock 9
 
 mode=${1:-}
-if ! pgrep -u "$UID" -x spotify >/dev/null; then
-    case "$mode" in
-        --check-update) spotify-launcher --check-update --no-exec ;;
-        --update) spotify-launcher --no-exec ;;
-    esac
-elif [[ "$mode" == --check-update ]]; then
-    echo "Spotify est ouvert. Mise à jour et patch au prochain lancement."
+if is_running; then
+    if [[ "$mode" == --check-update ]]; then
+        echo "Spotify est ouvert. Sauvegarde, mise à jour et patch au prochain lancement."
+        exit 0
+    fi
+    is_patched
+    exit
 fi
 
-[[ -f "$data/state.json" && -d "$apps" ]] || exit 0
-installed_version=$(python3 -c 'import json, sys; print(json.load(sys.stdin)["version"].split(":")[-1])' < "$data/state.json")
-# Spicetify lit la version depuis prefs. Fournir la version installée par le
-# lanceur, même si Spotify n’a pas encore ouvert cette version.
-printf 'app.last-launched-version="%s"\n' "$installed_version" > "$version_prefs"
+backup_profile
+case "$mode" in
+    --check-update) spotify-launcher --check-update --no-exec ;;
+    --update) spotify-launcher --no-exec ;;
+esac
 
-[[ -f "$apps/xpui.spa" ]] || exit 0
-if ! pgrep -u "$UID" -x spotify >/dev/null; then
+if [[ ! -f "$data/state.json" || ! -d "$apps" ]]; then
+    echo "L’installation du client Spotify est incomplète." >&2
+    exit 1
+fi
+installed_version=$(python3 -c 'import json, sys; print(json.load(sys.stdin)["version"].split(":")[-1])' < "$data/state.json")
+# Spicetify attend la version de Spotify dans un fichier prefs.
+printf 'app.last-launched-version="%s"\n' "$installed_version" > "$data/spicetify-version.prefs"
+
+if [[ -f "$apps/xpui.spa" ]]; then
     "$spicetify" --no-restart backup apply
+elif ! is_patched; then
+    "$spicetify" --no-restart apply
+fi
+
+if ! is_patched; then
+    echo "Spicetify ou les fichiers du Marketplace sont incomplets." >&2
+    exit 1
 fi

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Prépare le client et applique le patch avant de lancer la fenêtre.
-"$HOME/.local/bin/spicetify-reapply" --update || echo "La préparation de Spotify avec Spicetify a échoué." >&2
-exec /usr/bin/spotify-launcher --skip-update "$@"
+if ! "$HOME/.local/bin/spicetify-reapply" --update; then
+    message="Spotify n’a pas démarré car la sauvegarde du profil ou la vérification de Spicetify a échoué. Pour voir le détail, lancer spicetify-reapply --update dans un terminal."
+    echo "$message" >&2
+    if command -v kdialog >/dev/null; then kdialog --error "$message"; fi
+    exit 1
+fi
+exec spotify-launcher --skip-update "$@"

@@ -32,7 +32,7 @@ patchée n'est pas un lien vers la version système, ou s'il reste un fichier p�
 ## Spotify natif et Spicetify
 
 Si le module [Spicetify](../spicetify/) est installé, la fin de la mise à jour
-vérifie aussi la version de Spotify et réapplique Spicetify. Si le client est
+sauvegarde le profil Spotify, vérifie la version du client et réapplique Spicetify. Si le client est
 ouvert, le raccourci Spotify s’en charge au prochain lancement.
 
 ## Après une mise à jour de cachy-update

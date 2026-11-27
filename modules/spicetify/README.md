@@ -11,7 +11,7 @@ Appliquer `dotctl apply spicetify`, puis ouvrir **Spotify** depuis le menu.
 Le raccourci prépare et patche Spotify avant le démarrage. Cachy-Update vérifie
 aussi les mises à jour du client et applique Spicetify à la fin de la mise à
 jour système, en modes interactif et automatique. Si Spotify est ouvert, la
-mise à jour et le patch sont reportés au prochain lancement. Spotify fermé,
+sauvegarde, la mise à jour et le patch sont reportés au prochain lancement. Spotify fermé,
 `spicetify-reapply` peut également appliquer le patch à la main.
 
 Le champ Spicetify `prefs_path` pointe vers un fichier dédié, généré à partir
@@ -19,12 +19,31 @@ de la version que Spotify Launcher vient d’installer. Cela permet de patcher
 la bonne version avant son premier démarrage et préserve les préférences de
 Spotify.
 
-Pour reprendre des réglages d’une ancienne installation Flatpak, quitter
-l’ancien client, sauvegarder la configuration native existante et copier le
-contenu de `~/.var/app/com.spotify.Client/config/spotify/` dans
-`~/.config/spotify/`. Les thèmes, extensions et réglages Spicetify restent
-dans `~/.config/spicetify`. Retirer ensuite les copies Flatpak de Spotify et
-de MPC-Qt une fois les versions natives vérifiées.
+## Sauvegarde et restauration du Marketplace
+
+Spotify stocke les extensions, thèmes, snippets et réglages installés depuis
+le Marketplace dans les dossiers Chromium `Local Storage` et `IndexedDB`.
+Les réglages du CLI et les extensions installées manuellement se trouvent
+dans `~/.config/spicetify`. Le lanceur et Cachy-Update sauvegardent ces données
+localement, Spotify fermé, avant de vérifier ou d’installer une mise à jour.
+
+Les archives privées sont dans
+`${XDG_STATE_HOME:-~/.local/state}/spicetify-profile-backups`. Deux archives
+identiques partagent le même fichier. Pour restaurer, quitter Spotify,
+extraire une archive dans un dossier temporaire puis remettre `spicetify/`
+et `spotify/prefs` dans le dossier de configuration XDG, et
+`spotify/Browser/` et `spotify/Default/` dans le dossier de cache XDG. Faire
+une copie du profil courant avant de remettre les dossiers archivés.
+Les sauvegardes contiennent des données privées et restent sur la machine.
+
+Lors d’une migration depuis Flatpak, les préférences sont dans
+`~/.var/app/com.spotify.Client/config/spotify/` et les données Chromium
+dans `~/.var/app/com.spotify.Client/cache/spotify/`. Reprendre les deux
+emplacements pour retrouver les réglages et les extensions du Marketplace.
+
+Le raccourci géré par ce module lance Spotify après avoir vérifié le patch
+et les fichiers du Marketplace. S’il ne peut pas les préparer, il signale
+l’erreur. La commande `spicetify-reapply --update` donne le détail.
 
 ## Incident NVIDIA du 27 novembre 2026
 
