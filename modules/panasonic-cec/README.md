@@ -163,7 +163,7 @@ d’entrée et de veille.
 
 | Action | Comportement |
 | --- | --- |
-| Appuyer sur **Super** (touche Windows) | Le lanceur KDE s’ouvre. La Pico envoie `Image View On` puis annonce l’entrée HDMI du PC, ce qui réveille la TV si nécessaire et sélectionne le PC. |
+| Appuyer sur **Super** (touche Windows) | Le lanceur KDE s’ouvre. La Pico envoie d’abord `Image View On` et le retente en l’absence d’acquittement. Elle interroge ensuite l’état de la TV et annonce l’entrée HDMI du PC. |
 | Allumer le PC | Au premier démarrage du démon après le boot, celui-ci demande l’état de la TV et tente de la réveiller si nécessaire. Sur une machine avec ouverture automatique de session, cela se produit au lancement de KDE. |
 | Choisir **Arrêter** dans KDE ou appuyer brièvement sur le bouton du boîtier configuré pour un arrêt normal | Le démon envoie la veille à la TV si elle est allumée et que la source suivie est celle du PC. Une source différente ou indéterminée laisse la TV allumée. |
 
@@ -256,6 +256,10 @@ Voir aussi la [notice Panasonic](https://tda.panasonic-europe-service.com/docs/1
 - **Autre entrée**. Le test avec la TV sur HDMI 3 a détecté la route `3000`
   et a laissé la TV allumée. Après sélection du PC, la route attendue est
   `1000` sur ce montage.
+- **Réveil depuis la veille**. Le 27 novembre 2026, la TV répondait `Standby`
+  à la demande d’état et laissait la commande de réveil sans acquittement.
+  Le raccourci a été corrigé pour commencer par `Image View On`, comme le
+  recommande la [documentation CEC de Linux](https://docs.kernel.org/admin-guide/media/cec.html#cec-without-hpd).
 - **Source inconnue**. La TV peut répondre à la demande d’état d’alimentation
   sans répondre à la demande de source. Ce cas a expliqué un arrêt sans
   veille. Le journal détaille désormais la route et l’état de la TV.

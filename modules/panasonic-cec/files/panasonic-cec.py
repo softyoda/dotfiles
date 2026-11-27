@@ -41,6 +41,7 @@ class Controller:
         self.active = None
         self.power = None
         self.wake_timer = None
+        self.wake_acknowledged = False
         self.announcement_deadline = 0.0
         self.last_shortcut = 0.0
         self.boot_checked = False
@@ -173,8 +174,13 @@ class Controller:
         initiator, arrow, _destination, event, detail = frame.groups()
         if arrow in ("<-", "<~"):
             if event in ("Image View On", "Active Source", "Standby"):
+                result = ""
+                if event != "Active Source":
+                    result = " (ACK)" if arrow == "<-" else " (sans ACK)"
                 log.info("CEC émis %s%s%s", event, f" {detail}" if detail else "",
-                         " (ACK)" if arrow == "<-" else "")
+                         result)
+            if event == "Image View On" and initiator == "00" and arrow == "<-":
+                self.wake_acknowledged = True
             if (event == "Active Source" and detail and self.power == "On"
                     and time.monotonic() < self.announcement_deadline
                     and int(detail.split()[0], 16) == self.physical):
@@ -241,7 +247,7 @@ class Controller:
             self.wake_timer = None
 
     def discover_source(self):
-        if self.streaming and self.active is None:
+        if self.streaming and self.active is None and self.wake_timer is None:
             # The TV can confirm its current path with Set Stream Path when
             # rediscovering the device already connected to that input.
             self.write(f"send f 84 {self.physical >> 8:02x} {self.physical & 255:02x} 04")
@@ -262,9 +268,22 @@ class Controller:
             self.set_active(None)
         self.cancel_wake()
         self.power = None
-        self.write("send 0 8f")
+        self.wake_tv(retries=2)
+
+    def wake_tv(self, retries):
+        self.wake_acknowledged = False
         if self.write("send 0 04"):
-            self.wake_timer = GLib.timeout_add(350, self.announce_pc, True)
+            self.wake_timer = GLib.timeout_add(500, self.after_wake, retries)
+
+    def after_wake(self, retries):
+        self.wake_timer = None
+        if not self.stopping and self.streaming:
+            if not self.wake_acknowledged and retries > 0:
+                log.info("Réveil CEC sans acquittement, nouvel envoi")
+                self.wake_tv(retries - 1)
+            elif self.write("send 0 8f"):
+                self.wake_timer = GLib.timeout_add(350, self.announce_pc, True)
+        return GLib.SOURCE_REMOVE
 
     def announce_pc(self, allow_retry):
         self.wake_timer = None
