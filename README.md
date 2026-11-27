@@ -139,7 +139,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`rustdesk`](modules/rustdesk/) | Bureau à distance RustDesk en service système : accessible sans session ouverte, avec mot de passe permanent. ✋ |
 | [`seafile`](modules/seafile/) | Client Seafile avec démarrage automatique et réglages de connexion sélectionnables ; connexion au compte dans Seafile. ✋ |
 | [`selphy-print`](modules/selphy-print/) | Appli d'impression pour la Canon SELPHY CP1500 : glisser ou coller des photos, les cadrer, en mettre 1, 2 ou 4 par carte, imprimer sans bordure avec la marge de l'imprimante compensée, et suivre ou annuler les impressions. |
-| [`spicetify`](modules/spicetify/) | Spotify (Flatpak utilisateur) personnalisé par Spicetify avec le Marketplace, ré-appliqué automatiquement après chaque mise à jour de Spotify. |
+| [`spicetify`](modules/spicetify/) | Spotify natif via spotify-launcher, personnalisé par Spicetify avec le Marketplace. |
 | [`vesktop`](modules/vesktop/) | Client Discord Vesktop (Vencord intégré), démarré réduit dans la barre système, hors VPN Mullvad, gestionnaire des liens discord://. |
 
 ### IA & agents

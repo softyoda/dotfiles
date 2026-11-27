@@ -1,30 +1,40 @@
 # Spotify + Spicetify
 
-- **Spotify** : Flatpak `com.spotify.Client` installé **en mode utilisateur**
-  (`~/.local/share/flatpak`) : Spicetify doit pouvoir modifier les fichiers de
-  l’application, ce qu’une installation `--system` interdit sans root.
-- **Spicetify** : CLI officiel dans `~/.spicetify` (version épinglée dans
-  `apply.sh`, mise à jour ensuite par `spicetify update`). Le paquet AUR
-  `spicetify-cli` n’est pas utilisé (installé dans `/opt`, géré par pacman).
-  `~/.spicetify` est ajouté au PATH par la config fish.
-- **Marketplace** : application personnalisée + thème « marketplace » (thèmes et
-  extensions se choisissent ensuite depuis le Marketplace, dans Spotify).
-- Réglages notables : `experimental_features`, `home_config`, `expose_apis`,
-  `disable_sentry`, `disable_ui_logging` ; chemins vers le Flatpak utilisateur.
-  Ils sont posés clé par clé avec `spicetify config` (la section `[Backup]` du
-  fichier est gérée par spicetify).
+Le paquet natif `spotify-launcher` installe le client officiel dans
+`~/.local/share/spotify-launcher/install/usr/share/spotify`. Spicetify peut y
+écrire avec les droits de l’utilisateur. Le CLI est installé dans
+`~/.spicetify` et le module configure le thème et l’application Marketplace.
 
-## Ré-application automatique
+## Installation et mises à jour
 
-`spicetify-reapply.path` (systemd utilisateur) surveille le dossier de
-déploiement Flatpak de Spotify ; à chaque mise à jour il lance
-`~/.local/bin/spicetify-reapply` (`spicetify backup apply`, en fermant Spotify
-si besoin ; ne fait rien si l’appli est déjà patchée).
+Appliquer `dotctl apply spicetify`, puis ouvrir **Spotify** depuis le menu.
+À l’installation et après une mise à jour du client, ouvrir puis quitter Spotify
+une première fois pour qu’il enregistre sa nouvelle version dans ses
+préférences. L’ouverture suivante applique Spicetify avant de démarrer le client.
+Spotify fermé, `spicetify-reapply` peut aussi appliquer le patch à la main.
 
-À la main : `spicetify-reapply`, ou `spicetify restore` pour revenir à Spotify d’origine.
+Pour reprendre des réglages d’une ancienne installation Flatpak, quitter
+l’ancien client, sauvegarder la configuration native existante et copier le
+contenu de `~/.var/app/com.spotify.Client/config/spotify/` dans
+`~/.config/spotify/`. Les thèmes, extensions et réglages Spicetify restent
+dans `~/.config/spicetify`. Retirer ensuite les copies Flatpak de Spotify et
+de MPC-Qt une fois les versions natives vérifiées.
 
-## Première installation
+## Incident NVIDIA du 27 novembre 2026
 
-Spotify doit avoir été lancé une fois (fichier `prefs` créé) avant le premier
-patch : sinon `apply.sh` le signale ; lancer Spotify, se connecter, puis
-relancer `dotctl apply spicetify`.
+Après le passage du pilote NVIDIA de `620.70.06` à `620.73.04`,
+KDE utilisait bien la RTX 3080. Les Flatpaks Spotify et MPC-Qt n’avaient que
+l’ancienne extension graphique et chargeaient les bibliothèques Mesa. Leurs
+interfaces tournaient autour de 1 FPS. L’installation de l’extension
+`org.freedesktop.Platform.GL.nvidia-620-73-04` a permis de recréer un contexte
+OpenGL sur la RTX 3080 dans chacun de leurs environnements Flatpak.
+
+Le catalogue installe Spotify via le dépôt système et MPC-Qt via l’AUR. Ces
+deux applications utilisent désormais la pile graphique de l’hôte et ne
+dépendent plus de l’extension Flatpak liée à la version du pilote.
+
+Pour les autres Flatpaks, si ce symptôme réapparaît après une mise à jour
+NVIDIA, comparer `flatpak --gl-drivers` et
+`flatpak list --runtime --columns=ref | grep 'Platform.GL.nvidia'`.
+Lancer `flatpak update` après le démarrage sur le nouveau pilote, puis
+redémarrer les applications affectées. [Documentation Flatpak](https://docs.flatpak.org/en/latest/extension.html)

@@ -150,8 +150,8 @@ pkg = "obs-studio"
 id = "spotify"
 label = "Spotify"
 desc = "Musique en streaming"
-method = "flatpak"
-pkg = "com.spotify.Client"
+method = "pacman"
+pkg = "spotify-launcher"
 
 [["Médias"]]
 id = "shotcut"
@@ -343,8 +343,8 @@ pkg = "kodi"
 id = "mpcqt"
 label = "mpc-qt"
 desc = "Lecteur vidéo (défaut vidéos)"
-method = "flatpak"
-pkg = "io.github.mpc_qt.mpc-qt"
+method = "aur"
+pkg = "mpc-qt"
 
 [["Médias"]]
 id = "mpv"

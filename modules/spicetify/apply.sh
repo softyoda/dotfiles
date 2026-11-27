@@ -1,30 +1,22 @@
 #!/usr/bin/env bash
-# Spotify en Flatpak *utilisateur* (spicetify doit pouvoir écrire dans l’appli,
-# impossible sans root avec une installation --system), CLI Spicetify dans
-# ~/.spicetify (installeur officiel), Marketplace, hook systemd.
+# Client Spotify installé dans le dossier utilisateur par spotify-launcher.
 set -euo pipefail
 source "$DOTFILES_LIB"
 
-SPICETIFY_VERSION=2.45.0      # CLI (se met ensuite à jour avec `spicetify update`)
+SPICETIFY_VERSION=2.46.7      # CLI (se met ensuite à jour avec `spicetify update`)
 MARKETPLACE_VERSION=1.0.9     # spicetify/marketplace
-APP=com.spotify.Client
-SPOTIFY_PATH="$HOME/.local/share/flatpak/app/$APP/current/active/files/extra/share/spotify"
-PREFS_PATH="$HOME/.var/app/$APP/config/spotify/prefs"
-CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/spicetify"
+SPOTIFY_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/spotify-launcher/install/usr/share/spotify"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+PREFS_PATH="$CONFIG_HOME/spotify/prefs"
+CONF_DIR="$CONFIG_HOME/spicetify"
 SPICETIFY="$HOME/.spicetify/spicetify"
 
-# 1. Spotify (Flatpak utilisateur)
-if ! flatpak info --user "$APP" &>/dev/null; then
-    if flatpak info --system "$APP" &>/dev/null; then
-        warn "Spotify est installé en Flatpak système : spicetify ne pourra pas le patcher."
-        warn "Le désinstaller (flatpak uninstall --system $APP) puis relancer ce module."
-    fi
-    flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    info "installation de Spotify (Flatpak utilisateur)"
-    flatpak install --user -y --noninteractive flathub "$APP"
+# Désactive l’ancien déclencheur lors de la migration depuis Flatpak.
+if [[ -f "$CONFIG_HOME/systemd/user/spicetify-reapply.path" ]]; then
+    systemctl --user disable --now spicetify-reapply.path
 fi
 
-# 2. CLI Spicetify
+# 1. CLI Spicetify
 if [[ ! -x "$SPICETIFY" ]]; then
     info "téléchargement de spicetify $SPICETIFY_VERSION"
     mkdir -p "$HOME/.spicetify"
@@ -33,7 +25,7 @@ if [[ ! -x "$SPICETIFY" ]]; then
     chmod +x "$SPICETIFY"
 fi
 
-# 3. Marketplace (application personnalisée)
+# 2. Marketplace (application personnalisée)
 if [[ ! -f "$CONF_DIR/CustomApps/marketplace/manifest.json" ]]; then
     info "téléchargement du Marketplace $MARKETPLACE_VERSION"
     tmp=$(mktemp -d)
@@ -46,7 +38,7 @@ if [[ ! -f "$CONF_DIR/CustomApps/marketplace/manifest.json" ]]; then
     rm -r -- "${tmp:?}"
 fi
 
-# 4. Réglages de config-xpui.ini, clé par clé (spicetify gère lui-même la section [Backup])
+# 3. Réglages de config-xpui.ini, clé par clé (spicetify gère lui-même la section [Backup])
 "$SPICETIFY" config >/dev/null 2>&1 || true   # crée config-xpui.ini si absent
 cfg() { "$SPICETIFY" config "$1" "$2" >/dev/null; }
 cfg spotify_path "$SPOTIFY_PATH"
@@ -68,11 +60,15 @@ cfg disable_ui_logging 1
 grep -Eq '^custom_apps *=.*\bmarketplace\b' "$CONF_DIR/config-xpui.ini" || cfg custom_apps marketplace
 success "configuration Spicetify à jour"
 
-# 5. Patch + hook de ré-application après chaque mise à jour Flatpak
-if [[ -f "$PREFS_PATH" ]]; then
-    "$HOME/.local/bin/spicetify-reapply"
-else
-    warn "Spotify n’a jamais été lancé (prefs absent) : le lancer une fois, se connecter, puis relancer ce module."
+# Le module KDE peut aussi ajouter des actions à ce raccourci.
+desktop="${XDG_DATA_HOME:-$HOME/.local/share}/applications/spotify-launcher.desktop"
+if [[ ! -f "$desktop" ]]; then
+    install -Dm644 /usr/share/applications/spotify-launcher.desktop "$desktop"
 fi
-enable_user spicetify-reapply.path
-success "hook spicetify-reapply.path actif"
+kwriteconfig6 --file "$desktop" --group "Desktop Entry" --key Name Spotify
+kwriteconfig6 --file "$desktop" --group "Desktop Entry" --key Exec "\"$HOME/.local/bin/spotify-with-spicetify\" %u"
+
+# 4. Le raccourci natif applique le patch avant de lancer le client.
+if [[ ! -x "$SPOTIFY_PATH/spotify" || ! -f "$PREFS_PATH" ]]; then
+    info "Ouvrir Spotify depuis le menu pour initialiser le client natif."
+fi
