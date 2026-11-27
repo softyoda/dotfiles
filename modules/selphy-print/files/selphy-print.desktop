@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Name=Selphy Print
+Comment=Cadrer et imprimer des photos sur la Canon SELPHY
+Exec=/usr/bin/python ${HOME}/.local/share/selphy-print/selphy_print.py %f
+Icon=selphy-print
+Terminal=false
+Categories=Graphics;Photography;
+MimeType=image/jpeg;image/png;image/tiff;image/bmp;image/webp;image/heic;
+Actions=DotfilesOpenProgram;DotfilesOpenLauncher;
+X-Dotfiles-AppLocations-Managed=true
+X-Dotfiles-AppLocations-Generated=false
+X-Dotfiles-AppLocations-Source=file://${HOME}/.local/share/applications/selphy-print.desktop
+
+[Desktop Action DotfilesOpenProgram]
+Name=Open executable folder
+Name[fr]=Ouvrir le dossier du programme
+Icon=folder-open
+Exec="${HOME}/.local/bin/kde-app-locations" open program "file://${HOME}/.local/share/applications/selphy-print.desktop"
+
+[Desktop Action DotfilesOpenLauncher]
+Name=Open launcher folder
+Name[fr]=Ouvrir le dossier du raccourci
+Icon=folder-open
+Exec="${HOME}/.local/bin/kde-app-locations" open launcher "file://${HOME}/.local/share/applications/selphy-print.desktop"

@@ -116,7 +116,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 
 | Module | Ce que ça fait |
 |---|---|
-| [`hdmi-tv-recovery`](modules/hdmi-tv-recovery/) | Quand la TV HDMI reste « sans signal » (au rallumage ou en changeant d'entrée), le signal est relancé tout seul ; Alt+F9 force une re-détection. |
+| [`hdmi-tv-recovery`](modules/hdmi-tv-recovery/) | Quand la TV HDMI reste « sans signal » (au rallumage ou en changeant d'entrée), le signal est relancé tout seul ; Alt+F9 relance la liaison par un changement temporaire de mode. |
 | [`ntfs-automount`](modules/ntfs-automount/) | Les disques externes NTFS (Windows) se montent tout seuls au branchement, en lecture-écriture et au nom de l'utilisateur. |
 | [`round-screen`](modules/round-screen/) | Installe softyoda/linux-rond à une révision validée : barres en arc et zone sûre. Le code du projet est maintenu dans son dépôt dédié. |
 | [`usb-no-autosuspend`](modules/usb-no-autosuspend/) | Désactive la mise en veille automatique des périphériques USB (évite les souris, claviers, DAC ou dongles qui décrochent). |
@@ -138,6 +138,7 @@ Après ajout d'un module : `dotctl list --md` régénère le catalogue ci-dessou
 | [`mullvad`](modules/mullvad/) | VPN Mullvad connecté automatiquement (sortie en Belgique, WireGuard post-quantique + DAITA, LAN accessible), interface démarrée réduite. ✋ |
 | [`rustdesk`](modules/rustdesk/) | Bureau à distance RustDesk en service système : accessible sans session ouverte, avec mot de passe permanent. ✋ |
 | [`seafile`](modules/seafile/) | Client Seafile avec démarrage automatique et réglages de connexion sélectionnables ; connexion au compte dans Seafile. ✋ |
+| [`selphy-print`](modules/selphy-print/) | Appli d'impression pour la Canon SELPHY CP1500 : glisser ou coller des photos, les cadrer, en mettre 1, 2 ou 4 par carte, imprimer sans bordure avec la marge de l'imprimante compensée, et suivre ou annuler les impressions. |
 | [`spicetify`](modules/spicetify/) | Spotify (Flatpak utilisateur) personnalisé par Spicetify avec le Marketplace, ré-appliqué automatiquement après chaque mise à jour de Spotify. |
 | [`vesktop`](modules/vesktop/) | Client Discord Vesktop (Vencord intégré), démarré réduit dans la barre système, hors VPN Mullvad, gestionnaire des liens discord://. |
 

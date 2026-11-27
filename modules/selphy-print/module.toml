@@ -1,0 +1,38 @@
+name = "Selphy Print (cartes postales)"
+category = "apps"
+description = "Appli d'impression pour la Canon SELPHY CP1500 : glisser ou coller des photos, les cadrer, en mettre 1, 2 ou 4 par carte, imprimer sans bordure avec la marge de l'imprimante compensée, et suivre ou annuler les impressions."
+
+[packages]
+pacman = ["python", "pyside6", "cups"]
+
+[[files]]
+src = "files/selphy_print.py"
+dst = "~/.local/share/selphy-print/selphy_print.py"
+
+[[files]]
+src = "files/selphy-print.svg"
+dst = "~/.local/share/icons/hicolor/scalable/apps/selphy-print.svg"
+
+[[files]]
+src = "files/selphy-print.desktop"
+dst = "~/.local/share/applications/selphy-print.desktop"
+template = true
+
+[[parts]]
+id = "printer-queue"
+name = "Ajouter la Selphy à CUPS"
+description = "Trouve la Selphy sur le réseau (Wi-Fi) et crée sa file d'impression sans pilote (IPP Everywhere). L'imprimante doit être allumée."
+default = true
+apply = "add-printer.sh"
+check = "check-printer.sh"
+
+[parts.packages]
+pacman = ["avahi", "nss-mdns", "cups-filters"]
+
+[[parts.inputs]]
+key = "SELPHY_URI"
+label = "Adresse IPP de l'imprimante"
+type = "text"
+required = false
+pattern = "(ipps?|dnssd)://[^\\s]+"
+help = "Laisser vide pour la détection automatique sur le réseau."
