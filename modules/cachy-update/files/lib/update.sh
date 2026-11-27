@@ -70,6 +70,12 @@ if [ -n "${flatpak_packages}" ]; then
 fi
 
 if [ -z "${error_during_update}" ]; then
+	if [ -x "${HOME}/.local/bin/spicetify-reapply" ] && command -v spotify-launcher >/dev/null; then
+		main_msg "$(eval_gettext "Checking Spotify and reapplying Spicetify...\n")"
+		if ! "${HOME}/.local/bin/spicetify-reapply" --check-update; then
+			warning_msg "$(eval_gettext "Spicetify could not be applied. See the output above.\n")"
+		fi
+	fi
 	icon_up-to-date
 	echo
 	info_msg "$(eval_gettext "The update has been applied\n")"

@@ -36,13 +36,20 @@ printf '\nRESULT:%s:%s\n' "$proceed_with_update" "$noconfirm_mode"
             expected = "RESULT:true:true" if answer in ("A", "a") else "RESULT:true:"
             assert expected in result.stdout, result.stdout
 
+    home = Path(directory) / "home"
+    hook = home / ".local/bin/spicetify-reapply"
+    hook.parent.mkdir(parents=True)
+    hook.write_text('#!/bin/bash\nprintf "SPICETIFY <%s>\\n" "$@"\n')
+    hook.chmod(0o700)
+
     for mode in ("true", ""):
         result = subprocess.run(["bash", "-c", common + r'''
 ask_msg() { echo UNEXPECTED_PROMPT; return 1; }
 pacman() { :; }
 mock_sudo() { printf 'CMD'; printf ' <%s>' "$@"; echo; }
 paru() { printf 'AUR'; printf ' <%s>' "$@"; echo; }
-flatpak() { printf 'FLATPAK'; printf ' <%s>' "$@"; echo; }
+flatpak() { printf 'FLATPAK'; printf ' <%s>' "$@"; echo;  }
+spotify-launcher() { :; }
 libdir="$LIB"
 statedir="$TESTDIR"
 su_cmd=mock_sudo
@@ -52,9 +59,10 @@ packages=example
 aur_packages=example-aur
 flatpak_packages=example-flatpak
 source "$LIB/update.sh"
-'''], env=dict(env, noconfirm_mode=mode), capture_output=True, text=True)
+'''], env=dict(env, HOME=str(home), noconfirm_mode=mode), capture_output=True, text=True)
         assert result.returncode == 0, result.stderr
         assert "UNEXPECTED_PROMPT" not in result.stdout, result.stdout
+        assert result.stdout.index("FLATPAK <update>") < result.stdout.index("SPICETIFY <--check-update>")
         if mode:
             assert '<--noconfirm> <-Syu>' in result.stdout, result.stdout
             assert '<--noconfirm> <--skipreview> <-Syu>' in result.stdout, result.stdout
@@ -63,4 +71,13 @@ source "$LIB/update.sh"
             assert '--noconfirm' not in result.stdout, result.stdout
             assert '--skipreview' not in result.stdout, result.stdout
             assert 'FLATPAK <update>\n' in result.stdout, result.stdout
-print('OK : A/a automatiques, Y interactif, n annule ; commandes pacman/paru/Flatpak simulées.')
+    result = subprocess.run(["bash", "-c", common + r'''
+flatpak() { return 1; }
+spotify-launcher() { :; }
+statedir="$TESTDIR"
+flatpak_packages=example-flatpak
+source "$LIB/update.sh"
+'''], env=dict(env, HOME=str(home)), capture_output=True, text=True)
+    assert "SPICETIFY" not in result.stdout, result.stdout
+
+print('OK : hook Spicetify après une mise à jour réussie ; A/a automatiques, Y interactif, n annule ; commandes pacman/paru/Flatpak simulées.')

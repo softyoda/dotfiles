@@ -8,10 +8,16 @@ Le paquet natif `spotify-launcher` installe le client officiel dans
 ## Installation et mises à jour
 
 Appliquer `dotctl apply spicetify`, puis ouvrir **Spotify** depuis le menu.
-À l’installation et après une mise à jour du client, ouvrir puis quitter Spotify
-une première fois pour qu’il enregistre sa nouvelle version dans ses
-préférences. L’ouverture suivante applique Spicetify avant de démarrer le client.
-Spotify fermé, `spicetify-reapply` peut aussi appliquer le patch à la main.
+Le raccourci prépare et patche Spotify avant le démarrage. Cachy-Update vérifie
+aussi les mises à jour du client et applique Spicetify à la fin de la mise à
+jour système, en modes interactif et automatique. Si Spotify est ouvert, la
+mise à jour et le patch sont reportés au prochain lancement. Spotify fermé,
+`spicetify-reapply` peut également appliquer le patch à la main.
+
+Le champ Spicetify `prefs_path` pointe vers un fichier dédié, généré à partir
+de la version que Spotify Launcher vient d’installer. Cela permet de patcher
+la bonne version avant son premier démarrage et préserve les préférences de
+Spotify.
 
 Pour reprendre des réglages d’une ancienne installation Flatpak, quitter
 l’ancien client, sauvegarder la configuration native existante et copier le

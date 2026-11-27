@@ -7,7 +7,7 @@ SPICETIFY_VERSION=2.46.7      # CLI (se met ensuite à jour avec `spicetify upda
 MARKETPLACE_VERSION=1.0.9     # spicetify/marketplace
 SPOTIFY_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/spotify-launcher/install/usr/share/spotify"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-PREFS_PATH="$CONFIG_HOME/spotify/prefs"
+PREFS_PATH="${SPOTIFY_PATH%/install/usr/share/spotify}/spicetify-version.prefs"
 CONF_DIR="$CONFIG_HOME/spicetify"
 SPICETIFY="$HOME/.spicetify/spicetify"
 
@@ -69,6 +69,8 @@ kwriteconfig6 --file "$desktop" --group "Desktop Entry" --key Name Spotify
 kwriteconfig6 --file "$desktop" --group "Desktop Entry" --key Exec "\"$HOME/.local/bin/spotify-with-spicetify\" %u"
 
 # 4. Le raccourci natif applique le patch avant de lancer le client.
-if [[ ! -x "$SPOTIFY_PATH/spotify" || ! -f "$PREFS_PATH" ]]; then
+if [[ ! -x "$SPOTIFY_PATH/spotify" ]]; then
     info "Ouvrir Spotify depuis le menu pour initialiser le client natif."
+else
+    "$HOME/.local/bin/spicetify-reapply"
 fi

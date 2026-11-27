@@ -29,6 +29,12 @@ Le dossier est reconstruit à côté puis échangé d'un coup ; l'ancien est con
 `check.sh` signale le module comme non installé si une lib patchée diffère, si une lib non
 patchée n'est pas un lien vers la version système, ou s'il reste un fichier périmé.
 
+## Spotify natif et Spicetify
+
+Si le module [Spicetify](../spicetify/) est installé, la fin de la mise à jour
+vérifie aussi la version de Spotify et réapplique Spicetify. Si le client est
+ouvert, le raccourci Spotify s’en charge au prochain lancement.
+
 ## Après une mise à jour de cachy-update
 
 Compatible avec Cachy-Update / Arch-Update 4.4.x. Après une évolution de l'application,

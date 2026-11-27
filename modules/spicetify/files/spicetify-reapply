@@ -2,17 +2,32 @@
 set -euo pipefail
 
 data="${XDG_DATA_HOME:-$HOME/.local/share}/spotify-launcher"
-prefs="${XDG_CONFIG_HOME:-$HOME/.config}/spotify/prefs"
 apps="$data/install/usr/share/spotify/Apps"
 spicetify="$HOME/.spicetify/spicetify"
+version_prefs="$data/spicetify-version.prefs"
 
-# Lors de la première ouverture, Spotify écrit sa version dans prefs.
-[[ -f "$apps/xpui.spa" && -f "$prefs" && -f "$data/state.json" ]] || exit 0
-last_version=$(sed -n 's/^app\.last-launched-version="\([^"]*\)"$/\1/p' "$prefs")
-installed_version=$(python3 -c 'import json, sys; print(json.load(sys.stdin)["version"].split(":")[-1])' < "$data/state.json")
-if [[ "$last_version" != "$installed_version" ]]; then
-    echo "Spicetify sera appliqué à la prochaine ouverture de Spotify."
-    exit 0
+[[ -x "$spicetify" ]] || exit 0
+mkdir -p "$data"
+exec 9>"$data/spicetify-launch.lock"
+flock 9
+
+mode=${1:-}
+if ! pgrep -u "$UID" -x spotify >/dev/null; then
+    case "$mode" in
+        --check-update) spotify-launcher --check-update --no-exec ;;
+        --update) spotify-launcher --no-exec ;;
+    esac
+elif [[ "$mode" == --check-update ]]; then
+    echo "Spotify est ouvert. Mise à jour et patch au prochain lancement."
 fi
 
-"$spicetify" --no-restart backup apply
+[[ -f "$data/state.json" && -d "$apps" ]] || exit 0
+installed_version=$(python3 -c 'import json, sys; print(json.load(sys.stdin)["version"].split(":")[-1])' < "$data/state.json")
+# Spicetify lit la version depuis prefs. Fournir la version installée par le
+# lanceur, même si Spotify n’a pas encore ouvert cette version.
+printf 'app.last-launched-version="%s"\n' "$installed_version" > "$version_prefs"
+
+[[ -f "$apps/xpui.spa" ]] || exit 0
+if ! pgrep -u "$UID" -x spotify >/dev/null; then
+    "$spicetify" --no-restart backup apply
+fi

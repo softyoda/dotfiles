@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Transmet les liens spotify: à une instance ouverte sans la mettre à jour.
-if pgrep -u "$UID" -x spotify >/dev/null; then
-    exec /usr/bin/spotify-launcher --skip-update "$@"
-fi
-
-data="${XDG_DATA_HOME:-$HOME/.local/share}/spotify-launcher"
-mkdir -p "$data"
-exec 9>"$data/spicetify-launch.lock"
-flock -n 9 || exit 0
-
-/usr/bin/spotify-launcher --no-exec
-"$HOME/.local/bin/spicetify-reapply" || echo "Le patch Spicetify a échoué." >&2
-exec 9>&-
+# Prépare le client et applique le patch avant de lancer la fenêtre.
+"$HOME/.local/bin/spicetify-reapply" --update || echo "La préparation de Spotify avec Spicetify a échoué." >&2
 exec /usr/bin/spotify-launcher --skip-update "$@"
